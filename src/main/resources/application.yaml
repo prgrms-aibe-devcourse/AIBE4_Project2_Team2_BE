@@ -1,0 +1,13 @@
+# 1. port -> spring boot -> 8080 (tomcat의 기본 포트)
+server:
+  port: 8080
+
+spring:
+  application:
+    name: AIBE4_Project_Team2_BE
+
+  profiles:
+    active: dev
+    # application-dev.yaml 또는 application-dev.yml
+    # jar 직접 실행이나 배포 시 환경변수 -> prod.
+  # 3. mvc view resolver
