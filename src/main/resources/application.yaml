@@ -4,7 +4,7 @@ server:
 
 spring:
   application:
-    name: AIBE4_Project_Team2_BE
+    name: MajorMate
 
   profiles:
     active: dev
