@@ -37,3 +37,5 @@ out/
 
 ### dev ###
 *-dev.*
+### ai 추가###
+.claude
