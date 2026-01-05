@@ -1,7 +1,10 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.request.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
@@ -47,8 +51,12 @@ public class MajorRoleRequest extends BaseEntity {
 	private LocalDateTime decidedAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "decided_by", nullable = false)
+	@JoinColumn(name = "decided_by")
 	private Member decider;
+
+	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<RequestStatusHistory> statusHistories = new ArrayList<>();
+
 
 	public static MajorRoleRequest createRequest(Member member, String content, String documentUrl) {
 		MajorRoleRequest request = new MajorRoleRequest();
@@ -62,27 +70,51 @@ public class MajorRoleRequest extends BaseEntity {
 	// 승인
 	public void approve(Member decider) {
 		validatePendingStatus(); // 대기 상태인지 검증
+		ApplicationStatus oldStatus = this.applicationStatus;
 		this.applicationStatus = ApplicationStatus.ACCEPTED;
 		this.decider = decider;
 		this.decidedAt = LocalDateTime.now();
+
+		this.statusHistories.add(
+			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "전공자 지원 승인 되었습니다")
+		);
 	}
 
 	// 반려
-	public void reject(Member decider) {
+	public void reject(Member decider, String rejectMessage) {
 		validatePendingStatus();
+
+		if (rejectMessage == null || rejectMessage.trim().isEmpty()) {
+			throw new IllegalArgumentException("반려 시에는 반드시 반려 사유를 입력해야 합니다.");
+		}
+		ApplicationStatus oldStatus = this.applicationStatus;
 		this.applicationStatus = ApplicationStatus.REJECTED;
 		this.decider = decider;
 		this.decidedAt = LocalDateTime.now();
+
+		this.statusHistories.add(
+			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
+		);
 	}
 
 	// 재제출
 	public void resubmit(String content, String documentUrl) {
+
 		if (this.applicationStatus != ApplicationStatus.REJECTED) {
 			throw new IllegalStateException("반려된 상태에서만 재제출이 가능합니다.");
 		}
+
+		ApplicationStatus oldStatus = this.applicationStatus;
 		this.content = content;
 		this.documentUrl = documentUrl;
 		this.applicationStatus = ApplicationStatus.RESUBMITTED; // 상태를 '재제출'로 변경
+		this.decidedAt = null;
+		this.decider = null;
+
+		this.statusHistories.add(
+			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "반려 사유 확인 후 내용을 수정하여 재제출했습니다.")
+		);
+
 	}
 
 
