@@ -40,3 +40,6 @@ out/
 
 ### ai 추가###
 .claude
+.env
+###yml파일###
+src/main/resources/application.yml
