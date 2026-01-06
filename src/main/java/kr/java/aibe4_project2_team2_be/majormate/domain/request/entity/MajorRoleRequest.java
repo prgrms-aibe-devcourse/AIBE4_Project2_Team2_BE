@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "major_role_request")
 @Getter
 @NoArgsConstructor
-public class MajorRoleRequest extends BaseEntity {
+public class MajorRoleRequest {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +46,9 @@ public class MajorRoleRequest extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20, name = "application_status")
 	private ApplicationStatus applicationStatus;
+
+	@Column(name = "created_at", nullable = false)
+	private LocalDateTime createdAt;
 
 	@Column(name = "decided_at")
 	private LocalDateTime decidedAt;
@@ -68,7 +71,7 @@ public class MajorRoleRequest extends BaseEntity {
 	}
 
 	// 승인
-	public void approve(Member decider) {
+	public void accept(Member decider) {
 		validatePendingStatus(); // 대기 상태인지 검증
 		ApplicationStatus oldStatus = this.applicationStatus;
 		this.applicationStatus = ApplicationStatus.ACCEPTED;
@@ -116,7 +119,6 @@ public class MajorRoleRequest extends BaseEntity {
 		);
 
 	}
-
 
 	// 검증 로직
 	private void validatePendingStatus() {
