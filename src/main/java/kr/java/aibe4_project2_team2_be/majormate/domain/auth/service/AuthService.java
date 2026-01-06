@@ -81,16 +81,22 @@ public class AuthService {
         Member member = memberRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 2. 비밀번호 검증
-        if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
+        // 2. OAuth2 사용자 체크
+        if (member.isOAuth2User()) {
             throw new UnauthorizedException(ErrorCode.INVALID_PASSWORD);
         }
 
-        // 3. 토큰 생성
+        // 3. 비밀번호 검증
+        if (member.getPassword() == null ||
+            !passwordEncoder.matches(request.getPassword(), member.getPassword())) {
+            throw new UnauthorizedException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        // 4. 토큰 생성
         String accessToken = jwtTokenProvider.createAccessToken(member.getId(), member.getRole().name());
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
 
-        // 4. RefreshToken 저장
+        // 5. RefreshToken 저장
         saveOrUpdateRefreshToken(member.getId(), refreshToken);
 
         log.info("로그인 성공 - ID: {}, Username: {}", member.getId(), member.getUsername());

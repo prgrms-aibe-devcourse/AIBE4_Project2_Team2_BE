@@ -22,6 +22,12 @@ public enum ErrorCode {
     REFRESH_TOKEN_NOT_FOUND("AUTH_004", "리프레시 토큰을 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED),
     INVALID_PASSWORD("AUTH_005", "비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
 
+    // Auth (OAuth2)
+    OAUTH2_PROVIDER_NOT_SUPPORTED("AUTH_006", "지원하지 않는 OAuth2 제공자입니다.", HttpStatus.BAD_REQUEST),
+    OAUTH2_EMAIL_NOT_FOUND("AUTH_007", "OAuth2 제공자로부터 이메일을 받을 수 없습니다.", HttpStatus.BAD_REQUEST),
+    OAUTH2_AUTHENTICATION_FAILED("AUTH_008", "OAuth2 인증에 실패했습니다.", HttpStatus.UNAUTHORIZED),
+    SOCIAL_LOGIN_REQUIRED("AUTH_009", "소셜 로그인이 필요합니다.", HttpStatus.BAD_REQUEST),
+
     // Member
     MEMBER_NOT_FOUND("MEMBER_001", "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     DUPLICATE_EMAIL("MEMBER_002", "이미 사용 중인 이메일입니다.", HttpStatus.CONFLICT),

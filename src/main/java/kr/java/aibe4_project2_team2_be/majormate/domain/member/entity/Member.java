@@ -1,6 +1,7 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.member.entity;
 
 import jakarta.persistence.*;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.SocialAccount;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
@@ -8,6 +9,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -25,7 +29,7 @@ public class Member extends BaseEntity {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = true, length = 255)
     private String password;
 
     @Column(nullable = false, length = 100)
@@ -41,6 +45,9 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private MemberRole role;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SocialAccount> socialAccounts = new ArrayList<>();
 
     @Builder
     public Member(String username, String email, String password, String name, String nickname,
@@ -64,5 +71,17 @@ public class Member extends BaseEntity {
 
     public void updateMemberStatus(MemberStatus memberStatus) {
         this.memberStatus = memberStatus;
+    }
+
+    public boolean isOAuth2User() {
+        return !socialAccounts.isEmpty();
+    }
+
+    public boolean isLocalUser() {
+        return socialAccounts.isEmpty();
+    }
+
+    public boolean hasPassword() {
+        return this.password != null && !this.password.isEmpty();
     }
 }
