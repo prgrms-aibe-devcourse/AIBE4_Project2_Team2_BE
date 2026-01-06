@@ -29,7 +29,7 @@ public class MemberController {
 	}
 
 	@GetMapping("/mypage")
-	public ApiResponse<MemberResponse> getTest() {
+	public ApiResponse<MemberResponse> getTestName() {
 		return null;
 	}
 }
