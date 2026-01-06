@@ -64,7 +64,6 @@ public class AuthService {
                 .password(encodedPassword)
                 .name(request.getName())
                 .nickname(request.getNickname())
-                .memberType(request.getMemberType())
                 .memberStatus(MemberStatus.ENROLLED)
                 .role(MemberRole.STUDENT)
                 .build();

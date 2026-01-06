@@ -42,7 +42,6 @@ public class InitialDataLoader implements CommandLineRunner {
                 .password(passwordEncoder.encode("admin1234!"))
                 .name("관리자")
                 .nickname("Admin")
-                .memberType(MemberType.ADMIN)
                 .memberStatus(MemberStatus.GRADUATED)
                 .role(MemberRole.ADMIN)
                 .build();
@@ -60,7 +59,6 @@ public class InitialDataLoader implements CommandLineRunner {
                 .password(passwordEncoder.encode("test1234!"))
                 .name("테스트학생")
                 .nickname("학생1")
-                .memberType(MemberType.STUDENT)
                 .memberStatus(MemberStatus.ENROLLED)
                 .role(MemberRole.STUDENT)
                 .build();
@@ -76,7 +74,6 @@ public class InitialDataLoader implements CommandLineRunner {
                 .password(passwordEncoder.encode("test1234!"))
                 .name("테스트전공자")
                 .nickname("전공자1")
-                .memberType(MemberType.MAJOR)
                 .memberStatus(MemberStatus.ENROLLED)
                 .role(MemberRole.MAJOR)
                 .build();
