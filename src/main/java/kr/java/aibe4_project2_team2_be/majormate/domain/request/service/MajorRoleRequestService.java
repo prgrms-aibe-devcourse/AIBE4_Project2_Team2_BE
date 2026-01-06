@@ -11,6 +11,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.MajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.request.repository.MajorRoleRequestRepository;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,7 @@ public class MajorRoleRequestService {
 	private final MajorRoleRequestRepository majorRoleRequestRepository;
 	private final MemberRepository memberRepository;
 
-	// TODO 파일 입출력 관련 클래스 구현
-	// private final S3Service s3Service;
+	private final S3FileService s3Service;
 
 
 	//등록
@@ -34,8 +34,7 @@ public class MajorRoleRequestService {
 		Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
 
 		// 파일 업로드
-		// String documentUrl = s3Service.upload(documentFile);
-		String documentUrl = "";
+		String documentUrl = s3Service.upload(documentFile);
 
 		MajorRoleRequest request = MajorRoleRequest.createRequest(member, content, documentUrl);
 		return majorRoleRequestRepository.save(request).getId();
@@ -55,9 +54,11 @@ public class MajorRoleRequestService {
 			throw new ForbiddenException();
 		}
 
+		// 기존 파일 삭제
+		s3Service.delete(request.getDocumentUrl());
+
 		// 새 파일 업로드
-		// String newUrl = s3Service.upload(newFile);
-		String newUrl = "";
+		String newUrl = s3Service.upload(newFile);
 
 		request.resubmit(newContent, newUrl);
 	}
