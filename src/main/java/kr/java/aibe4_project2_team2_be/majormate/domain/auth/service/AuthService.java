@@ -39,21 +39,27 @@ public class AuthService {
 
     @Transactional
     public SignupResponse signup(SignupRequest request) {
-        // 1. 이메일 중복 검증
+        // 1. 아이디 중복 검증
+        if (memberRepository.existsByUsername(request.getUsername())) {
+            throw new DuplicateException(ErrorCode.DUPLICATE_USERNAME);
+        }
+
+        // 2. 이메일 중복 검증
         if (memberRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateException(ErrorCode.DUPLICATE_EMAIL);
         }
 
-        // 2. 닉네임 중복 검증
+        // 3. 닉네임 중복 검증
         if (memberRepository.existsByNickname(request.getNickname())) {
             throw new DuplicateException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
-        // 3. 비밀번호 암호화
+        // 4. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // 4. 회원 생성
+        // 5. 회원 생성
         Member member = Member.builder()
+                .username(request.getUsername())
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .name(request.getName())
@@ -65,7 +71,7 @@ public class AuthService {
 
         Member savedMember = memberRepository.save(member);
 
-        log.info("회원가입 완료 - ID: {}, Email: {}", savedMember.getId(), savedMember.getEmail());
+        log.info("회원가입 완료 - ID: {}, Username: {}, Email: {}", savedMember.getId(), savedMember.getUsername(), savedMember.getEmail());
 
         return SignupResponse.from(savedMember);
     }
@@ -73,7 +79,7 @@ public class AuthService {
     @Transactional
     public TokenResponse login(LoginRequest request) {
         // 1. 사용자 조회
-        Member member = memberRepository.findByEmail(request.getEmail())
+        Member member = memberRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 2. 비밀번호 검증
@@ -88,7 +94,7 @@ public class AuthService {
         // 4. RefreshToken 저장
         saveOrUpdateRefreshToken(member.getId(), refreshToken);
 
-        log.info("로그인 성공 - ID: {}, Email: {}", member.getId(), member.getEmail());
+        log.info("로그인 성공 - ID: {}, Username: {}", member.getId(), member.getUsername());
 
         // 5. 토큰 만료 시간 (밀리초 -> 초 변환)
         Long expiresIn = jwtProperties.getAccessTokenValidity() / 1000;

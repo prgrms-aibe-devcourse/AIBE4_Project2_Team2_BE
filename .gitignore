@@ -40,3 +40,4 @@ out/
 
 ### ai 추가###
 .claude
+.env
