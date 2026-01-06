@@ -39,6 +39,9 @@ public class Member extends BaseEntity {
 	@Column(nullable = false)
 	private String password;
 
+	@Column(columnDefinition = "TEXT")
+	private String profileImageUrl;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
 	private MemberStatus status;
@@ -47,14 +50,11 @@ public class Member extends BaseEntity {
 	@Column(nullable = false, length = 20)
 	private MemberRole role;
 
-	@Column(columnDefinition = "TEXT")
-	private String profileImageUrl;
-
 	@Builder
 	public Member(
 		Long memberId,
-		String name, String nickname, String email, String username, String password,
-		MemberStatus status, MemberRole role, String profileImageUrl
+		String name, String nickname, String email, String username, String password, String profileImageUrl,
+		MemberStatus status, MemberRole role
 	) {
 		this.memberId = memberId;
 		this.name = name;
@@ -62,8 +62,32 @@ public class Member extends BaseEntity {
 		this.email = email;
 		this.username = username;
 		this.password = password;
+		this.profileImageUrl = profileImageUrl;
 		this.status = status;
 		this.role = role;
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public void updateEmail(String email) {
+		this.email = email;
+	}
+
+	public void updatePassword(String password) {
+		this.password = password;
+	}
+
+	public void updateProfileImageUrl(String profileImageUrl) {
 		this.profileImageUrl = profileImageUrl;
+	}
+
+	public void updateStatus(MemberStatus status) {
+		this.status = status;
+	}
+
+	public void updateRole(MemberRole role) {
+		this.role = role;
 	}
 }
