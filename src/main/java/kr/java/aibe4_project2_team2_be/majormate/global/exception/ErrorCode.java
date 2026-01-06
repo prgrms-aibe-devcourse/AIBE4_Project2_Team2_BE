@@ -26,7 +26,8 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND("MEMBER_001", "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     DUPLICATE_EMAIL("MEMBER_002", "이미 사용 중인 이메일입니다.", HttpStatus.CONFLICT),
     DUPLICATE_NICKNAME("MEMBER_003", "이미 사용 중인 닉네임입니다.", HttpStatus.CONFLICT),
-    INVALID_MEMBER_STATUS("MEMBER_004", "유효하지 않은 회원 상태입니다.", HttpStatus.BAD_REQUEST),
+    DUPLICATE_USERNAME("MEMBER_004", "이미 사용 중인 아이디입니다.", HttpStatus.CONFLICT),
+    INVALID_MEMBER_STATUS("MEMBER_005", "유효하지 않은 회원 상태입니다.", HttpStatus.BAD_REQUEST),
 
     // Profile
     PROFILE_NOT_FOUND("PROFILE_001", "프로필을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
