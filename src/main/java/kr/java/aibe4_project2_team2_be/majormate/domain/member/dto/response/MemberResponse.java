@@ -3,7 +3,6 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,7 +15,6 @@ public class MemberResponse {
     private String email;
     private String name;
     private String nickname;
-    private MemberType memberType;
     private MemberStatus memberStatus;
     private MemberRole role;
 
@@ -27,7 +25,6 @@ public class MemberResponse {
                 .email(member.getEmail())
                 .name(member.getName())
                 .nickname(member.getNickname())
-                .memberType(member.getMemberType())
                 .memberStatus(member.getMemberStatus())
                 .role(member.getRole())
                 .build();
