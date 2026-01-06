@@ -8,17 +8,17 @@ import lombok.Getter;
 @Builder
 public class SignupResponse {
 
-    private Long id;
-    private String email;
-    private String name;
-    private String nickname;
+	private Long id;
+	private String email;
+	private String name;
+	private String nickname;
 
-    public static SignupResponse from(Member member) {
-        return SignupResponse.builder()
-                .id(member.getId())
-                .email(member.getEmail())
-                .name(member.getName())
-                .nickname(member.getNickname())
-                .build();
-    }
+	public static SignupResponse from(Member member) {
+		return SignupResponse.builder()
+			.id(member.getMemberId())
+			.email(member.getEmail())
+			.name(member.getName())
+			.nickname(member.getNickname())
+			.build();
+	}
 }

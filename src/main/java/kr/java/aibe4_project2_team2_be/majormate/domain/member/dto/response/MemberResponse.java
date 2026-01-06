@@ -10,23 +10,23 @@ import lombok.Getter;
 @Builder
 public class MemberResponse {
 
-    private Long id;
-    private String username;
-    private String email;
-    private String name;
-    private String nickname;
-    private MemberStatus memberStatus;
-    private MemberRole role;
+	private Long id;
+	private String username;
+	private String email;
+	private String name;
+	private String nickname;
+	private MemberStatus memberStatus;
+	private MemberRole role;
 
-    public static MemberResponse from(Member member) {
-        return MemberResponse.builder()
-                .id(member.getId())
-                .username(member.getUsername())
-                .email(member.getEmail())
-                .name(member.getName())
-                .nickname(member.getNickname())
-                .memberStatus(member.getMemberStatus())
-                .role(member.getRole())
-                .build();
-    }
+	public static MemberResponse from(Member member) {
+		return MemberResponse.builder()
+			.id(member.getMemberId())
+			.username(member.getUsername())
+			.email(member.getEmail())
+			.name(member.getName())
+			.nickname(member.getNickname())
+			.memberStatus(member.getStatus())
+			.role(member.getRole())
+			.build();
+	}
 }
