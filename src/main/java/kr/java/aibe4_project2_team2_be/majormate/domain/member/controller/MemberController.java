@@ -1,11 +1,15 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.member.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberProfileResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
@@ -14,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Member", description = "회원 API")
 @RestController
-@RequestMapping("/api/member")
+@RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class MemberController {
 
@@ -28,8 +32,9 @@ public class MemberController {
 		return ApiResponse.success(response, "사용자 정보 조회 성공");
 	}
 
-	@GetMapping("/mypage")
-	public ApiResponse<MemberResponse> getTestName() {
-		return null;
+	@GetMapping("/{memberId}/profile")
+	public ResponseEntity<ApiResponse<MemberProfileResponse>> getProfile(@PathVariable Long memberId) {
+		MemberProfileResponse response = memberService.getProfileByMemberId(memberId);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 }
