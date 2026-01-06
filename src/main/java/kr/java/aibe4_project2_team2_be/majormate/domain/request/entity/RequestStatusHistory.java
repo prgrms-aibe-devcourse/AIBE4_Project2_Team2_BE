@@ -2,6 +2,8 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.request.entity;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.CreatedDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
@@ -48,8 +51,13 @@ public class RequestStatusHistory {
 	@Column(nullable = false, length = 512, name = "message")
 	private String message;
 
-	@Column(name = "changed_at", nullable = false)
+	@Column(name = "changed_at", nullable = false, updatable = false)
 	private LocalDateTime changedAt;
+
+	@PrePersist
+	public void prePersist() {
+		this.changedAt = LocalDateTime.now();
+	}
 
 	public static RequestStatusHistory createHistory(MajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String msg) {
 		RequestStatusHistory history = new RequestStatusHistory();

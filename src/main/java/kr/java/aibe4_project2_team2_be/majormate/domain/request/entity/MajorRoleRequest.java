@@ -16,10 +16,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -47,7 +47,7 @@ public class MajorRoleRequest {
 	@Column(nullable = false, length = 20, name = "application_status")
 	private ApplicationStatus applicationStatus;
 
-	@Column(name = "created_at", nullable = false)
+	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
 	@Column(name = "decided_at")
@@ -60,6 +60,10 @@ public class MajorRoleRequest {
 	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<RequestStatusHistory> statusHistories = new ArrayList<>();
 
+	@PrePersist
+	public void prePersist() {
+		this.createdAt = LocalDateTime.now();
+	}
 
 	public static MajorRoleRequest createRequest(Member member, String content, String documentUrl) {
 		MajorRoleRequest request = new MajorRoleRequest();
@@ -67,6 +71,12 @@ public class MajorRoleRequest {
 		request.content = content;
 		request.documentUrl = documentUrl;
 		request.applicationStatus = ApplicationStatus.PENDING; // 초기 상태는 대기
+		
+		// 초기 이력 생성
+		request.statusHistories.add(
+			RequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "전공자 인증 요청을 등록했습니다.")
+		);
+		
 		return request;
 	}
 
