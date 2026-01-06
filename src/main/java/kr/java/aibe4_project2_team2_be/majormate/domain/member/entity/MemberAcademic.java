@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,14 +30,22 @@ public class MemberAcademic extends BaseEntity {
 	@Column(nullable = false, length = 20)
 	private String university;
 
-	@Column(nullable = false, length = 255)
+	@Column(nullable = false)
 	private String major;
 
+	@Builder
 	public MemberAcademic(Long academicId, Member member, String university, String major) {
 		this.academicId = academicId;
 		this.member = member;
 		this.university = university;
 		this.major = major;
 	}
-}
 
+	public void updateUniversity(String university) {
+		this.university = university;
+	}
+
+	public void updateMajor(String major) {
+		this.major = major;
+	}
+}
