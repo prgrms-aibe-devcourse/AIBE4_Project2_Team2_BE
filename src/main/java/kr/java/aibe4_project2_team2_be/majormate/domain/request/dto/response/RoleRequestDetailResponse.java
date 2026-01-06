@@ -23,7 +23,7 @@ public class RoleRequestDetailResponse {
 
 	public static RoleRequestDetailResponse from(MajorRoleRequest majorRoleRequest) {
 		return RoleRequestDetailResponse.builder()
-			.id(majorRoleRequest.getId())
+			.id(majorRoleRequest.getRequestId())
 			.memberName(majorRoleRequest.getMember().getName())
 			.content(majorRoleRequest.getContent())
 			.documentUrl(majorRoleRequest.getDocumentUrl())

@@ -1,7 +1,5 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.request.service;
 
-import java.nio.file.AccessDeniedException;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,7 +11,6 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.MajorRole
 import kr.java.aibe4_project2_team2_be.majormate.domain.request.repository.MajorRoleRequestRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,7 +34,7 @@ public class MajorRoleRequestService {
 		String documentUrl = s3Service.upload(documentFile);
 
 		MajorRoleRequest request = MajorRoleRequest.createRequest(member, content, documentUrl);
-		return majorRoleRequestRepository.save(request).getId();
+		return majorRoleRequestRepository.save(request).getRequestId();
 	}
 
 
@@ -50,7 +47,7 @@ public class MajorRoleRequestService {
 		MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
 			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
 
-		if (!request.getMember().getId().equals(memberId)) {
+		if (!request.getMember().getMemberId().equals(memberId)) {
 			throw new ForbiddenException();
 		}
 

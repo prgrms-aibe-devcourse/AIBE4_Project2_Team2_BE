@@ -48,7 +48,7 @@ public class InitialDataLoader implements CommandLineRunner {
 				.username("admin")
                 .name("관리자")
                 .nickname("Admin")
-                .memberStatus(MemberStatus.GRADUATED)
+                .status(MemberStatus.GRADUATED)
                 .role(MemberRole.ADMIN)
                 .build();
 
@@ -66,7 +66,7 @@ public class InitialDataLoader implements CommandLineRunner {
 				.username("student")
                 .name("테스트학생")
                 .nickname("학생1")
-                .memberStatus(MemberStatus.ENROLLED)
+                .status(MemberStatus.ENROLLED)
                 .role(MemberRole.STUDENT)
                 .build();
 
@@ -82,7 +82,7 @@ public class InitialDataLoader implements CommandLineRunner {
 				.username("major")
                 .name("테스트전공자")
                 .nickname("전공자1")
-                .memberStatus(MemberStatus.ENROLLED)
+                .status(MemberStatus.ENROLLED)
                 .role(MemberRole.MAJOR)
                 .build();
 

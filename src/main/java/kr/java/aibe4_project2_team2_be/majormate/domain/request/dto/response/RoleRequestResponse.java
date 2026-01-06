@@ -18,7 +18,7 @@ public class RoleRequestResponse {
 
 	public static RoleRequestResponse from(MajorRoleRequest majorRoleRequest) {
 		return RoleRequestResponse.builder()
-			.id(majorRoleRequest.getId())
+			.id(majorRoleRequest.getRequestId())
 			.memberName(majorRoleRequest.getMember().getName())
 			.applicationStatus(majorRoleRequest.getApplicationStatus())
 			.createdAt(majorRoleRequest.getCreatedAt())

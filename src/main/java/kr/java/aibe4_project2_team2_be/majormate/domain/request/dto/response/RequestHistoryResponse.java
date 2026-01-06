@@ -22,7 +22,7 @@ public class RequestHistoryResponse {
 		String changedByName = (history.getChangedBy() != null) ? history.getChangedBy().getName() : "null";
 
 		return RequestHistoryResponse.builder()
-			.id(history.getId())
+			.id(history.getHistoryId())
 			.memberName(history.getRequest().getMember().getName())
 			.oldStatus(history.getFromStatus())
 			.newStatus(history.getToStatus())
