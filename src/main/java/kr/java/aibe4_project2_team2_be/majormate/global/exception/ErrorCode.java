@@ -64,6 +64,8 @@ public enum ErrorCode {
 	APPLICATION_NOT_FOUND("INTERVIEW_004", "인터뷰 신청을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 	APPLICATION_ALREADY_EXISTS("INTERVIEW_005", "이미 신청한 인터뷰입니다.", HttpStatus.CONFLICT),
 	UNAUTHORIZED_INTERVIEW_ACCESS("INTERVIEW_006", "인터뷰에 대한 권한이 없습니다.", HttpStatus.FORBIDDEN),
+	INTERVIEW_TARGET_NOT_MAJOR("INTERVIEW_007", "인터뷰 신청 대상이 전공자가 아닙니다.", HttpStatus.BAD_REQUEST),
+	INTERVIEW_SELF_REQUEST_NOT_ALLOWED("INTERVIEW_008", "본인에게 인터뷰를 신청할 수 없습니다.", HttpStatus.BAD_REQUEST),
 
 	// Review
 	REVIEW_NOT_FOUND("REVIEW_001", "후기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

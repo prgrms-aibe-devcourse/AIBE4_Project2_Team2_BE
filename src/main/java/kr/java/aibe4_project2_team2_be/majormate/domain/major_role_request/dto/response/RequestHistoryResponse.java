@@ -17,7 +17,7 @@ public class RequestHistoryResponse {
 	private String changedBy;
 	private String reason;
 	private LocalDateTime changedAt;
-	
+
 	public static RequestHistoryResponse from(RequestStatusHistory history) {
 		String changedByName = (history.getChangedBy() != null) ? history.getChangedBy().getName() : "null";
 
@@ -31,5 +31,5 @@ public class RequestHistoryResponse {
 			.changedAt(history.getChangedAt())
 			.build();
 	}
-	
+
 }

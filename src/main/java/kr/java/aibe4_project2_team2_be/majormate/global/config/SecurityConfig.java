@@ -54,7 +54,9 @@ public class SecurityConfig {
 					"/v3/api-docs/**",
 					"/swagger-resources/**",
 					"/api-docs/**",
-					"/api/members/**"
+					// 아래는 제거해야 함
+					"/api/members/**",
+					"/api/majors/{majorId}/interview-requests"
 				).permitAll()
 				.anyRequest().authenticated()
 			)

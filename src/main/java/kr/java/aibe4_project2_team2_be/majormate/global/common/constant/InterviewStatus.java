@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum InterviewStatus {
 
-    OPEN("모집 중"),
-    CLOSED("모집 마감"),
-    COMPLETED("완료"),
-    CANCELLED("취소");
+	PENDING("대기"),
+	ACCEPTED("수락"),
+	REJECTED("거절"),
+	COMPLETED("완료");
 
-    private final String description;
+	private final String description;
 }

@@ -3,8 +3,6 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repo
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
-import java.util.List;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 
 
 public interface MajorRoleRequestRepository extends JpaRepository<MajorRoleRequest, Long> {
