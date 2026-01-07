@@ -1,11 +1,16 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.interview.service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.InterviewCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.InterviewResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.Interview;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.InterviewMajorSnapshot;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.InterviewStudentSnapshot;
@@ -36,6 +41,62 @@ public class InterviewService {
 
 	private final MemberRepository memberRepository;
 	private final MemberAcademicRepository memberAcademicRepository;
+
+	public List<InterviewResponse> getInterviews(Long studentId) {
+		validateStudentId(studentId);
+
+		List<Interview> interviews = interviewRepository.findByStudentMemberIdOrderByCreatedAtDesc(studentId);
+		if (interviews.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<Long> interviewIds = interviews.stream()
+			.map(Interview::getInterviewId)
+			.toList();
+
+		Map<Long, InterviewMajorSnapshot> majorSnapshotMap = interviewMajorSnapshotRepository
+			.findByInterviewIdIn(interviewIds)
+			.stream()
+			.collect(Collectors.toMap(
+				InterviewMajorSnapshot::getInterviewId,
+				snapshot -> snapshot
+			));
+
+		return interviews.stream()
+			.map(interview -> toResponse(interview, majorSnapshotMap.get(interview.getInterviewId())))
+			.toList();
+
+	}
+
+	private void validateStudentId(Long studentId) {
+		if (studentId == null) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+	}
+
+	private InterviewResponse toResponse(Interview interview, InterviewMajorSnapshot majorSnapshot) {
+		if (majorSnapshot == null) {
+			throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+
+		return new InterviewResponse(
+			new InterviewResponse.MajorSnapshot(
+				majorSnapshot.getMajorProfileImageUrl(),   // nullable
+				majorSnapshot.getMajorNickname(),
+				majorSnapshot.getMajorUniversity(),
+				majorSnapshot.getMajorMajor()
+			),
+			new InterviewResponse.InterviewContent(
+				interview.getTitle(),
+				interview.getContent(),
+				interview.getInterviewMethod(),
+				interview.getPreferredDatetime(),
+				interview.getExtraDescription()            // nullable
+			),
+			interview.getStatus(),
+			interview.getMajorMessage()                  // nullable
+		);
+	}
 
 	@Transactional
 	public void createInterview(Long studentId, Long majorId, InterviewCreateRequest request) {
