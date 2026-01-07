@@ -1,12 +1,7 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.member.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.SocialAccount;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
@@ -14,6 +9,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -36,7 +34,7 @@ public class Member extends BaseEntity {
 	@Column(nullable = false, unique = true, length = 20)
 	private String username;
 
-	@Column(nullable = false)
+	@Column(nullable = true, length = 255)
 	private String password;
 
 	@Column(columnDefinition = "TEXT")
@@ -49,6 +47,9 @@ public class Member extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
 	private MemberRole role;
+
+	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<SocialAccount> socialAccounts = new ArrayList<>();
 
 	@Builder
 	public Member(
@@ -87,7 +88,19 @@ public class Member extends BaseEntity {
 		this.status = status;
 	}
 
-    public void upgradeToMajor() {
-        this.role = MemberRole.MAJOR; // 혹은 사용하시는 Role Enum 값
-    }
+	public void updateRole(MemberRole role) {
+		this.role = role;
+	}
+
+	public boolean isOAuth2User() {
+		return !socialAccounts.isEmpty();
+	}
+
+	public boolean isLocalUser() {
+		return socialAccounts.isEmpty();
+	}
+
+	public boolean hasPassword() {
+		return this.password != null && !this.password.isEmpty();
+	}
 }
