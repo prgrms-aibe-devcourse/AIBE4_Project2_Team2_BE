@@ -32,17 +32,27 @@ public class MajorRoleRequestService {
 
     private final MajorRoleRequestRepository majorRoleRequestRepository;
     private final MemberRepository memberRepository;
+    private final MemberAcademicRepository memberAcademicRepository;
     private final S3FileService s3Service;
 
     // 1. 등록
     @Transactional
-    public Long createRequest(Long memberId, String content, MultipartFile documentFile) {
+    public Long createRequest(Long memberId, RoleRequestCreateRequest requestDto, MultipartFile documentFile) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
 
+        MemberAcademic academic = memberAcademicRepository.findByMember(member)
+                .orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다"));
+
         String documentUrl = s3Service.upload(documentFile);
 
-        MajorRoleRequest request = MajorRoleRequest.createRequest(member, content, documentUrl);
+        MajorRoleRequest request = MajorRoleRequest.createRequest(
+                member,
+                academic.getUniversity(),
+                academic.getMajor(),
+                requestDto.getContent(),
+                documentUrl
+        );
         return majorRoleRequestRepository.save(request).getRequestId();
     }
 
