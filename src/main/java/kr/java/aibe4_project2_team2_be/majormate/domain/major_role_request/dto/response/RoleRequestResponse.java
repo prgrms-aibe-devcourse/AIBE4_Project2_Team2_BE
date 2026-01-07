@@ -11,16 +11,22 @@ import lombok.Getter;
 @Builder
 public class RoleRequestResponse {
 	private Long id;
-	private String memberName;
+	private String university;
+	private String major;
 	private ApplicationStatus applicationStatus;
+	private String comment;
+	private String reason;
 	private LocalDateTime createdAt;
 	private LocalDateTime decidedAt;
 
 	public static RoleRequestResponse from(MajorRoleRequest majorRoleRequest) {
 		return RoleRequestResponse.builder()
 			.id(majorRoleRequest.getRequestId())
-			.memberName(majorRoleRequest.getMember().getName())
+			.university(majorRoleRequest.getUniversity())
+			.major(majorRoleRequest.getMajor())
 			.applicationStatus(majorRoleRequest.getApplicationStatus())
+			.comment(majorRoleRequest.getComment())
+
 			.createdAt(majorRoleRequest.getCreatedAt())
 			.decidedAt(majorRoleRequest.getDecidedAt())
 			.build();
