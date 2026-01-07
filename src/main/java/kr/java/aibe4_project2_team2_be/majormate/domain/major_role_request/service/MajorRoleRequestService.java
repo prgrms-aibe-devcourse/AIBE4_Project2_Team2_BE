@@ -89,7 +89,7 @@ public class MajorRoleRequestService {
 	}
 
 	// 상세 조회
-	public RoleRequestDetailResponse getRequestDetail(Long requestId, Long memberId) {
+	public RoleRequestDetailResponse MyGetRequestDetail(Long requestId, Long memberId) {
 		MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
 			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
 
