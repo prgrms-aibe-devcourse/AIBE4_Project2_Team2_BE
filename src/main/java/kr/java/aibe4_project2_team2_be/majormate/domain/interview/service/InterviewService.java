@@ -41,7 +41,7 @@ public class InterviewService {
 	private final MemberRepository memberRepository;
 	private final MemberAcademicRepository memberAcademicRepository;
 
-	public List<InterviewResponse> getInterviews(Long studentId) {
+	public List<InterviewResponse> getInterviewRequests(Long studentId) {
 		validateStudentId(studentId);
 
 		List<Interview> interviews = findAppliedInterviewsOrThrow(studentId);
