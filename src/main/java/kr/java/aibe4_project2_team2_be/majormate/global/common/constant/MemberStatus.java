@@ -9,7 +9,7 @@ public enum MemberStatus {
 
 	ENROLLED("재학생"),
 	GRADUATED("졸업생"),
-	HIGHSCHOOL("고등학생"),
+	HIGH_SCHOOL("고등학생"),
 	ETC("기타");
 
 	private final String description;

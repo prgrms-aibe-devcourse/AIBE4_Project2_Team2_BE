@@ -18,6 +18,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.r
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repository.MajorRoleRequestRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +41,7 @@ public class MajorRoleRequestService {
 	@Transactional
 	public Long createRequest(Long memberId, RoleRequestCreateRequest requestDto, MultipartFile documentFile) {
 		Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
-		
+
 		MemberAcademic academic = memberAcademicRepository.findByMember(member)
 			.orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다. 먼저 학적 정보를 등록해주세요."));
 
@@ -48,9 +50,9 @@ public class MajorRoleRequestService {
 
 		MajorRoleRequest request = MajorRoleRequest.createRequest(
 			member,
-			academic.getUniversity(), 
-			academic.getMajor(), 
-			requestDto.getContent(), 
+			academic.getUniversity(),
+			academic.getMajor(),
+			requestDto.getContent(),
 			documentUrl
 		);
 		return majorRoleRequestRepository.save(request).getRequestId();

@@ -149,7 +149,8 @@ public class MajorRoleRequest {
 
 	// 검증 로직
 	private void validatePendingStatus() {
-		if (this.applicationStatus != ApplicationStatus.PENDING && this.applicationStatus != ApplicationStatus.RESUBMITTED) {
+		if (this.applicationStatus != ApplicationStatus.PENDING
+			&& this.applicationStatus != ApplicationStatus.RESUBMITTED) {
 			throw new IllegalStateException("심사가 가능한 상태(PENDING/RESUBMITTED)가 아닙니다.");
 		}
 	}
