@@ -1,4 +1,4 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.dto.request;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

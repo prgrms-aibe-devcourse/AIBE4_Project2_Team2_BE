@@ -1,7 +1,7 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.repository;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.MajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import java.util.List;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 

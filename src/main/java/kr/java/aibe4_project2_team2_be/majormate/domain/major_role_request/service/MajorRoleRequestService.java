@@ -1,6 +1,5 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.service;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.service;
 
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,8 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.persistence.EntityNotFoundException;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.MajorRoleRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.repository.MajorRoleRequestRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repository.MajorRoleRequestRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
 import lombok.RequiredArgsConstructor;

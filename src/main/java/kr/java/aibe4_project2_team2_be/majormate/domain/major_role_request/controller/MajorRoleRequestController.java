@@ -1,22 +1,17 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.controller;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.dto.request.RequestRejectRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.dto.request.RoleRequestCreateRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.MajorRoleRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.service.MajorRoleRequestService;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.request.RequestRejectRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.request.RoleRequestCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.service.MajorRoleRequestService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/major-requests")
