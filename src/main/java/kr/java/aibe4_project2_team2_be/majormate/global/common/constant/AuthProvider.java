@@ -5,10 +5,11 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum MemberType {
+public enum AuthProvider {
 
-    STUDENT("학생"),
-    MAJOR("전공자");
+    LOCAL("로컬"),
+    GOOGLE("구글"),
+    GITHUB("깃허브");
 
     private final String description;
 }

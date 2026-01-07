@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MemberStatus {
 
-    ENROLLED("재학"),
-    LEAVE_OF_ABSENCE("휴학"),
-    GRADUATED("졸업"),
-    EXPELLED("제적");
+	ENROLLED("재학생"),
+	GRADUATED("졸업생"),
+	HIGHSCHOOL("고등학생"),
+	ETC("기타");
 
-    private final String description;
+	private final String description;
 }
