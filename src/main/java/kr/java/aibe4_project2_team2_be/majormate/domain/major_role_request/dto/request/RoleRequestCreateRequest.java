@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class RoleRequestCreateRequest {
 
-    @NotBlank(message = "요청 내용은 필수입니다.")
-    private String content;
+	@NotBlank(message = "요청 내용은 필수입니다.")
+	private String content;
 }

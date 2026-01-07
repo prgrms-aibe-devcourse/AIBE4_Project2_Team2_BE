@@ -9,15 +9,15 @@ VALUES ('신형만', 'hyeongman', 'hyeongman.shin@example.com',
 
        ('이서준', 'seojun', 'seojun.lee@example.com',
         'seojun_lee', '$2a$10$2gyYE7Y7FmjoIpmnVNw3Je21sUrmfo.wH2AiDKdvWeXxddeORtuiW',
-        'ENROLLED', 'STUDENT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        'ENROLLED', 'MAJOR', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
        ('박지훈', 'jihoon', 'jihoon.park@example.com',
         'parkjh', '$2a$10$Ph3198sbmwMPBvuXwsn10OnCvm7T6S7agOXPE6KN85Yu3cCthWo2a',
-        'ENROLLED', 'STUDENT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        'ENROLLED', 'MAJOR', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
        ('최유나', 'yuna', 'yuna.choi@example.com',
         'yuna.choi', '$2a$10$G5HsHPdTKDxDnhWx2BlhEOeAGHBajKkzf.x07Py68vtcoa72X2RLe',
-        'ENROLLED', 'STUDENT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        'ENROLLED', 'MAJOR', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO member_academic (member_id, university, major, created_at, updated_at)
 VALUES ((SELECT member_id FROM member WHERE username = 'hyeongman'), '서울대학교', '컴퓨터공학과',
