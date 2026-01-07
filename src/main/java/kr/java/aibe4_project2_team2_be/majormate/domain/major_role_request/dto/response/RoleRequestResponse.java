@@ -22,10 +22,10 @@ public class RoleRequestResponse {
 	public static RoleRequestResponse from(MajorRoleRequest majorRoleRequest) {
 		return RoleRequestResponse.builder()
 			.id(majorRoleRequest.getRequestId())
-			.university(majorRoleRequest.getUniversityName())
-			.major(majorRoleRequest.getMajorName())
+			.university(majorRoleRequest.getUniversity())
+			.major(majorRoleRequest.getMajor())
 			.applicationStatus(majorRoleRequest.getApplicationStatus())
-			.comment(majorRoleRequest.getContent())
+			.comment(majorRoleRequest.getComment())
 
 			.createdAt(majorRoleRequest.getCreatedAt())
 			.decidedAt(majorRoleRequest.getDecidedAt())

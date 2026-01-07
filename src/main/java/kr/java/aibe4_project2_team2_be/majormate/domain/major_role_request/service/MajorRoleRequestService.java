@@ -3,24 +3,24 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.serv
 import java.util.List;
 import java.util.stream.Collectors;
 
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.persistence.EntityNotFoundException;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestDetailResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.request.RoleRequestCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestDetailResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repository.MajorRoleRequestRepository;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,23 +29,28 @@ public class MajorRoleRequestService {
 
 	private final MajorRoleRequestRepository majorRoleRequestRepository;
 	private final MemberRepository memberRepository;
+	private final MemberAcademicRepository memberAcademicRepository;
 
 	private final S3FileService s3Service;
+
 
 	//등록
 
 	@Transactional
 	public Long createRequest(Long memberId, RoleRequestCreateRequest requestDto, MultipartFile documentFile) {
 		Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
+		
+		MemberAcademic academic = memberAcademicRepository.findByMember(member)
+			.orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다. 먼저 학적 정보를 등록해주세요."));
 
 		// 파일 업로드
 		String documentUrl = s3Service.upload(documentFile);
 
 		MajorRoleRequest request = MajorRoleRequest.createRequest(
 			member,
-			requestDto.getUniversityName(),
-			requestDto.getMajorName(),
-			requestDto.getContent(),
+			academic.getUniversity(), 
+			academic.getMajor(), 
+			requestDto.getContent(), 
 			documentUrl
 		);
 		return majorRoleRequestRepository.save(request).getRequestId();
@@ -85,6 +90,7 @@ public class MajorRoleRequestService {
 	public RoleRequestDetailResponse getRequestDetail(Long requestId, Long memberId) {
 		MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
 			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
+
 		// 본인 확인 (관리자 권한 체크 로직 추가 필요)
 		if (!request.getMember().getMemberId().equals(memberId)) {
 			// TODO: 관리자인 경우 통과시키는 로직 추가
