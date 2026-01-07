@@ -5,8 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.persistence.EntityNotFoundException;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repository.MajorRoleRequestRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
@@ -27,8 +25,6 @@ public class MajorRoleRequestService {
 
 	@Transactional
 	public Long createRequest(Long memberId, String content, MultipartFile documentFile) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
 
 		// 파일 업로드
 		String documentUrl = s3Service.upload(documentFile);
