@@ -1,6 +1,5 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.interview.service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,33 +44,54 @@ public class InterviewService {
 	public List<InterviewResponse> getInterviews(Long studentId) {
 		validateStudentId(studentId);
 
-		List<Interview> interviews = interviewRepository.findByStudentMemberIdOrderByCreatedAtDesc(studentId);
-		if (interviews.isEmpty()) {
-			return Collections.emptyList();
-		}
+		List<Interview> interviews = findAppliedInterviewsOrThrow(studentId);
 
-		List<Long> interviewIds = interviews.stream()
-			.map(Interview::getInterviewId)
-			.toList();
-
-		Map<Long, InterviewMajorSnapshot> majorSnapshotMap = interviewMajorSnapshotRepository
-			.findByInterviewIdIn(interviewIds)
-			.stream()
-			.collect(Collectors.toMap(
-				InterviewMajorSnapshot::getInterviewId,
-				snapshot -> snapshot
-			));
+		Map<Long, InterviewMajorSnapshot> majorSnapshotMap = loadMajorSnapshotMap(interviews);
 
 		return interviews.stream()
-			.map(interview -> toResponse(interview, majorSnapshotMap.get(interview.getInterviewId())))
-			.toList();
-
+			.map(interview -> toResponse(interview,
+					getMajorSnapshotOrThrow(majorSnapshotMap, interview.getInterviewId())
+				)
+			).toList();
 	}
 
 	private void validateStudentId(Long studentId) {
 		if (studentId == null) {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
 		}
+	}
+
+	private List<Interview> findAppliedInterviewsOrThrow(Long studentId) {
+		List<Interview> interviews = interviewRepository.findByStudentMemberIdOrderByCreatedAtDesc(studentId);
+		if (interviews.isEmpty()) {
+			throw new NotFoundException(ErrorCode.INTERVIEW_REQUEST_EMPTY);
+		}
+		return interviews;
+	}
+
+	private Map<Long, InterviewMajorSnapshot> loadMajorSnapshotMap(List<Interview> interviews) {
+		List<Long> interviewIds = interviews.stream()
+			.map(Interview::getInterviewId)
+			.toList();
+
+		return interviewMajorSnapshotRepository.findByInterviewIdIn(interviewIds)
+			.stream()
+			.collect(Collectors.toMap(
+				InterviewMajorSnapshot::getInterviewId,
+				s -> s,
+				(a, b) -> a
+			));
+	}
+
+	private InterviewMajorSnapshot getMajorSnapshotOrThrow(
+		Map<Long, InterviewMajorSnapshot> majorSnapshotMap,
+		Long interviewId
+	) {
+		InterviewMajorSnapshot snapshot = majorSnapshotMap.get(interviewId);
+		if (snapshot == null) {
+			throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+		return snapshot;
 	}
 
 	private InterviewResponse toResponse(Interview interview, InterviewMajorSnapshot majorSnapshot) {
@@ -81,7 +101,7 @@ public class InterviewService {
 
 		return new InterviewResponse(
 			new InterviewResponse.MajorSnapshot(
-				majorSnapshot.getMajorProfileImageUrl(),   // nullable
+				majorSnapshot.getMajorProfileImageUrl(),
 				majorSnapshot.getMajorNickname(),
 				majorSnapshot.getMajorUniversity(),
 				majorSnapshot.getMajorMajor()
@@ -91,10 +111,10 @@ public class InterviewService {
 				interview.getContent(),
 				interview.getInterviewMethod(),
 				interview.getPreferredDatetime(),
-				interview.getExtraDescription()            // nullable
+				interview.getExtraDescription()
 			),
 			interview.getStatus(),
-			interview.getMajorMessage()                  // nullable
+			interview.getMajorMessage()
 		);
 	}
 
