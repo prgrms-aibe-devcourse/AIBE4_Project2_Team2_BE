@@ -54,7 +54,9 @@ public class SecurityConfig {
 					"/v3/api-docs/**",
 					"/swagger-resources/**",
 					"/api-docs/**",
-					"/api/members/**"
+					"/api/members/**",
+                        "/sse-test.html",
+                        "/api/notifications/set-cookie"
 				).permitAll()
 				.anyRequest().authenticated()
 			)
