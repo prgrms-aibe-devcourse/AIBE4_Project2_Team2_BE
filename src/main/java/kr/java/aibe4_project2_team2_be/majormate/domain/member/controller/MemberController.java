@@ -47,7 +47,7 @@ public class MemberController {
 
 	@Operation(
 		summary = "회원 프로필 수정",
-		description = "memberId에 해당하는 회원의 프로필 정보를 수정합니다. "
+		description = "memberId에 해당하는 회원의 프로필 정보를 수정합니다."
 			+ "currentPassword가 일치하지 않으면 요청이 거부됩니다. "
 			+ "newPassword가 존재하면 비밀번호를 변경합니다."
 			+ "profileImageUrl이 null이면 프로필 이미지를 삭제합니다."

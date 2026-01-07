@@ -1,8 +1,8 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.dto.response;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response;
 
 import java.time.LocalDateTime;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.RequestStatusHistory;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.RequestStatusHistory;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +17,7 @@ public class RequestHistoryResponse {
 	private String changedBy;
 	private String reason;
 	private LocalDateTime changedAt;
-	
+
 	public static RequestHistoryResponse from(RequestStatusHistory history) {
 		String changedByName = (history.getChangedBy() != null) ? history.getChangedBy().getName() : "null";
 
@@ -31,5 +31,5 @@ public class RequestHistoryResponse {
 			.changedAt(history.getChangedAt())
 			.build();
 	}
-	
+
 }

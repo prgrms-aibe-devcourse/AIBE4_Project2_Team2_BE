@@ -1,4 +1,4 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.entity;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity;
 
 import java.time.LocalDateTime;
 
@@ -56,7 +56,8 @@ public class RequestStatusHistory {
 		this.changedAt = LocalDateTime.now();
 	}
 
-	public static RequestStatusHistory createHistory(MajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String msg) {
+	public static RequestStatusHistory createHistory(MajorRoleRequest request, ApplicationStatus from,
+		ApplicationStatus to, Member actor, String msg) {
 		RequestStatusHistory history = new RequestStatusHistory();
 		history.request = request;
 		history.fromStatus = from;

@@ -1,4 +1,4 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.entity;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -71,12 +71,12 @@ public class MajorRoleRequest {
 		request.content = content;
 		request.documentUrl = documentUrl;
 		request.applicationStatus = ApplicationStatus.PENDING; // 초기 상태는 대기
-		
+
 		// 초기 이력 생성
 		request.statusHistories.add(
 			RequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "전공자 인증 요청을 등록했습니다.")
 		);
-		
+
 		return request;
 	}
 
@@ -125,17 +125,18 @@ public class MajorRoleRequest {
 		this.decider = null;
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "반려 사유 확인 후 내용을 수정하여 재제출했습니다.")
+			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member,
+				"반려 사유 확인 후 내용을 수정하여 재제출했습니다.")
 		);
 
 	}
 
 	// 검증 로직
 	private void validatePendingStatus() {
-		if (this.applicationStatus != ApplicationStatus.PENDING && this.applicationStatus != ApplicationStatus.RESUBMITTED) {
+		if (this.applicationStatus != ApplicationStatus.PENDING
+			&& this.applicationStatus != ApplicationStatus.RESUBMITTED) {
 			throw new IllegalStateException("심사가 가능한 상태(PENDING/RESUBMITTED)가 아닙니다.");
 		}
 	}
-
 
 }
