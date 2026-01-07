@@ -13,7 +13,11 @@ import lombok.Getter;
 @Builder
 public class RoleRequestDetailResponse {
 	private Long id;
-	private String memberName;
+	private String name;
+	private String username;
+	private String nickname;
+	private String universityName;
+	private String majorName;
 	private String content;
 	private String documentUrl;
 	private ApplicationStatus applicationStatus;
@@ -24,8 +28,12 @@ public class RoleRequestDetailResponse {
 	public static RoleRequestDetailResponse from(MajorRoleRequest majorRoleRequest) {
 		return RoleRequestDetailResponse.builder()
 			.id(majorRoleRequest.getRequestId())
-			.memberName(majorRoleRequest.getMember().getName())
-			.content(majorRoleRequest.getContent())
+			.name(majorRoleRequest.getMember().getName())
+			.nickname(majorRoleRequest.getNickname())
+			.username(majorRoleRequest.getMember().getUsername())
+			.universityName(majorRoleRequest.getUniversity())
+			.majorName(majorRoleRequest.getMajor())
+			.content(majorRoleRequest.getComment())
 			.documentUrl(majorRoleRequest.getDocumentUrl())
 			.applicationStatus(majorRoleRequest.getApplicationStatus())
 			.createdAt(majorRoleRequest.getCreatedAt())
