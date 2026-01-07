@@ -87,7 +87,7 @@ public class Member extends BaseEntity {
 		this.status = status;
 	}
 
-	public void updateRole(MemberRole role) {
-		this.role = role;
-	}
+    public void upgradeToMajor() {
+        this.role = MemberRole.MAJOR; // 혹은 사용하시는 Role Enum 값
+    }
 }
