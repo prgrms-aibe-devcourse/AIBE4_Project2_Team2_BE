@@ -1,15 +1,5 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.controller;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,8 +15,6 @@ import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiRespo
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,28 +61,9 @@ public class MajorRoleRequestController {
         return ApiResponse.success(null);
     }
 
-    @Operation(summary = "내 요청 목록 조회", description = "자신이 신청한 전공자 인증 요청 목록을 조회합니다.")
-    @GetMapping("major-requests/me")
-    public ApiResponse<List<RoleRequestResponse>> getMyRequests(
-            // @RequestHeader("Authorization") String token
-    ) {
-        // Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
-        Long memberId = 2L; // 테스트용 하드코딩
-        List<RoleRequestResponse> responses = majorRoleRequestService.getMyRequests(memberId);
-        return ApiResponse.success(responses);
-    }
-
-    @Operation(summary = "전공자 인증 요청 상세 조회", description = "특정 전공자 인증 요청의 상세 정보를 조회합니다.")
-    @GetMapping("major-requests/{requestId}")
-    public ApiResponse<RoleRequestDetailResponse> MyGetRequestDetail(
-            @PathVariable Long requestId
-            // @RequestHeader("Authorization") String token
-    ) {
-		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
-		Long memberId = 2L; // 테스트용 하드코딩
-		RoleRequestDetailResponse response = majorRoleRequestService.MyGetRequestDetail(requestId, memberId);
-		return ApiResponse.success(response);
-	}
+    // ==========================================
+    //  ⬇️ [추가됨] 관리자 기능 (목록 조회 & 상세 조회)
+    // ==========================================
 
     // 3. 관리자 - 요청 목록 조회 (대기중 & 재제출)
     @Operation(summary = "관리자 - 요청 목록 조회", description = "대기 중(PENDING) 또는 재제출(RESUBMITTED) 상태의 요청 목록을 조회합니다.")

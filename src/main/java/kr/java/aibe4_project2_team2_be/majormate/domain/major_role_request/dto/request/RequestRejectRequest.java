@@ -6,5 +6,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RequestRejectRequest {
-	private	String reason;
+    private String reason; // 반려 사유
 }

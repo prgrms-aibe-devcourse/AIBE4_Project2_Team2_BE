@@ -1,7 +1,6 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +19,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repos
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
 import lombok.RequiredArgsConstructor;
@@ -29,123 +30,77 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class MajorRoleRequestService {
 
-	private final MajorRoleRequestRepository majorRoleRequestRepository;
-	private final MemberRepository memberRepository;
-	private final MemberAcademicRepository memberAcademicRepository;
+    private final MajorRoleRequestRepository majorRoleRequestRepository;
+    private final MemberRepository memberRepository;
+    private final S3FileService s3Service;
 
-	private final S3FileService s3Service;
+    // 1. 등록
+    @Transactional
+    public Long createRequest(Long memberId, String content, MultipartFile documentFile) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
 
+        String documentUrl = s3Service.upload(documentFile);
 
-	//등록
+        MajorRoleRequest request = MajorRoleRequest.createRequest(member, content, documentUrl);
+        return majorRoleRequestRepository.save(request).getRequestId();
+    }
 
-	@Transactional
-	public Long createRequest(Long memberId, RoleRequestCreateRequest requestDto, MultipartFile documentFile) {
-		Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
+    // 2. 재제출
+    @Transactional
+    public void resubmitRequest(Long requestId, Long memberId, String newContent, MultipartFile newFile) {
+        MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
 
-		MemberAcademic academic = memberAcademicRepository.findByMember(member)
-			.orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다. 먼저 학적 정보를 등록해주세요."));
+        if (!request.getMember().getMemberId().equals(memberId)) {
+            throw new ForbiddenException();
+        }
 
-		// 파일 업로드
-		String documentUrl = s3Service.upload(documentFile);
+        s3Service.delete(request.getDocumentUrl());
+        String newUrl = s3Service.upload(newFile);
 
-		MajorRoleRequest request = MajorRoleRequest.createRequest(
-			member,
-			academic.getUniversity(),
-			academic.getMajor(),
-			requestDto.getContent(),
-			documentUrl
-		);
-		return majorRoleRequestRepository.save(request).getRequestId();
-	}
+        request.resubmit(newContent, newUrl);
+    }
 
+    // ==========================================
+    //  ⬇️ [추가됨] 관리자 기능 구현 (누락된 부분)
+    // ==========================================
 
-	// TODO 승인, 반려 관리자
-
-
-	// 반려 후 재제출
-	@Transactional
-	public void resubmitRequest(Long requestId, Long memberId, String newContent, MultipartFile newFile) {
-		MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
-			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
-
-		if (!request.getMember().getMemberId().equals(memberId)) {
-			throw new ForbiddenException();
-		}
-
-		// 기존 파일 삭제
-		s3Service.delete(request.getDocumentUrl());
-
-		// 새 파일 업로드
-		String newUrl = s3Service.upload(newFile);
-
-		request.resubmit(newContent, newUrl);
-	}
-
-	// 내 요청 목록 조회
-	public List<RoleRequestResponse> getMyRequests(Long memberId) {
-		return majorRoleRequestRepository.findAllByMember_MemberIdOrderByCreatedAtDesc(memberId).stream()
-			.map(RoleRequestResponse::from)
-			.collect(Collectors.toList());
-	}
-
-	// 상세 조회
-	public RoleRequestDetailResponse MyGetRequestDetail(Long requestId, Long memberId) {
-		MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
-			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
-
-		// 본인 확인 (관리자 권한 체크 로직 추가 필요)
-		if (!request.getMember().getMemberId().equals(memberId)) {
-			// TODO: 관리자인 경우 통과시키는 로직 추가
-			throw new ForbiddenException();
-		}
-		return RoleRequestDetailResponse.from(request);
-	}
-
-    // 1. 관리자용 - 대기 중인 요청 목록 조회
+    // 3. 관리자 - 요청 목록 조회 (대기중 & 재제출 상태만)
     public List<MajorRoleRequest> getPendingRequests() {
-        // PENDING(대기)과 RESUBMITTED(재제출) 상태인 요청을 모두 가져옴
         return majorRoleRequestRepository.findByApplicationStatusInOrderByCreatedAtDesc(
                 List.of(ApplicationStatus.PENDING, ApplicationStatus.RESUBMITTED)
         );
     }
 
-    // 2. 관리자용 - 요청 상세 조회
+    // 4. 관리자 - 요청 상세 조회
     public MajorRoleRequest getRequestDetail(Long requestId) {
         return majorRoleRequestRepository.findById(requestId)
-                .orElseThrow(() -> new EntityNotFoundException("요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
     }
 
-    // 3. 관리자용 - 승인 처리
+    // 5. 관리자 - 승인
     @Transactional
     public void acceptRequest(Long requestId, Long adminId) {
-        // 관리자 정보 조회
+        MajorRoleRequest request = getRequestDetail(requestId);
         Member admin = memberRepository.findById(adminId)
                 .orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
 
-        // 요청 정보 조회
-        MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
-                .orElseThrow(() -> new EntityNotFoundException("요청을 찾을 수 없습니다."));
-
-        // A. 요청 상태 변경 (PENDING -> ACCEPTED) 및 이력 저장
-        // 엔티티에 만들어두신 accept 메서드 활용!
+        // 요청 상태 변경 (APPROVED)
         request.accept(admin);
 
-        // B. [중요] 실제 회원의 등급(Role) 변경
-        Member applicant = request.getMember();
-        // Member 엔티티에 updateRole 같은 메서드가 필요합니다. (아래 참고)
-        // applicant.upgradeToMajor();
-	}
+        // 학생의 권한을 전공자(MAJOR)로 변경
+        request.getMember().updateRole(MemberRole.MAJOR);
+    }
 
-    // 4. 관리자용 - 반려 처리
+    // 6. 관리자 - 반려
     @Transactional
-    public void rejectRequest(Long requestId, Long adminId, String rejectReason) {
+    public void rejectRequest(Long requestId, Long adminId, String reason) {
+        MajorRoleRequest request = getRequestDetail(requestId);
         Member admin = memberRepository.findById(adminId)
                 .orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
 
-        MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
-                .orElseThrow(() -> new EntityNotFoundException("요청을 찾을 수 없습니다."));
-
-        // 엔티티에 만들어두신 reject 메서드 활용!
-        request.reject(admin, rejectReason);
+        // 요청 상태 변경 (REJECTED) 및 사유 저장
+        request.reject(admin, reason);
     }
 }
