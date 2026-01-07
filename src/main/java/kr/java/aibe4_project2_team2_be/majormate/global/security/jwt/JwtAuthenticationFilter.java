@@ -25,21 +25,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public static final String BEARER_PREFIX = "Bearer ";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
         String jwt = resolveToken(request);
 
-        if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
-            Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug("Security Context에 '{}' 인증 정보를 저장했습니다.", authentication.getName());
-        } else {
-            log.debug("유효한 JWT 토큰이 없습니다.");
+        if (StringUtils.hasText(jwt)) {
+            try {
+                if (jwtTokenProvider.validateToken(jwt)) {
+                    Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("Security Context에 '{}' 인증 정보를 저장했습니다.", authentication.getName());
+                }
+            } catch (Exception e) {
+                log.debug("JWT 처리 중 오류 발생: {}", e.getMessage());
+                //예외를 던지지 않고 그냥 통과
+            }
         }
 
         filterChain.doFilter(request, response);
     }
+
 
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
@@ -50,4 +58,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return null;
     }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+
+        return path.startsWith("/oauth2/")
+                || path.startsWith("/login/oauth2/")
+
+                || path.equals("/error");
+    }
+
+
 }

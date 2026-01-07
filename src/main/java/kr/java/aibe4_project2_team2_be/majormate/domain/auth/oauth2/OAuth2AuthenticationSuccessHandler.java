@@ -28,8 +28,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProperties jwtProperties;
 
-    @Value("${app.oauth2.redirect-uri:http://localhost:3000/oauth2/redirect}")
+    @Value("${app.oauth2.redirect-uri:http://localhost:5173/#/oauth/callback}")
     private String redirectUri;
+
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -59,11 +60,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         log.info("OAuth2 login success - Member ID: {}, Role: {}", memberId, role);
 
         // Redirect to frontend with access token only
-        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+        String targetUrl = UriComponentsBuilder
+                .fromUriString(redirectUri)
                 .queryParam("accessToken", accessToken)
                 .queryParam("tokenType", "Bearer")
                 .queryParam("expiresIn", jwtProperties.getAccessTokenValidity() / 1000)
-                .build().toUriString();
+                .build()
+                .toUriString();
+
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
@@ -85,4 +89,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                         }
                 );
     }
+
+
+
+
 }
