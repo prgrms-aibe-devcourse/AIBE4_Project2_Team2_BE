@@ -1,6 +1,7 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +72,27 @@ public class MajorRoleRequestService {
 
 		request.resubmit(newContent, newUrl);
 	}
+
+	// 내 요청 목록 조회
+	public List<RoleRequestResponse> getMyRequests(Long memberId) {
+		return majorRoleRequestRepository.findAllByMember_MemberIdOrderByCreatedAtDesc(memberId).stream()
+			.map(RoleRequestResponse::from)
+			.collect(Collectors.toList());
+	}
+
+	// 상세 조회
+	public RoleRequestDetailResponse MyGetRequestDetail(Long requestId, Long memberId) {
+		MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
+			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
+
+		// 본인 확인 (관리자 권한 체크 로직 추가 필요)
+		if (!request.getMember().getMemberId().equals(memberId)) {
+			// TODO: 관리자인 경우 통과시키는 로직 추가
+			throw new ForbiddenException();
+		}
+		return RoleRequestDetailResponse.from(request);
+	}
+
 
 	// ==========================================
 	//  ⬇️ [추가됨] 관리자 기능 구현 (누락된 부분)

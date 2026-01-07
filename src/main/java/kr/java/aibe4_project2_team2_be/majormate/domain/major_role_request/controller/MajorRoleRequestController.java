@@ -61,6 +61,29 @@ public class MajorRoleRequestController {
 		return ApiResponse.success(null);
 	}
 
+	@Operation(summary = "내 요청 목록 조회", description = "자신이 신청한 전공자 인증 요청 목록을 조회합니다.")
+	@GetMapping("major-requests/me")
+	public ApiResponse<List<RoleRequestResponse>> getMyRequests(
+		// @RequestHeader("Authorization") String token
+	) {
+		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
+		Long memberId = 2L; // 테스트용 하드코딩
+		List<RoleRequestResponse> responses = majorRoleRequestService.getMyRequests(memberId);
+		return ApiResponse.success(responses);
+	}
+
+	@Operation(summary = "전공자 인증 요청 상세 조회", description = "특정 전공자 인증 요청의 상세 정보를 조회합니다.")
+	@GetMapping("major-requests/{requestId}")
+	public ApiResponse<RoleRequestDetailResponse> MyGetRequestDetail(
+		@PathVariable Long requestId
+		// @RequestHeader("Authorization") String token
+	) {
+		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
+		Long memberId = 2L; // 테스트용 하드코딩
+		RoleRequestDetailResponse response = majorRoleRequestService.MyGetRequestDetail(requestId, memberId);
+		return ApiResponse.success(response);
+	}
+
 	// ==========================================
 	//  ⬇️ [추가됨] 관리자 기능 (목록 조회 & 상세 조회)
 	// ==========================================
