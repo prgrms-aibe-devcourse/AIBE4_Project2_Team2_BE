@@ -7,6 +7,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.RefreshToken
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.RefreshTokenRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtProperties;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtTokenProvider;
+import kr.java.aibe4_project2_team2_be.majormate.global.util.CookieUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,12 +52,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         // Save refresh token
         saveOrUpdateRefreshToken(memberId, refreshToken);
 
+        // Set refresh token as HttpOnly cookie
+        int cookieMaxAge = (int) (jwtProperties.getRefreshTokenValidity() / 1000);
+        CookieUtil.addCookie(response, "refreshToken", refreshToken, cookieMaxAge);
+
         log.info("OAuth2 login success - Member ID: {}, Role: {}", memberId, role);
 
-        // Redirect to frontend with tokens
+        // Redirect to frontend with access token only
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("accessToken", accessToken)
-                .queryParam("refreshToken", refreshToken)
                 .queryParam("tokenType", "Bearer")
                 .queryParam("expiresIn", jwtProperties.getAccessTokenValidity() / 1000)
                 .build().toUriString();

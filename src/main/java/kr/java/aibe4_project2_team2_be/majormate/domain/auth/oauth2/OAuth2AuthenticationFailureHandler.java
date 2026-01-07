@@ -3,6 +3,7 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import kr.java.aibe4_project2_team2_be.majormate.global.util.CookieUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
@@ -25,6 +26,9 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
                                        AuthenticationException exception) throws IOException, ServletException {
 
         log.error("OAuth2 authentication failed: {}", exception.getMessage());
+
+        // Clear any existing refresh token cookie
+        CookieUtil.deleteCookie(request, response, "refreshToken");
 
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("error", exception.getLocalizedMessage())
