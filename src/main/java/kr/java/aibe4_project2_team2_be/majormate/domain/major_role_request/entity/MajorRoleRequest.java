@@ -1,4 +1,4 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.entity;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

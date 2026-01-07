@@ -1,8 +1,8 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.dto.response;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response;
 
 import java.time.LocalDateTime;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.MajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Builder;
 import lombok.Getter;
