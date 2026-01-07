@@ -1,4 +1,4 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.entity;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,6 +37,15 @@ public class MajorRoleRequest {
 	@JoinColumn(name = "member_id", nullable = false)
 	private Member member;
 
+	@Column(nullable = false, length = 50)
+	private String nickname;
+
+	@Column(nullable = false, length = 100)
+	private String universityName;
+
+	@Column(nullable = false, length = 100)
+	private String majorName;
+
 	@Column(nullable = false, length = 512)
 	private String content;
 
@@ -65,9 +74,11 @@ public class MajorRoleRequest {
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public static MajorRoleRequest createRequest(Member member, String content, String documentUrl) {
+	public static MajorRoleRequest createRequest(Member member, String universityName, String majorName, String content, String documentUrl) {
 		MajorRoleRequest request = new MajorRoleRequest();
 		request.member = member;
+		request.universityName = universityName;
+		request.majorName = majorName;
 		request.content = content;
 		request.documentUrl = documentUrl;
 		request.applicationStatus = ApplicationStatus.PENDING; // 초기 상태는 대기

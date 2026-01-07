@@ -1,14 +1,20 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.service;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.persistence.EntityNotFoundException;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestDetailResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.MajorRoleRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.repository.MajorRoleRequestRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.request.RoleRequestCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repository.MajorRoleRequestRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +33,19 @@ public class MajorRoleRequestService {
 	//등록
 
 	@Transactional
-	public Long createRequest(Long memberId, String content, MultipartFile documentFile) {
+	public Long createRequest(Long memberId, RoleRequestCreateRequest requestDto, MultipartFile documentFile) {
 		Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
 
 		// 파일 업로드
 		String documentUrl = s3Service.upload(documentFile);
 
-		MajorRoleRequest request = MajorRoleRequest.createRequest(member, content, documentUrl);
+		MajorRoleRequest request = MajorRoleRequest.createRequest(
+			member, 
+			requestDto.getUniversityName(), 
+			requestDto.getMajorName(), 
+			requestDto.getContent(), 
+			documentUrl
+		);
 		return majorRoleRequestRepository.save(request).getRequestId();
 	}
 
@@ -60,4 +72,24 @@ public class MajorRoleRequestService {
 		request.resubmit(newContent, newUrl);
 	}
 
+	// 내 요청 목록 조회
+	public List<RoleRequestResponse> getMyRequests(Long memberId) {
+		return majorRoleRequestRepository.findAllByMember_MemberIdOrderByCreatedAtDesc(memberId).stream()
+			.map(RoleRequestResponse::from)
+			.collect(Collectors.toList());
+	}
+
+	// 상세 조회
+	public RoleRequestDetailResponse getRequestDetail(Long requestId, Long memberId) {
+		MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
+			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
+
+		// 본인 확인 (관리자 권한 체크 로직 추가 필요)
+		if (!request.getMember().getMemberId().equals(memberId)) {
+			// TODO: 관리자인 경우 통과시키는 로직 추가
+			throw new ForbiddenException();
+		}
+
+		return RoleRequestDetailResponse.from(request);
+	}
 }

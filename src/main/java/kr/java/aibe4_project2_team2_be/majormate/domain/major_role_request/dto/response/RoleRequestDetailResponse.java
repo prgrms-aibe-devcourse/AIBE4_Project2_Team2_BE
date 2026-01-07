@@ -1,10 +1,10 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.request.dto.response;
+package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.request.entity.MajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +13,11 @@ import lombok.Getter;
 @Builder
 public class RoleRequestDetailResponse {
 	private Long id;
-	private String memberName;
+	private String name;
+	private String username;
+	private String nickname;
+	private String universityName;
+	private String majorName;
 	private String content;
 	private String documentUrl;
 	private ApplicationStatus applicationStatus;
@@ -24,7 +28,11 @@ public class RoleRequestDetailResponse {
 	public static RoleRequestDetailResponse from(MajorRoleRequest majorRoleRequest) {
 		return RoleRequestDetailResponse.builder()
 			.id(majorRoleRequest.getRequestId())
-			.memberName(majorRoleRequest.getMember().getName())
+			.name(majorRoleRequest.getMember().getName())
+			.nickname(majorRoleRequest.getNickname())
+			.username(majorRoleRequest.getMember().getUsername())
+			.universityName(majorRoleRequest.getUniversityName())
+			.majorName(majorRoleRequest.getMajorName())
 			.content(majorRoleRequest.getContent())
 			.documentUrl(majorRoleRequest.getDocumentUrl())
 			.applicationStatus(majorRoleRequest.getApplicationStatus())
