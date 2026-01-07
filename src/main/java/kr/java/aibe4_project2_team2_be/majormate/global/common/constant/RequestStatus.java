@@ -7,9 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum RequestStatus {
 
-    PENDING("승인 대기"),
-    APPROVED("승인"),
-    REJECTED("반려");
+	PENDING("대기"),
+	RESUBMITTED("재신청"),
+	APPROVED("승인"),
+	REJECTED("반려");
 
-    private final String description;
+	private final String description;
 }
