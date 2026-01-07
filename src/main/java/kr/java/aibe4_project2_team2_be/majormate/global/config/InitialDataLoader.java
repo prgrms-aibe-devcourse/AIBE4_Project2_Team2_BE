@@ -1,9 +1,14 @@
 package kr.java.aibe4_project2_team2_be.majormate.global.config;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,22 +22,22 @@ import org.springframework.stereotype.Component;
 public class InitialDataLoader implements CommandLineRunner {
 
     // TODO: Member 도메인 구현 후 주석 해제
-    // private final MemberRepository memberRepository;
-    // private final PasswordEncoder passwordEncoder;
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
         log.info("🚀 초기 데이터 로더 시작...");
 
         // TODO: Member 도메인 구현 후 아래 메서드 주석 해제
-        // createAdminIfNotExists();
-        // createTestUsersIfNotExists();
+        createAdminIfNotExists();
+        createTestUsersIfNotExists();
 
         log.info("✅ 초기 데이터 로더 준비 완료 (Member 도메인 구현 후 활성화 필요)");
     }
 
     // TODO: Member 도메인 구현 후 주석 해제
-    /*
+
     private void createAdminIfNotExists() {
         String adminEmail = "admin@majormate.com";
 
@@ -40,9 +45,10 @@ public class InitialDataLoader implements CommandLineRunner {
             Member admin = Member.builder()
                 .email(adminEmail)
                 .password(passwordEncoder.encode("admin1234!"))
+				.username("admin")
                 .name("관리자")
                 .nickname("Admin")
-                .memberStatus(MemberStatus.GRADUATED)
+                .status(MemberStatus.GRADUATED)
                 .role(MemberRole.ADMIN)
                 .build();
 
@@ -57,9 +63,10 @@ public class InitialDataLoader implements CommandLineRunner {
             Member student = Member.builder()
                 .email("student@test.com")
                 .password(passwordEncoder.encode("test1234!"))
+				.username("student")
                 .name("테스트학생")
                 .nickname("학생1")
-                .memberStatus(MemberStatus.ENROLLED)
+                .status(MemberStatus.ENROLLED)
                 .role(MemberRole.STUDENT)
                 .build();
 
@@ -72,9 +79,10 @@ public class InitialDataLoader implements CommandLineRunner {
             Member major = Member.builder()
                 .email("major@test.com")
                 .password(passwordEncoder.encode("test1234!"))
+				.username("major")
                 .name("테스트전공자")
                 .nickname("전공자1")
-                .memberStatus(MemberStatus.ENROLLED)
+                .status(MemberStatus.ENROLLED)
                 .role(MemberRole.MAJOR)
                 .build();
 
@@ -82,5 +90,4 @@ public class InitialDataLoader implements CommandLineRunner {
             log.info("✅ 테스트 전공자 계정 생성: major@test.com");
         }
     }
-    */
 }

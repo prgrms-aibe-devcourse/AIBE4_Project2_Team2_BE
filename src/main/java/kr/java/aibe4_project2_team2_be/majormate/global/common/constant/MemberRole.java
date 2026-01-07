@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MemberRole {
 
-    STUDENT("일반 학생"),
-    MAJOR("전공자"),
-    ADMIN("관리자");
+	STUDENT("학생"),
+	MAJOR("전공자"),
+	ADMIN("관리자");
 
-    private final String description;
+	private final String description;
 }

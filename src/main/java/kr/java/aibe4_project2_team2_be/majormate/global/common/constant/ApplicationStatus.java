@@ -10,7 +10,8 @@ public enum ApplicationStatus {
     PENDING("대기"),
     ACCEPTED("승인"),
     REJECTED("거절"),
-    CANCELLED("취소");
+    CANCELLED("취소"),
+	RESUBMITTED("재제출");
 
     private final String description;
 }

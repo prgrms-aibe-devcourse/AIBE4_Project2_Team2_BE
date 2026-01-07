@@ -53,6 +53,9 @@ dependencies {
     // Dotenv - .env 파일 자동 로드
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
+    // [S3]
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2")
+
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

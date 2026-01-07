@@ -14,74 +14,93 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "member")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long memberId;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String username;
+	@Column(nullable = false, length = 20)
+	private String name;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String email;
+	@Column(nullable = false, unique = true, length = 20)
+	private String nickname;
 
-    @Column(nullable = true, length = 255)
-    private String password;
+	@Column(nullable = false, unique = true)
+	private String email;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+	@Column(nullable = false, unique = true, length = 20)
+	private String username;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String nickname;
+	@Column(nullable = true, length = 255)
+	private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20, name = "member_status")
-    private MemberStatus memberStatus;
+	@Column(columnDefinition = "TEXT")
+	private String profileImageUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private MemberRole role;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20)
+	private MemberStatus status;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SocialAccount> socialAccounts = new ArrayList<>();
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20)
+	private MemberRole role;
 
-    @Builder
-    public Member(String username, String email, String password, String name, String nickname,
-                  MemberStatus memberStatus, MemberRole role) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.nickname = nickname;
-        this.memberStatus = memberStatus;
-        this.role = role;
-    }
+	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<SocialAccount> socialAccounts = new ArrayList<>();
 
-    public void updatePassword(String password) {
-        this.password = password;
-    }
+	@Builder
+	public Member(
+		Long memberId,
+		String name, String nickname, String email, String username, String password, String profileImageUrl,
+		MemberStatus status, MemberRole role
+	) {
+		this.memberId = memberId;
+		this.name = name;
+		this.nickname = nickname;
+		this.email = email;
+		this.username = username;
+		this.password = password;
+		this.profileImageUrl = profileImageUrl;
+		this.status = status;
+		this.role = role;
+	}
 
-    public void updateRole(MemberRole role) {
-        this.role = role;
-    }
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
 
-    public void updateMemberStatus(MemberStatus memberStatus) {
-        this.memberStatus = memberStatus;
-    }
+	public void updateEmail(String email) {
+		this.email = email;
+	}
 
-    public boolean isOAuth2User() {
-        return !socialAccounts.isEmpty();
-    }
+	public void updatePassword(String password) {
+		this.password = password;
+	}
 
-    public boolean isLocalUser() {
-        return socialAccounts.isEmpty();
-    }
+	public void updateProfileImageUrl(String profileImageUrl) {
+		this.profileImageUrl = profileImageUrl;
+	}
 
-    public boolean hasPassword() {
-        return this.password != null && !this.password.isEmpty();
-    }
+	public void updateStatus(MemberStatus status) {
+		this.status = status;
+	}
+
+	public void updateRole(MemberRole role) {
+		this.role = role;
+	}
+
+	public boolean isOAuth2User() {
+		return !socialAccounts.isEmpty();
+	}
+
+	public boolean isLocalUser() {
+		return socialAccounts.isEmpty();
+	}
+
+	public boolean hasPassword() {
+		return this.password != null && !this.password.isEmpty();
+	}
 }
