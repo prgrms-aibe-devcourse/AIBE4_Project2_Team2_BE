@@ -19,7 +19,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     public CustomOAuth2User(Member member, Map<String, Object> attributes) {
         // Extract member info immediately to avoid LazyInitializationException
-        this.memberId = member.getId();
+        this.memberId = member.getMemberId();
         this.role = member.getRole().name();
         this.attributes = attributes;
     }

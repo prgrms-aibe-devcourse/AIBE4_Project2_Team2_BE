@@ -58,8 +58,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         if (userInfo.getEmail() == null || userInfo.getEmail().isEmpty()) {
-            throw new BadRequestException(ErrorCode.INVALID_INPUT_VALUE,
-                "이메일을 제공하지 않는 OAuth2 제공자입니다.");
+            throw new BadRequestException(ErrorCode.OAUTH2_EMAIL_NOT_FOUND);
         }
 
         // Find or create member
@@ -73,8 +72,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return switch (registrationId.toLowerCase()) {
             case "google" -> new GoogleOAuth2UserInfo(attributes);
             case "github" -> new GithubOAuth2UserInfo(attributes);
-            default -> throw new BadRequestException(ErrorCode.INVALID_INPUT_VALUE,
-                "지원하지 않는 OAuth2 제공자입니다: " + registrationId);
+            default -> throw new BadRequestException(ErrorCode.OAUTH2_PROVIDER_NOT_SUPPORTED);
         };
     }
 
@@ -89,7 +87,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         if (socialAccount != null) {
             Member member = socialAccount.getMember();
-            log.info("Existing OAuth2 user logged in - ID: {}, Provider: {}", member.getId(), provider);
+            log.info("Existing OAuth2 user logged in - ID: {}, Provider: {}", member.getMemberId(), provider);
             return member;
         }
 
@@ -129,7 +127,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .password(null)  // OAuth2 users don't have passwords
                 .name(name != null ? name : "OAuth2 User")
                 .nickname(nickname)
-                .memberStatus(MemberStatus.ENROLLED)
+                .status(MemberStatus.ENROLLED)
                 .role(MemberRole.STUDENT)
                 .build();
 
@@ -144,7 +142,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         socialAccountRepository.save(socialAccount);
 
         log.info("New OAuth2 user created - ID: {}, Email: {}, Provider: {}",
-            savedMember.getId(), email, provider);
+            savedMember.getMemberId(), email, provider);
 
         return savedMember;
     }
@@ -158,8 +156,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         } while (memberRepository.existsByUsername(username) && attempts < 10);
 
         if (attempts >= 10) {
-            throw new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR,
-                "고유한 사용자명을 생성할 수 없습니다.");
+            throw new BadRequestException(ErrorCode.DUPLICATE_USERNAME);
         }
 
         return username;
@@ -183,8 +180,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         if (counter >= 1000) {
-            throw new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR,
-                "고유한 닉네임을 생성할 수 없습니다.");
+            throw new BadRequestException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
         return nickname;
