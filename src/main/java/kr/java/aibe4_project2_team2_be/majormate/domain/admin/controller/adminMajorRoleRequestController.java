@@ -3,12 +3,12 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.admin.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.request.RequestRejectRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.request.RoleRequestCreateRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.RoleRequestDetailResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.RoleRequestResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.MajorRoleRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.MajorRoleRequestService;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.request.adminRequestRejectRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.request.adminRoleRequestCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.adminRoleRequestDetailResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.adminRoleRequestResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.adminMajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.adminMajorRoleRequestService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/")
 @RequiredArgsConstructor
 @Tag(name = "Major Role Request", description = "전공자 인증 요청 API")
-public class MajorRoleRequestController {
+public class adminMajorRoleRequestController {
 
-	private final MajorRoleRequestService majorRoleRequestService;
+	private final adminMajorRoleRequestService majorRoleRequestService;
 	private final JwtTokenProvider jwtTokenProvider;
 
 	// 1. 전공자 인증 요청 등록
@@ -33,7 +33,7 @@ public class MajorRoleRequestController {
 	@PostMapping(value = "major-requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ApiResponse<Long> createRequest(
 		// @RequestHeader("Authorization") String token,
-		@Valid @RequestPart("request") RoleRequestCreateRequest requestDto,
+		@Valid @RequestPart("request") adminRoleRequestCreateRequest requestDto,
 		@RequestPart("file") MultipartFile file
 	) {
 		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
@@ -48,7 +48,7 @@ public class MajorRoleRequestController {
 	public ApiResponse<Void> resubmitRequest(
 		@PathVariable Long requestId,
 		// @RequestHeader("Authorization") String token,
-		@Valid @RequestPart("request") RoleRequestCreateRequest requestDto,
+		@Valid @RequestPart("request") adminRoleRequestCreateRequest requestDto,
 		@RequestPart("file") MultipartFile file
 	) {
 		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
@@ -59,24 +59,24 @@ public class MajorRoleRequestController {
 
 	@Operation(summary = "내 요청 목록 조회", description = "자신이 신청한 전공자 인증 요청 목록을 조회합니다.")
 	@GetMapping("major-requests/me")
-	public ApiResponse<List<RoleRequestResponse>> getMyRequests(
+	public ApiResponse<List<adminRoleRequestResponse>> getMyRequests(
 		// @RequestHeader("Authorization") String token
 	) {
 		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
 		Long memberId = 2L; // 테스트용 하드코딩
-		List<RoleRequestResponse> responses = majorRoleRequestService.getMyRequests(memberId);
+		List<adminRoleRequestResponse> responses = majorRoleRequestService.getMyRequests(memberId);
 		return ApiResponse.success(responses);
 	}
 
 	@Operation(summary = "전공자 인증 요청 상세 조회", description = "특정 전공자 인증 요청의 상세 정보를 조회합니다.")
 	@GetMapping("major-requests/{requestId}")
-	public ApiResponse<RoleRequestDetailResponse> MyGetRequestDetail(
+	public ApiResponse<adminRoleRequestDetailResponse> MyGetRequestDetail(
 		@PathVariable Long requestId
 		// @RequestHeader("Authorization") String token
 	) {
 		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
 		Long memberId = 2L; // 테스트용 하드코딩
-		RoleRequestDetailResponse response = majorRoleRequestService.MyGetRequestDetail(requestId, memberId);
+		adminRoleRequestDetailResponse response = majorRoleRequestService.MyGetRequestDetail(requestId, memberId);
 		return ApiResponse.success(response);
 	}
 
@@ -87,17 +87,17 @@ public class MajorRoleRequestController {
 	// 3. 관리자 - 요청 목록 조회 (대기중 & 재제출)
 	@Operation(summary = "관리자 - 요청 목록 조회", description = "대기 중(PENDING) 또는 재제출(RESUBMITTED) 상태의 요청 목록을 조회합니다.")
 	@GetMapping(value = "admin/major-role-requests")
-	public ApiResponse<List<RoleRequestResponse>> getPendingRequests(
+	public ApiResponse<List<adminRoleRequestResponse>> getPendingRequests(
 		@RequestHeader("Authorization") String token
 	) {
 		// (필요 시 관리자 권한 체크 로직 추가 가능)
 
 		// 서비스에서 엔티티 리스트 조회
-		List<MajorRoleRequest> requests = majorRoleRequestService.getPendingRequests();
+		List<adminMajorRoleRequest> requests = majorRoleRequestService.getPendingRequests();
 
 		// 엔티티 -> DTO 변환
-		List<RoleRequestResponse> response = requests.stream()
-			.map(RoleRequestResponse::from)
+		List<adminRoleRequestResponse> response = requests.stream()
+			.map(adminRoleRequestResponse::from)
 			.collect(Collectors.toList());
 
 		return ApiResponse.success(response);
@@ -106,12 +106,12 @@ public class MajorRoleRequestController {
 	// 4. 관리자 - 요청 상세 조회 (이력 포함)
 	@Operation(summary = "관리자 - 요청 상세 조회", description = "특정 전공자 인증 요청의 상세 정보와 히스토리를 조회합니다.")
 	@GetMapping("admin/major-role-requests/{requestId}/detail")
-	public ApiResponse<RoleRequestDetailResponse> getRequestDetail(
+	public ApiResponse<adminRoleRequestDetailResponse> getRequestDetail(
 		@PathVariable Long requestId,
 		@RequestHeader("Authorization") String token
 	) {
-		MajorRoleRequest request = majorRoleRequestService.getRequestDetail(requestId);
-		RoleRequestDetailResponse response = RoleRequestDetailResponse.from(request);
+		adminMajorRoleRequest request = majorRoleRequestService.getRequestDetail(requestId);
+		adminRoleRequestDetailResponse response = adminRoleRequestDetailResponse.from(request);
 		return ApiResponse.success(response);
 	}
 
@@ -133,7 +133,7 @@ public class MajorRoleRequestController {
 	public ApiResponse<Void> rejectRequest(
 		@PathVariable Long requestId,
 		@RequestHeader("Authorization") String token,
-		@RequestBody RequestRejectRequest rejectDto
+		@RequestBody adminRequestRejectRequest rejectDto
 	) {
 		Long adminId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
 		majorRoleRequestService.rejectRequest(requestId, adminId, rejectDto.getReason());

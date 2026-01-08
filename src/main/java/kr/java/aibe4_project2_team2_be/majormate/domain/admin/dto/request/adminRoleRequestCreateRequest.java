@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RoleRequestCreateRequest {
+public class adminRoleRequestCreateRequest {
 
 	@NotBlank(message = "요청 내용은 필수입니다.")
 	private String content;
