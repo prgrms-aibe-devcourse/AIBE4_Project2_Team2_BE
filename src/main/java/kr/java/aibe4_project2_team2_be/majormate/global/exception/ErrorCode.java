@@ -29,6 +29,14 @@ public enum ErrorCode {
 	OAUTH2_AUTHENTICATION_FAILED("AUTH_008", "OAuth2 인증에 실패했습니다.", HttpStatus.UNAUTHORIZED),
 	SOCIAL_LOGIN_REQUIRED("AUTH_009", "소셜 로그인이 필요합니다.", HttpStatus.BAD_REQUEST),
 
+	// Email Verification
+	VERIFICATION_CODE_NOT_FOUND("AUTH_010", "인증 코드를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+	VERIFICATION_CODE_EXPIRED("AUTH_011", "인증 코드가 만료되었습니다.", HttpStatus.BAD_REQUEST),
+	INVALID_VERIFICATION_CODE("AUTH_012", "인증 코드가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
+	ALREADY_VERIFIED("AUTH_013", "이미 인증되었습니다.", HttpStatus.BAD_REQUEST),
+	EMAIL_SEND_FAILED("AUTH_014", "이메일 발송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+	EMAIL_NOT_VERIFIED("AUTH_015", "이메일 인증이 필요합니다.", HttpStatus.BAD_REQUEST),
+
 	// Member
 	MEMBER_NOT_FOUND("MEMBER_001", "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 	DUPLICATE_NICKNAME("MEMBER_002", "이미 사용 중인 닉네임입니다.", HttpStatus.CONFLICT),

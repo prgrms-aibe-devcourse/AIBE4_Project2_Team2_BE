@@ -1,5 +1,11 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
 
+import jakarta.persistence.*;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,9 +83,7 @@ public class adminMajorRoleRequest {
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public static adminMajorRoleRequest createRequest(MemberProfile member, String university, String major,
-		String comment,
-		String documentUrl) {
+	public static adminMajorRoleRequest createRequest(MemberProfile member, String university, String major, String comment, String documentUrl) {
 		adminMajorRoleRequest request = new adminMajorRoleRequest();
 		request.member = member;
 		request.nickname = member.getNickname();

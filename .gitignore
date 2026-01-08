@@ -44,3 +44,6 @@ out/
 
 ## gradle.properties ##
 .gradle.properties
+
+#마이그레이션
+*.py
