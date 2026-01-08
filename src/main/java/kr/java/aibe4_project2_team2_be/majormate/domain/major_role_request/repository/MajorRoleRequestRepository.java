@@ -13,7 +13,4 @@ import java.util.List;
 public interface MajorRoleRequestRepository extends JpaRepository<MajorRoleRequest, Long> {
     List<MajorRoleRequest> findAllByMember_MemberIdOrderByCreatedAtDesc(Long memberId);
 
-    // 혹은 상태 리스트로 조회 (PENDING 이거나 RESUBMITTED 인 것들 한번에 조회)
-    @EntityGraph(attributePaths = "member")
-    List<MajorRoleRequest> findByApplicationStatusInOrderByCreatedAtDesc(List<ApplicationStatus> statuses);
 }
