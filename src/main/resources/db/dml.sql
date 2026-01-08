@@ -1,4 +1,4 @@
-INSERT INTO member (name, nickname, email, username, password, status, role, created_at, updated_at)
+INSERT INTO member_profile (name, nickname, email, username, password, status, role, created_at, updated_at)
 VALUES ('신형만', 'hyeongman', 'hyeongman.shin@example.com',
         'hyeongman', '$2a$10$y3dmZoSBhQgrkYFb7Mrh6eSvfn5DMTmEyptjoajINn3xTbNS5bZfW',
         'ENROLLED', 'STUDENT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -20,39 +20,39 @@ VALUES ('신형만', 'hyeongman', 'hyeongman.shin@example.com',
         'ENROLLED', 'MAJOR', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO member_academic (member_id, university, major, created_at, updated_at)
-VALUES ((SELECT member_id FROM member WHERE username = 'hyeongman'), '서울대학교', '컴퓨터공학과',
+VALUES ((SELECT member_id FROM member_profile WHERE username = 'hyeongman'), '서울대학교', '컴퓨터공학과',
         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-       ((SELECT member_id FROM member WHERE username = 'minji99'), '고려대학교', '경영학과',
+       ((SELECT member_id FROM member_profile WHERE username = 'minji99'), '고려대학교', '경영학과',
         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-       ((SELECT member_id FROM member WHERE username = 'seojun_lee'), '한양대학교', '기계공학과',
+       ((SELECT member_id FROM member_profile WHERE username = 'seojun_lee'), '한양대학교', '기계공학과',
         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-       ((SELECT member_id FROM member WHERE username = 'parkjh'), '경북대학교', '전자공학과',
+       ((SELECT member_id FROM member_profile WHERE username = 'parkjh'), '경북대학교', '전자공학과',
         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-       ((SELECT member_id FROM member WHERE username = 'yuna.choi'), '이화여자대학교', '심리학과',
+       ((SELECT member_id FROM member_profile WHERE username = 'yuna.choi'), '이화여자대학교', '심리학과',
         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------
 -- IDs 캐시
 -- ------------------------------------------------------------
 SET @student1 := (SELECT member_id
-                  FROM member
+                  FROM member_profile
                   WHERE
                       username = 'hyeongman');
 SET @student2 := (SELECT member_id
-                  FROM member
+                  FROM member_profile
                   WHERE
                       username = 'minji99');
 
 SET @major1 := (SELECT member_id
-                FROM member
+                FROM member_profile
                 WHERE
                     username = 'seojun_lee');
 SET @major2 := (SELECT member_id
-                FROM member
+                FROM member_profile
                 WHERE
                     username = 'parkjh');
 SET @major3 := (SELECT member_id
-                FROM member
+                FROM member_profile
                 WHERE
                     username = 'yuna.choi');
 
@@ -86,7 +86,7 @@ SELECT
     a.university,
     a.major
 FROM
-    member m
+    member_profile m
         JOIN member_academic a ON a.member_id = m.member_id
 WHERE
     m.member_id = @student1;
@@ -102,7 +102,7 @@ SELECT
     a.university,
     a.major
 FROM
-    member m
+    member_profile m
         JOIN member_academic a ON a.member_id = m.member_id
 WHERE
     m.member_id = @major1;
@@ -137,7 +137,7 @@ SELECT
     a.university,
     a.major
 FROM
-    member m
+    member_profile m
         JOIN member_academic a ON a.member_id = m.member_id
 WHERE
     m.member_id = @student1;
@@ -153,7 +153,7 @@ SELECT
     a.university,
     a.major
 FROM
-    member m
+    member_profile m
         JOIN member_academic a ON a.member_id = m.member_id
 WHERE
     m.member_id = @major2;
@@ -188,7 +188,7 @@ SELECT
     a.university,
     a.major
 FROM
-    member m
+    member_profile m
         JOIN member_academic a ON a.member_id = m.member_id
 WHERE
     m.member_id = @student2;
@@ -204,7 +204,7 @@ SELECT
     a.university,
     a.major
 FROM
-    member m
+    member_profile m
         JOIN member_academic a ON a.member_id = m.member_id
 WHERE
     m.member_id = @major3;
@@ -239,7 +239,7 @@ SELECT
     a.university,
     a.major
 FROM
-    member m
+    member_profile m
         JOIN member_academic a ON a.member_id = m.member_id
 WHERE
     m.member_id = @student2;
@@ -255,7 +255,7 @@ SELECT
     a.university,
     a.major
 FROM
-    member m
+    member_profile m
         JOIN member_academic a ON a.member_id = m.member_id
 WHERE
     m.member_id = @major1;

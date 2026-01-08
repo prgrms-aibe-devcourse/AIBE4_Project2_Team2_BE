@@ -16,10 +16,10 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.Intervi
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewMajorSnapshotRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewStudentSnapshotRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
@@ -38,7 +38,7 @@ public class InterviewService {
 	private final InterviewStudentSnapshotRepository interviewStudentSnapshotRepository;
 	private final InterviewMajorSnapshotRepository interviewMajorSnapshotRepository;
 
-	private final MemberRepository memberRepository;
+	private final MemberProfileRepository memberProfileRepository;
 	private final MemberAcademicRepository memberAcademicRepository;
 
 	public List<InterviewResponse> getInterviewRequests(Long studentId) {
@@ -122,8 +122,8 @@ public class InterviewService {
 	public void createInterview(Long studentId, Long majorId, InterviewCreateRequest request) {
 		validateCreate(studentId, majorId);
 
-		Member student = getMemberOrThrow(studentId);
-		Member major = getMemberOrThrow(majorId);
+		MemberProfile student = getMemberOrThrow(studentId);
+		MemberProfile major = getMemberOrThrow(majorId);
 		validateMajorRoleOrThrow(major);
 
 		validateReapplyAllowedOrThrow(studentId, majorId);
@@ -145,12 +145,12 @@ public class InterviewService {
 		}
 	}
 
-	private Member getMemberOrThrow(Long memberId) {
-		return memberRepository.findByMemberId(memberId)
+	private MemberProfile getMemberOrThrow(Long memberId) {
+		return memberProfileRepository.findByMemberId(memberId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 	}
 
-	private void validateMajorRoleOrThrow(Member major) {
+	private void validateMajorRoleOrThrow(MemberProfile major) {
 		if (major.getRole() != MemberRole.MAJOR) {
 			throw new BusinessException(ErrorCode.INTERVIEW_TARGET_NOT_MAJOR);
 		}
@@ -168,8 +168,8 @@ public class InterviewService {
 		}
 	}
 
-	private MemberAcademic getAcademicOrThrow(Member member) {
-		return memberAcademicRepository.findByMember(member)
+	private MemberAcademic getAcademicOrThrow(MemberProfile memberProfile) {
+		return memberAcademicRepository.findByMemberProfile(memberProfile)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_ACADEMIC_NOT_FOUND));
 	}
 
@@ -189,9 +189,9 @@ public class InterviewService {
 
 	private void saveSnapshots(
 		Interview interview,
-		Member student,
+		MemberProfile student,
 		MemberAcademic studentAcademic,
-		Member major,
+		MemberProfile major,
 		MemberAcademic majorAcademic
 	) {
 		InterviewStudentSnapshot studentSnapshot = buildStudentSnapshot(interview, student, studentAcademic);
@@ -203,7 +203,7 @@ public class InterviewService {
 
 	private InterviewStudentSnapshot buildStudentSnapshot(
 		Interview interview,
-		Member student,
+		MemberProfile student,
 		MemberAcademic academic
 	) {
 		return InterviewStudentSnapshot.builder()
@@ -218,7 +218,7 @@ public class InterviewService {
 
 	private InterviewMajorSnapshot buildMajorSnapshot(
 		Interview interview,
-		Member major,
+		MemberProfile major,
 		MemberAcademic academic
 	) {
 		return InterviewMajorSnapshot.builder()
