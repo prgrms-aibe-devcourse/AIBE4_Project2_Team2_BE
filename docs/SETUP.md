@@ -205,7 +205,7 @@ src/main/java/kr/java/majormate/
 │   ├── profile/                       ← 전공자 프로필
 │   ├── card/                          ← 전공자 카드
 │   ├── qna/                           ← Q&A
-│   ├── interview/                     ← 인터뷰
+│   ├── interviewForm/                     ← 인터뷰
 │   ├── review/                        ← 후기
 │   └── request/                       ← 전공자 권한 신청
 └── global/                            ← 공통 기능
@@ -249,7 +249,7 @@ src/main/java/kr/java/majormate/
 팀원 A: memberProfile, auth
 팀원 B: profile, request
 팀원 C: card, qna
-팀원 D: interview
+팀원 D: interviewForm
 팀원 E: review, global
 ```
 

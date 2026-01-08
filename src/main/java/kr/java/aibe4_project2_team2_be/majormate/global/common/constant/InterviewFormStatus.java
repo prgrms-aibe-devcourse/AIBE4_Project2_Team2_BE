@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum InterviewStatus {
+public enum InterviewFormStatus {
 
 	PENDING("대기"),
 	ACCEPTED("수락"),
