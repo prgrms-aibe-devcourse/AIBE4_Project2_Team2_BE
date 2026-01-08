@@ -54,8 +54,7 @@ public class InterviewService {
 		return forms.stream()
 			.map(form -> AppliedInterviewFormResponse.from(
 				getOrInternalError(majorSnapshotMap, form.getInterviewId()), form
-			))
-			.toList();
+			)).toList();
 	}
 
 	public List<ReceivedInterviewFormResponse> getReceivedInterviewForms(Long majorId) {
@@ -78,8 +77,7 @@ public class InterviewService {
 			.map(form -> ReceivedInterviewFormResponse.from(
 				getOrInternalError(studentSnapshotMap, form.getInterviewId()),
 				form
-			))
-			.toList();
+			)).toList();
 	}
 
 	@Transactional
