@@ -93,8 +93,10 @@ public class AuthService {
 	 */
 	@Transactional
 	public FindUsernameResponse findUsername(String email, String code) {
-		// 1. 인증 코드 검증
-		emailService.verifyCode(email, code, VerificationType.FIND_USERNAME);
+		// 1. 이메일 인증 여부 확인
+		if (!emailService.isVerified(email, VerificationType.FIND_USERNAME)) {
+			throw new BadRequestException(ErrorCode.EMAIL_NOT_VERIFIED);
+		}
 
 		// 2. 이메일로 회원 조회
 		MemberProfile memberProfile = memberProfileRepository.findByEmail(email)
@@ -115,8 +117,10 @@ public class AuthService {
 	 */
 	@Transactional
 	public void resetPassword(ResetPasswordRequest request) {
-		// 1. 인증 코드 검증
-		emailService.verifyCode(request.getEmail(), request.getCode(), VerificationType.RESET_PASSWORD);
+		// 1. 이메일 인증 여부 확인
+		if (!emailService.isVerified(request.getEmail(), VerificationType.RESET_PASSWORD)) {
+			throw new BadRequestException(ErrorCode.EMAIL_NOT_VERIFIED);
+		}
 
 		// 2. 이메일로 회원 조회
 		MemberProfile memberProfile = memberProfileRepository.findByEmail(request.getEmail())
