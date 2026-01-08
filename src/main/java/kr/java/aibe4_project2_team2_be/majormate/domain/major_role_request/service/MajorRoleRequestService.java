@@ -8,18 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.persistence.EntityNotFoundException;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.request.RoleRequestCreateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestDetailResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repository.MajorRoleRequestRepository;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
@@ -32,23 +29,23 @@ import lombok.RequiredArgsConstructor;
 public class MajorRoleRequestService {
 
 	private final MajorRoleRequestRepository majorRoleRequestRepository;
-	private final MemberRepository memberRepository;
+	private final MemberProfileRepository memberProfileRepository;
 	private final S3FileService s3Service;
 	private final MemberAcademicRepository memberAcademicRepository;
 
 	// 1. 등록
 	@Transactional
 	public Long createRequest(Long memberId, RoleRequestCreateRequest requestDto, MultipartFile documentFile) {
-		Member member = memberRepository.findById(memberId)
+		MemberProfile memberProfile = memberProfileRepository.findById(memberId)
 			.orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
 
-		MemberAcademic academic = memberAcademicRepository.findByMember(member)
+		MemberAcademic academic = memberAcademicRepository.findByMemberProfile(memberProfile)
 			.orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다. 먼저 학적 정보를 등록해주세요."));
 
 		String documentUrl = s3Service.upload(documentFile);
 
 		MajorRoleRequest request = MajorRoleRequest.createRequest(
-			member,
+			memberProfile,
 			academic.getUniversity(),
 			academic.getMajor(),
 			requestDto.getContent(),
@@ -63,7 +60,7 @@ public class MajorRoleRequestService {
 		MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
 			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
 
-		if (!request.getMember().getMemberId().equals(memberId)) {
+		if (!request.getMemberProfile().getMemberId().equals(memberId)) {
 			throw new ForbiddenException();
 		}
 
@@ -75,7 +72,7 @@ public class MajorRoleRequestService {
 
 	// 내 요청 목록 조회
 	public List<RoleRequestResponse> getMyRequests(Long memberId) {
-		return majorRoleRequestRepository.findAllByMember_MemberIdOrderByCreatedAtDesc(memberId).stream()
+		return majorRoleRequestRepository.findAllByMemberProfile_MemberIdOrderByCreatedAtDesc(memberId).stream()
 			.map(RoleRequestResponse::from)
 			.collect(Collectors.toList());
 	}
@@ -86,7 +83,8 @@ public class MajorRoleRequestService {
 			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
 
 		// 본인 확인 (관리자 권한 체크 로직 추가 필요)
-		if (!request.getMember().getMemberId().equals(memberId)) {
+		if (!request.getMemberProfile().getMemberId().equals(memberId)) {
+			// TODO: 관리자인 경우 통과시키는 로직 추가
 			throw new ForbiddenException();
 		}
 		return RoleRequestDetailResponse.from(request);

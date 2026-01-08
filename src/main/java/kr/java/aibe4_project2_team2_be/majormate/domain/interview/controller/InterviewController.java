@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -15,25 +16,24 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.InterviewC
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.InterviewResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.service.InterviewService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
 public class InterviewController {
 
 	private final InterviewService interviewService;
 
-	public InterviewController(InterviewService interviewService) {
-		this.interviewService = interviewService;
-	}
-
-	@GetMapping("/api/members/me/interviews")
-	public ApiResponse<List<InterviewResponse>> getInterviews() {
+	@GetMapping("/members/me/interviews")
+	public ApiResponse<List<InterviewResponse>> getMyInterviewRequests() {
 		//Long studentId = SecurityUtil.getCurrentMemberId();
 		Long studentId = 1L;
-		List<InterviewResponse> response = interviewService.getInterviews(studentId);
+		List<InterviewResponse> response = interviewService.getInterviewRequests(studentId);
 		return ApiResponse.success(response);
 	}
 
-	@PostMapping("/api/majors/{majorId}/interview-requests")
+	@PostMapping("/majors/{majorId}/interview-requests")
 	public ResponseEntity<Void> createInterview(
 		@PathVariable Long majorId,
 		@Valid @RequestBody InterviewCreateRequest request
