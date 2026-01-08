@@ -90,45 +90,4 @@ public class MajorRoleRequestService {
 		return RoleRequestDetailResponse.from(request);
 	}
 
-	// ==========================================
-	//  ⬇️ [추가됨] 관리자 기능 구현 (누락된 부분)
-	// ==========================================
-
-	// 3. 관리자 - 요청 목록 조회 (대기중 & 재제출 상태만)
-	public List<MajorRoleRequest> getPendingRequests() {
-		return majorRoleRequestRepository.findByApplicationStatusInOrderByCreatedAtDesc(
-			List.of(ApplicationStatus.PENDING, ApplicationStatus.RESUBMITTED)
-		);
-	}
-
-	// 4. 관리자 - 요청 상세 조회
-	public MajorRoleRequest getRequestDetail(Long requestId) {
-		return majorRoleRequestRepository.findById(requestId)
-			.orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
-	}
-
-	// 5. 관리자 - 승인
-	@Transactional
-	public void acceptRequest(Long requestId, Long adminId) {
-		MajorRoleRequest request = getRequestDetail(requestId);
-		MemberProfile admin = memberProfileRepository.findById(adminId)
-			.orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
-
-		// 요청 상태 변경 (APPROVED)
-		request.accept(admin);
-
-		// 학생의 권한을 전공자(MAJOR)로 변경
-		request.getMemberProfile().updateRole(MemberRole.MAJOR);
-	}
-
-	// 6. 관리자 - 반려
-	@Transactional
-	public void rejectRequest(Long requestId, Long adminId, String reason) {
-		MajorRoleRequest request = getRequestDetail(requestId);
-		MemberProfile admin = memberProfileRepository.findById(adminId)
-			.orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
-
-		// 요청 상태 변경 (REJECTED) 및 사유 저장
-		request.reject(admin, reason);
-	}
 }

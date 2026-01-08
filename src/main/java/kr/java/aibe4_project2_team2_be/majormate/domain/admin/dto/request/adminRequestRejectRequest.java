@@ -1,0 +1,10 @@
+package kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.request;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+public class adminRequestRejectRequest {
+    private String reason; // 반려 사유
+}
