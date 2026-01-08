@@ -142,7 +142,7 @@ public class AuthService {
 
 		// 2. OAuth2 사용자 체크
 		if (memberProfile.isOAuth2User()) {
-			throw new UnauthorizedException(ErrorCode.INVALID_PASSWORD);
+			throw new BadRequestException(ErrorCode.SOCIAL_LOGIN_REQUIRED);
 		}
 
 		// 3. 비밀번호 검증
