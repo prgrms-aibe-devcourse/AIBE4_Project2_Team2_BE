@@ -6,10 +6,10 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.admin
 import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.adminRoleRequestResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.adminMajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.admin.repository.adminMajorRoleRequestRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class adminMajorRoleRequestService {
 
 	private final adminMajorRoleRequestRepository majorRoleRequestRepository;
-	private final MemberRepository memberRepository;
+	private final MemberProfileRepository memberProfileRepository;
 	private final S3FileService s3Service;
 	private final MemberAcademicRepository memberAcademicRepository;
 
@@ -36,10 +36,10 @@ public class adminMajorRoleRequestService {
 	// 1. 등록
 	@Transactional
 	public Long createRequest(Long memberId, adminRoleRequestCreateRequest requestDto, MultipartFile documentFile) {
-		Member member = memberRepository.findById(memberId)
+		MemberProfile member = memberProfileRepository.findById(memberId)
 			.orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
 
-		MemberAcademic academic = memberAcademicRepository.findByMember(member)
+		MemberAcademic academic = memberAcademicRepository.findByMemberProfile(member)
 			.orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다. 먼저 학적 정보를 등록해주세요."));
 
 		String documentUrl = s3Service.upload(documentFile);
@@ -110,7 +110,7 @@ public class adminMajorRoleRequestService {
 	@Transactional
 	public void acceptRequest(Long requestId, Long adminId) {
 		adminMajorRoleRequest request = getRequestDetail(requestId);
-		Member admin = memberRepository.findById(adminId)
+		MemberProfile admin = memberProfileRepository.findById(adminId)
 			.orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
 
 		// 요청 상태 변경 (APPROVED)
@@ -124,7 +124,7 @@ public class adminMajorRoleRequestService {
 	@Transactional
 	public void rejectRequest(Long requestId, Long adminId, String reason) {
 		adminMajorRoleRequest request = getRequestDetail(requestId);
-		Member admin = memberRepository.findById(adminId)
+		MemberProfile admin = memberProfileRepository.findById(adminId)
 			.orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
 
 		// 요청 상태 변경 (REJECTED) 및 사유 저장

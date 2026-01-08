@@ -15,7 +15,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays; // 추가됨
 
 @Slf4j
 @Component
@@ -80,8 +79,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/oauth2/")
-                || path.startsWith("/login/oauth2/")
+
+        return path.startsWith("/api/auth/")
+                || path.startsWith("/oauth2/")
+                | path.startsWith("/login/oauth2/")
                 || path.equals("/error");
     }
 }

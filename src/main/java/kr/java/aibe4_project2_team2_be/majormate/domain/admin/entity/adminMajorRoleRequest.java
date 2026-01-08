@@ -1,7 +1,7 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
 
 import jakarta.persistence.*;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +22,7 @@ public class adminMajorRoleRequest {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id", nullable = false)
-	private Member member;
+	private MemberProfile member;
 
 	@Column(name = "nickname", nullable = false, length = 50)
 	private String nickname;
@@ -51,7 +51,7 @@ public class adminMajorRoleRequest {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "decided_by")
-	private Member decider;
+	private MemberProfile decider;
 
 	@Column(name = "reason", length = 255)
 	private String reason;
@@ -64,7 +64,7 @@ public class adminMajorRoleRequest {
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public static adminMajorRoleRequest createRequest(Member member, String university, String major, String comment, String documentUrl) {
+	public static adminMajorRoleRequest createRequest(MemberProfile member, String university, String major, String comment, String documentUrl) {
 		adminMajorRoleRequest request = new adminMajorRoleRequest();
 		request.member = member;
 		request.nickname = member.getNickname();
@@ -83,7 +83,7 @@ public class adminMajorRoleRequest {
 	}
 
 	// 승인
-	public void accept(Member decider) {
+	public void accept(MemberProfile decider) {
 		validatePendingStatus(); // 대기 상태인지 검증
 		ApplicationStatus oldStatus = this.applicationStatus;
 		this.applicationStatus = ApplicationStatus.ACCEPTED;
@@ -96,7 +96,7 @@ public class adminMajorRoleRequest {
 	}
 
 	// 반려
-	public void reject(Member decider, String rejectMessage) {
+	public void reject(MemberProfile decider, String rejectMessage) {
 		validatePendingStatus();
 
 		if (rejectMessage == null || rejectMessage.trim().isEmpty()) {
