@@ -1,6 +1,3 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
-
-import jakarta.persistence.*;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
@@ -134,13 +131,4 @@ public class adminMajorRoleRequest {
 
 	}
 
-	// 검증 로직
-	private void validatePendingStatus() {
-		if (this.applicationStatus != ApplicationStatus.PENDING
-			&& this.applicationStatus != ApplicationStatus.RESUBMITTED) {
-			throw new IllegalStateException("심사가 가능한 상태(PENDING/RESUBMITTED)가 아닙니다.");
-		}
-	}
 
-
-}
