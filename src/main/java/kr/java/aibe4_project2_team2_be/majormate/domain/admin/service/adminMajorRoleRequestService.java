@@ -32,6 +32,7 @@ public class adminMajorRoleRequestService {
 	private final S3FileService s3Service;
 	private final MemberAcademicRepository memberAcademicRepository;
 
+    /*
 	// 1. 등록
 	@Transactional
 	public Long createRequest(Long memberId, adminRoleRequestCreateRequest requestDto, MultipartFile documentFile) {
@@ -88,11 +89,9 @@ public class adminMajorRoleRequestService {
 		}
 		return adminRoleRequestDetailResponse.from(request);
 	}
+    */
 
-
-	// ==========================================
-	//  ⬇️ [추가됨] 관리자 기능 구현 (누락된 부분)
-	// ==========================================
+	//  관리자 기능 구현
 
 	// 3. 관리자 - 요청 목록 조회 (대기중 & 재제출 상태만)
 	public List<adminMajorRoleRequest> getPendingRequests() {

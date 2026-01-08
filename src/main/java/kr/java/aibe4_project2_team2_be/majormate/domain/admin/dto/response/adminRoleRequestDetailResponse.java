@@ -12,35 +12,35 @@ import java.util.stream.Collectors;
 @Getter
 @Builder
 public class adminRoleRequestDetailResponse {
-	private Long id;
-	private String name;
-	private String username;
-	private String nickname;
-	private String universityName;
-	private String majorName;
-	private String content;
-	private String documentUrl;
-	private ApplicationStatus applicationStatus;
-	private LocalDateTime createdAt;
-	private LocalDateTime decidedAt;
-	private List<adminRequestHistoryResponse> histories;
+    private Long id;
+    private String name;
+    private String username;
+    private String nickname;
+    private String universityName;
+    private String majorName;
+    private String content;
+    private String documentUrl;
+    private ApplicationStatus applicationStatus;
+    private LocalDateTime createdAt;
+    private LocalDateTime decidedAt;
+    private List<adminRequestHistoryResponse> histories;
 
-	public static adminRoleRequestDetailResponse from(adminMajorRoleRequest majorRoleRequest) {
-		return adminRoleRequestDetailResponse.builder()
-			.id(majorRoleRequest.getRequestId())
-			.name(majorRoleRequest.getMember().getName())
-			.nickname(majorRoleRequest.getNickname())
-			.username(majorRoleRequest.getMember().getUsername())
-			.universityName(majorRoleRequest.getUniversity())
-			.majorName(majorRoleRequest.getMajor())
-			.content(majorRoleRequest.getComment())
-			.documentUrl(majorRoleRequest.getDocumentUrl())
-			.applicationStatus(majorRoleRequest.getApplicationStatus())
-			.createdAt(majorRoleRequest.getCreatedAt())
-			.decidedAt(majorRoleRequest.getDecidedAt())
-			.histories(majorRoleRequest.getStatusHistories().stream()
-				.map(adminRequestHistoryResponse::from)
-				.collect(Collectors.toList()))
-			.build();
-	}
+    public static adminRoleRequestDetailResponse from(adminMajorRoleRequest adminmajorRoleRequest) {
+        return adminRoleRequestDetailResponse.builder()
+                .id(adminmajorRoleRequest.getRequestId())
+                .name(adminmajorRoleRequest.getMember().getName())
+                .nickname(adminmajorRoleRequest.getNickname())
+                .username(adminmajorRoleRequest.getMember().getUsername())
+                .universityName(adminmajorRoleRequest.getUniversity())
+                .majorName(adminmajorRoleRequest.getMajor())
+                .content(adminmajorRoleRequest.getComment())
+                .documentUrl(adminmajorRoleRequest.getDocumentUrl())
+                .applicationStatus(adminmajorRoleRequest.getApplicationStatus())
+                .createdAt(adminmajorRoleRequest.getCreatedAt())
+                .decidedAt(adminmajorRoleRequest.getDecidedAt())
+                .histories(adminmajorRoleRequest.getStatusHistories().stream()
+                        .map(adminRequestHistoryResponse::from)
+                        .collect(Collectors.toList()))
+                .build();
+    }
 }
