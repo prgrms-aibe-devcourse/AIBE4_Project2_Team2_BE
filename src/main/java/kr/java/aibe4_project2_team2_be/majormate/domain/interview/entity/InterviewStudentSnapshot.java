@@ -9,9 +9,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,38 +27,44 @@ public class InterviewStudentSnapshot {
 	@MapsId
 	@OneToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "interview_id", nullable = false)
-	private Interview interview;
+	private InterviewForm interviewForm;
 
 	@Column(columnDefinition = "TEXT")
-	private String studentProfileImageUrl;
+	private String profileImageUrl;
 
 	@Column(nullable = false, length = 20)
-	private String studentNickname;
+	private String nickname;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 20)
-	private MemberStatus studentStatus;
+	@Column(length = 20)
+	private MemberStatus status;
 
-	@Column(nullable = false, length = 20)
-	private String studentUniversity;
+	@Column(length = 20)
+	private String university;
 
-	@Column(nullable = false)
-	private String studentMajor;
+	@Column(length = 20)
+	private String major;
 
-	@Builder
-	public InterviewStudentSnapshot(
-		Interview interview,
-		String studentProfileImageUrl,
-		String studentNickname,
-		MemberStatus studentStatus,
-		String studentUniversity,
-		String studentMajor
+	private InterviewStudentSnapshot(
+		InterviewForm interviewForm,
+		String profileImageUrl, String nickname, MemberStatus status, String university, String major
 	) {
-		this.interview = interview;
-		this.studentProfileImageUrl = studentProfileImageUrl;
-		this.studentNickname = studentNickname;
-		this.studentStatus = studentStatus;
-		this.studentUniversity = studentUniversity;
-		this.studentMajor = studentMajor;
+		this.interviewForm = interviewForm;
+		this.profileImageUrl = profileImageUrl;
+		this.nickname = nickname;
+		this.status = status;
+		this.university = university;
+		this.major = major;
+	}
+
+	public static InterviewStudentSnapshot create(InterviewForm form, MemberProfile student, MemberAcademic academic) {
+		return new InterviewStudentSnapshot(
+			form,
+			student.getProfileImageUrl(),
+			student.getNickname(),
+			student.getStatus(),
+			academic.getUniversity(),
+			academic.getMajor()
+		);
 	}
 }

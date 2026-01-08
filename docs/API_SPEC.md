@@ -1,14 +1,17 @@
 # API 명세서
 
 ## 개요
+
 MajorMate API 명세서입니다.
 
 ## Base URL
+
 ```
 http://localhost:8080
 ```
 
 ## 인증
+
 - JWT Bearer Token 사용
 - Header: `Authorization: Bearer {token}`
 
@@ -17,11 +20,13 @@ http://localhost:8080
 ## 1. 인증 (Auth)
 
 ### 1.1 회원가입
+
 ```
 POST /api/auth/signup
 ```
 
 **Request**
+
 ```json
 {
   "email": "user@example.com",
@@ -33,6 +38,7 @@ POST /api/auth/signup
 ```
 
 **Response**
+
 ```json
 {
   "success": true,
@@ -47,11 +53,13 @@ POST /api/auth/signup
 ```
 
 ### 1.2 로그인
+
 ```
 POST /api/auth/login
 ```
 
 **Request**
+
 ```json
 {
   "email": "user@example.com",
@@ -60,6 +68,7 @@ POST /api/auth/login
 ```
 
 **Response**
+
 ```json
 {
   "success": true,
@@ -78,11 +87,13 @@ POST /api/auth/login
 ## 2. 회원 (Member)
 
 ### 2.1 내 정보 조회
+
 ```
 GET /api/members/me
 ```
 
 **Response**
+
 ```json
 {
   "success": true,
@@ -102,11 +113,13 @@ GET /api/members/me
 ## 3. 전공자 카드 (Major Card)
 
 ### 3.1 카드 목록 조회
+
 ```
 GET /api/cards?page=0&size=10&major=컴퓨터공학
 ```
 
 **Response**
+
 ```json
 {
   "success": true,
@@ -133,11 +146,13 @@ GET /api/cards?page=0&size=10&major=컴퓨터공학
 ## 4. Q&A
 
 ### 4.1 질문 작성
+
 ```
 POST /api/questions
 ```
 
 **Request**
+
 ```json
 {
   "cardId": 1,
@@ -151,27 +166,29 @@ POST /api/questions
 ## 5. 인터뷰
 
 ### 5.1 인터뷰 신청
+
 ```
-POST /api/interviews/{interviewId}/applications
+POST /api/interviewForms/{interviewId}/applications
 ```
 
 ---
 
 ## 에러 코드
 
-| 코드 | HTTP Status | 설명 |
-|------|-------------|------|
-| AUTH_001 | 401 | 인증 실패 |
-| AUTH_002 | 403 | 권한 없음 |
-| MEMBER_001 | 404 | 회원을 찾을 수 없음 |
-| MEMBER_002 | 409 | 이미 존재하는 이메일 |
-| CARD_001 | 404 | 카드를 찾을 수 없음 |
+| 코드         | HTTP Status | 설명          |
+|------------|-------------|-------------|
+| AUTH_001   | 401         | 인증 실패       |
+| AUTH_002   | 403         | 권한 없음       |
+| MEMBER_001 | 404         | 회원을 찾을 수 없음 |
+| MEMBER_002 | 409         | 이미 존재하는 이메일 |
+| CARD_001   | 404         | 카드를 찾을 수 없음 |
 
 ---
 
 ## 공통 응답 형식
 
 ### 성공 응답
+
 ```json
 {
   "success": true,
@@ -181,6 +198,7 @@ POST /api/interviews/{interviewId}/applications
 ```
 
 ### 에러 응답
+
 ```json
 {
   "success": false,

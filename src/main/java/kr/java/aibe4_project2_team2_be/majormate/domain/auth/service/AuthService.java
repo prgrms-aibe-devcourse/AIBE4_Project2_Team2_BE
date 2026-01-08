@@ -21,8 +21,6 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.RefreshToken
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.RefreshTokenRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.DuplicateException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
@@ -70,16 +68,10 @@ public class AuthService {
 		// 5. 비밀번호 암호화
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-		// 6. 회원 생성
-		MemberProfile memberProfile = MemberProfile.builder()
-			.username(request.getUsername())
-			.email(request.getEmail())
-			.password(encodedPassword)
-			.name(request.getName())
-			.nickname(request.getNickname())
-			.status(MemberStatus.ENROLLED)
-			.role(MemberRole.STUDENT)
-			.build();
+		// 5. 회원 생성
+		MemberProfile memberProfile = MemberProfile.create(
+			request.getName(), request.getNickname(), request.getEmail(), request.getUsername(), encodedPassword
+		);
 
 		MemberProfile savedMemberProfile = memberProfileRepository.save(memberProfile);
 

@@ -6,8 +6,6 @@ import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.Applicat
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "major_role_request_status_history")
 @Getter

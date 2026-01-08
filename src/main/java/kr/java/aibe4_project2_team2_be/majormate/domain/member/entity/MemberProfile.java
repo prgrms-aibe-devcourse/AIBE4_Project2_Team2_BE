@@ -17,7 +17,6 @@ import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRo
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,7 +35,7 @@ public class MemberProfile extends BaseEntity {
 	@Column(nullable = false, unique = true, length = 20)
 	private String nickname;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false, unique = true, length = 255)
 	private String email;
 
 	@Column(nullable = false, unique = true, length = 20)
@@ -49,7 +48,7 @@ public class MemberProfile extends BaseEntity {
 	private String profileImageUrl;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 20)
+	@Column(length = 20)
 	private MemberStatus status;
 
 	@Enumerated(EnumType.STRING)
@@ -59,21 +58,26 @@ public class MemberProfile extends BaseEntity {
 	@OneToMany(mappedBy = "memberProfile", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<SocialAccount> socialAccounts = new ArrayList<>();
 
-	@Builder
-	public MemberProfile(
-		Long memberId,
-		String name, String nickname, String email, String username, String password, String profileImageUrl,
-		MemberStatus status, MemberRole role
+	private MemberProfile(
+		String name, String nickname, String email, String username, String password, MemberRole role
 	) {
-		this.memberId = memberId;
 		this.name = name;
 		this.nickname = nickname;
 		this.email = email;
 		this.username = username;
 		this.password = password;
-		this.profileImageUrl = profileImageUrl;
-		this.status = status;
 		this.role = role;
+	}
+
+	public static MemberProfile create(String name, String nickname, String email, String username, String password) {
+		return new MemberProfile(
+			name == null ? "OAuth2 User" : name,
+			nickname,
+			email,
+			username,
+			password,
+			MemberRole.STUDENT
+		);
 	}
 
 	public void updateNickname(String nickname) {
@@ -100,12 +104,12 @@ public class MemberProfile extends BaseEntity {
 		this.role = role;
 	}
 
-	public boolean isOAuth2User() {
-		return !socialAccounts.isEmpty();
-	}
-
 	public boolean isLocalUser() {
 		return socialAccounts.isEmpty();
+	}
+
+	public boolean isOAuth2User() {
+		return !socialAccounts.isEmpty();
 	}
 
 	public boolean hasPassword() {

@@ -22,8 +22,6 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.SocialAc
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.AuthProvider;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
@@ -129,15 +127,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		String nickname = generateUniqueNickname(name != null ? name : emailPrefix);
 
 		// Create new member without password
-		MemberProfile newMemberProfile = MemberProfile.builder()
-			.username(username)
-			.email(email)
-			.password(null)  // OAuth2 users don't have passwords
-			.name(displayName) // Use displayName from HEAD
-			.nickname(nickname)
-			.status(MemberStatus.ENROLLED)
-			.role(MemberRole.STUDENT)
-			.build();
+		MemberProfile newMemberProfile = MemberProfile.create(
+			name, nickname, email, username, null
+		);
 
 		MemberProfile savedMemberProfile = memberProfileRepository.save(newMemberProfile);
 
