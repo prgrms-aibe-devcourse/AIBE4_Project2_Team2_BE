@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@Slf4j // ★ 로그 사용 필수
+@Slf4j
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
@@ -24,7 +24,6 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final ApplicationEventPublisher eventPublisher;
 
-    // [수정된 메서드] 타입을 Object로 받아서 로그를 찍습니다.
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal Object principal) {
 
@@ -36,11 +35,10 @@ public class NotificationController {
             memberId = (Long) principal;
         }
         else if (principal instanceof UserDetails) {
-            // ... (기존 UserDetails 처리 로직) ...
             UserDetails user = (UserDetails) principal;
             memberId = Long.parseLong(user.getUsername());
         }
-        // ▼▼▼ [추가된 부분] String 타입 처리 ▼▼▼
+        // String type 처리로직
         else if (principal instanceof String) {
             String principalStr = (String) principal;
             log.info(">>>> [SSE 정보] 타입이 String입니다. 값: {}", principalStr);
@@ -50,7 +48,6 @@ public class NotificationController {
                 log.error(">>>> [SSE 에러] String 타입이지만 숫자로 변환할 수 없습니다: {}", principalStr);
             }
         }
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         if (memberId == null) {
             throw new IllegalArgumentException("ID 추출 실패: " + principal.getClass().getName());

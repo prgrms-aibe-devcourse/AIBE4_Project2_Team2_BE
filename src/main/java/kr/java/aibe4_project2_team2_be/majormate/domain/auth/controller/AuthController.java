@@ -48,6 +48,11 @@ public class AuthController {
         int cookieMaxAge = (int) (jwtProperties.getRefreshTokenValidity() / 1000);
         CookieUtil.addCookie(response, "refreshToken", tokenResponse.getRefreshToken(), cookieMaxAge);
 
+        //cookie가 아닌 body로 토큰이 나오고있어
+        //accessToken 쿠키 발행을 위해 추가했습니다 ( 조현우 )
+        int accessCookieMaxAge = (int) (tokenResponse.getExpiresIn() / 1000);
+        CookieUtil.addCookie(response, "accessToken", tokenResponse.getAccessToken(), accessCookieMaxAge);
+
         // Return response with access token only (no refresh token in body)
         TokenResponse responseWithoutRefreshToken = TokenResponse.builder()
                 .accessToken(tokenResponse.getAccessToken())
@@ -78,6 +83,8 @@ public class AuthController {
 
         // Delete refresh token cookie
         CookieUtil.deleteCookie(request, response, "refreshToken");
+        //엑세스토큰 쿠키도 같이 삭제하도록 추가하였습니다 ( 조현우 )
+        CookieUtil.deleteCookie(request, response, "accessToken");
 
         return ApiResponse.success("로그아웃 되었습니다.");
     }
