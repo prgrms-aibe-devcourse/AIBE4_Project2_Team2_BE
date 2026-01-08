@@ -14,6 +14,8 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
 
 	Optional<MemberProfile> findByUsername(String username);
 
+	Optional<MemberProfile> findByUsernameAndEmail(String username, String email);
+
 	boolean existsByNickname(String nickname);
 
 	boolean existsByEmail(String email);

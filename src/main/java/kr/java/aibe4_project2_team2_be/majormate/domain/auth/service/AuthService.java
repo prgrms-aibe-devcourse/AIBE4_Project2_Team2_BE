@@ -7,10 +7,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.CheckProviderRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.LoginRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.RefreshTokenRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.ResetPasswordRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SignupRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.CheckProviderResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.FindUsernameResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.SignupResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.TokenResponse;
@@ -92,7 +94,7 @@ public class AuthService {
 	 * 이메일로 아이디 찾기
 	 */
 	@Transactional
-	public FindUsernameResponse findUsername(String email, String code) {
+	public FindUsernameResponse findUsername(String email) {
 		// 1. 이메일 인증 여부 확인
 		if (!emailService.isVerified(email, VerificationType.FIND_USERNAME)) {
 			throw new BadRequestException(ErrorCode.EMAIL_NOT_VERIFIED);
@@ -102,14 +104,23 @@ public class AuthService {
 		MemberProfile memberProfile = memberProfileRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
-		// 3. OAuth2 사용자는 아이디 찾기 불가
+		// 3. 소셜/일반 유저 분기 처리
 		if (memberProfile.isOAuth2User()) {
-			throw new BadRequestException(ErrorCode.SOCIAL_LOGIN_REQUIRED);
+			// 소셜 로그인 사용자인 경우, 가입된 소셜 서비스 정보와 함께 응답
+			String provider = memberProfile.getSocialAccounts().get(0).getAuthProvider().name();
+			log.info("아이디 찾기 시도 (소셜 계정) - Email: {}, Provider: {}", email, provider);
+			return FindUsernameResponse.builder()
+				.username(null)
+				.provider(provider)
+				.build();
+		} else {
+			// 일반 로그인 사용자인 경우, 아이디와 "LOCAL" 프로바이더 정보 응답
+			log.info("아이디 찾기 완료 - Email: {}", email);
+			return FindUsernameResponse.builder()
+				.username(memberProfile.getUsername())
+				.provider("LOCAL")
+				.build();
 		}
-
-		log.info("아이디 찾기 완료 - Email: {}", email);
-
-		return FindUsernameResponse.of(memberProfile.getUsername(), memberProfile.getEmail());
 	}
 
 	/**
@@ -136,6 +147,34 @@ public class AuthService {
 		memberProfile.updatePassword(encodedPassword);
 
 		log.info("비밀번호 재설정 완료 - Email: {}", request.getEmail());
+	}
+
+	/**
+	 * 계정 타입 확인 (소셜/일반 로그인 구분)
+	 */
+	@Transactional(readOnly = true)
+	public CheckProviderResponse checkProvider(CheckProviderRequest request) {
+		// 1. 이메일로 회원 조회
+		MemberProfile memberProfile = memberProfileRepository.findByEmail(request.getEmail())
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+		// 2. 소셜/일반 유저 분기 처리
+		if (memberProfile.isOAuth2User()) {
+			// 소셜 로그인 사용자인 경우
+			String provider = memberProfile.getSocialAccounts().get(0).getAuthProvider().name();
+			log.info("계정 타입 확인 (소셜 계정) - Email: {}, Provider: {}",
+				request.getEmail(), provider);
+			return CheckProviderResponse.builder()
+				.provider(provider)
+				.build();
+		} else {
+			// 일반 로그인 사용자인 경우
+			log.info("계정 타입 확인 (일반 계정) - Email: {}",
+				request.getEmail());
+			return CheckProviderResponse.builder()
+				.provider("LOCAL")
+				.build();
+		}
 	}
 
 	@Transactional

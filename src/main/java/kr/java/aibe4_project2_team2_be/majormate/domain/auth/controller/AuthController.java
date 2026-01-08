@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.CheckProviderRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.FindUsernameRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.LoginRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.RefreshTokenRequest;
@@ -13,6 +14,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.ResetPa
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SendVerificationCodeRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SignupRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.VerifyCodeRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.CheckProviderResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.FindUsernameResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.SignupResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.TokenResponse;
@@ -109,7 +111,7 @@ public class AuthController {
     @Operation(summary = "아이디 찾기", description = "이메일 인증 후 아이디를 조회합니다.")
     @PostMapping("/find-username")
     public ApiResponse<FindUsernameResponse> findUsername(@Valid @RequestBody FindUsernameRequest request) {
-        FindUsernameResponse response = authService.findUsername(request.getEmail(), request.getCode());
+        FindUsernameResponse response = authService.findUsername(request.getEmail());
         return ApiResponse.success(response, "아이디 찾기가 완료되었습니다.");
     }
 
@@ -118,5 +120,12 @@ public class AuthController {
     public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ApiResponse.success("비밀번호가 재설정되었습니다.");
+    }
+
+    @Operation(summary = "계정 타입 확인", description = "아이디와 이메일로 계정의 로그인 방식(소셜/일반)을 확인합니다.")
+    @PostMapping("/check-provider")
+    public ApiResponse<CheckProviderResponse> checkProvider(@Valid @RequestBody CheckProviderRequest request) {
+        CheckProviderResponse response = authService.checkProvider(request);
+        return ApiResponse.success(response, "계정 타입 확인이 완료되었습니다.");
     }
 }
