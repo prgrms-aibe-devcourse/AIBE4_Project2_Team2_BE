@@ -7,56 +7,140 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "major_role_request_status_history")
+@Table(name = "major_role_request")
 @Getter
 @NoArgsConstructor
-public class adminRequestStatusHistory {
+public class adminMajorRoleRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long historyId;
+    private Long requestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id", nullable = false)
-    private adminMajorRoleRequest request;
+    @JoinColumn(name = "member_id", nullable = false)
+    private MemberProfile member;
+
+    @Column(name = "nickname", nullable = false, length = 50)
+    private String nickname;
+
+    @Column(name = "university", nullable = false, length = 100)
+    private String university;
+
+    @Column(name = "major", nullable = false, length = 100)
+    private String major;
+
+    @Column(name = "comment", nullable = false, length = 512)
+    private String comment;
+
+    @Column(name = "document_url", nullable = false, length = 512)
+    private String documentUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true, length = 20, name = "from_status")
-    private ApplicationStatus fromStatus;
+    @Column(nullable = false, length = 20, name = "application_status")
+    private ApplicationStatus applicationStatus;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20, name = "to_status")
-    private ApplicationStatus toStatus;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "decided_at")
+    private LocalDateTime decidedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "changed_by", nullable = false)
-    private MemberProfile changedBy;
+    @JoinColumn(name = "decided_by")
+    private MemberProfile decider;
 
-    @Column(nullable = false, length = 512, name = "message")
-    private String message;
-
-    @Column(length = 512, name = "reason")
+    @Column(name = "reason", length = 255)
     private String reason;
 
-    @Column(name = "changed_at", nullable = false, updatable = false)
-    private LocalDateTime changedAt;
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<adminRequestStatusHistory> statusHistories = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
-        this.changedAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
 
-    public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, MemberProfile actor, String reason) {
-        adminRequestStatusHistory history = new adminRequestStatusHistory();
-        history.request = request;
-        history.fromStatus = from;
-        history.toStatus = to;
-        history.changedBy = actor;
-        history.message = request.getComment();
-        history.reason = reason;
-        history.changedAt = LocalDateTime.now();
-        return history;
+    public static adminMajorRoleRequest createRequest(MemberProfile member, String university, String major, String comment, String documentUrl) {
+        adminMajorRoleRequest request = new adminMajorRoleRequest();
+        request.member = member;
+        request.nickname = member.getNickname();
+        request.university = university;
+        request.major = major;
+        request.comment = comment;
+        request.documentUrl = documentUrl;
+        request.applicationStatus = ApplicationStatus.PENDING; // 초기 상태는 대기
+
+        // 초기 이력 생성
+        request.statusHistories.add(
+                adminRequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "")
+        );
+
+        return request;
     }
+
+    // 승인
+    public void accept(MemberProfile decider) {
+        validatePendingStatus(); // 대기 상태인지 검증
+        ApplicationStatus oldStatus = this.applicationStatus;
+        this.applicationStatus = ApplicationStatus.ACCEPTED;
+        this.decider = decider;
+        this.decidedAt = LocalDateTime.now();
+
+        this.statusHistories.add(
+                adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
+        );
+    }
+
+    // 반려
+    public void reject(MemberProfile decider, String rejectMessage) {
+        validatePendingStatus();
+
+        if (rejectMessage == null || rejectMessage.trim().isEmpty()) {
+            throw new IllegalArgumentException("반려 시에는 반드시 반려 사유를 입력해야 합니다.");
+        }
+        ApplicationStatus oldStatus = this.applicationStatus;
+        this.applicationStatus = ApplicationStatus.REJECTED;
+        this.decider = decider;
+        this.decidedAt = LocalDateTime.now();
+        this.reason = rejectMessage; // 반려 사유 저장
+
+        this.statusHistories.add(
+                adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
+        );
+    }
+
+    // 재제출
+    public void resubmit(String comment, String documentUrl) {
+
+        if (this.applicationStatus != ApplicationStatus.REJECTED) {
+            throw new IllegalStateException("반려된 상태에서만 재제출이 가능합니다.");
+        }
+
+        ApplicationStatus oldStatus = this.applicationStatus;
+        this.comment = comment;
+        this.documentUrl = documentUrl;
+        this.applicationStatus = ApplicationStatus.RESUBMITTED; // 상태를 '재제출'로 변경
+        this.decidedAt = null;
+        this.decider = null;
+        this.reason = null; // 재제출 시 반려 사유 초기화
+
+        this.statusHistories.add(
+                adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "")
+        );
+
+    }
+
+    // 검증 로직
+    private void validatePendingStatus() {
+        if (this.applicationStatus != ApplicationStatus.PENDING
+                && this.applicationStatus != ApplicationStatus.RESUBMITTED) {
+            throw new IllegalStateException("심사가 가능한 상태(PENDING/RESUBMITTED)가 아닙니다.");
+        }
+    }
+
+
 }
