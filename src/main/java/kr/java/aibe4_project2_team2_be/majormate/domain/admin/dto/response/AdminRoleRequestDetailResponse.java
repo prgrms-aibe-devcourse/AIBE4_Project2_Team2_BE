@@ -28,9 +28,9 @@ public class AdminRoleRequestDetailResponse {
     public static AdminRoleRequestDetailResponse from(AdminMajorRoleRequest adminmajorRoleRequest) {
         return AdminRoleRequestDetailResponse.builder()
                 .id(adminmajorRoleRequest.getRequestId())
-                .name(adminmajorRoleRequest.getMemberprofile().getName())
+                .name(adminmajorRoleRequest.getMember().getName())
                 .nickname(adminmajorRoleRequest.getNickname())
-                .username(adminmajorRoleRequest.getMemberprofile().getUsername())
+                .username(adminmajorRoleRequest.getMember().getUsername())
                 .universityName(adminmajorRoleRequest.getUniversity())
                 .majorName(adminmajorRoleRequest.getMajor())
 
