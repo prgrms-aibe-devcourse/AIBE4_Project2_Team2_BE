@@ -3,7 +3,6 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.respon
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.entity.Notification;
 import java.time.LocalDateTime;
 
-// Java 17 record 기능 사용 (CONVENTION.md 규칙)
 public record NotificationResponse(
         Long id,
         String type,

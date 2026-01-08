@@ -42,13 +42,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
                     if (requestURI.startsWith("/api/notifications")) {
-                        log.info("✅ [Filter] 인증 성공! User: {}", authentication.getName());
+                        log.info("[Filter] 인증 성공! User: {}", authentication.getName());
                     } else {
                         log.debug("Security Context에 '{}' 인증 정보를 저장했습니다.", authentication.getName());
                     }
                 } else {
                     if (requestURI.startsWith("/api/notifications")) {
-                        log.warn("❌ [Filter] 토큰이 유효하지 않습니다.");
+                        log.warn("[Filter] 토큰이 유효하지 않습니다.");
                     }
                 }
             } catch (Exception e) {
@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else {
             // 토큰이 없는 경우 경고로그
             if (requestURI.startsWith("/api/notifications")) {
-                log.warn("⚠️토큰을 찾을 수 없습니다. (헤더/쿠키 확인 필요)");
+                log.warn("[Filter]토큰을 찾을 수 없습니다. (헤더/쿠키 확인 필요)");
             }
         }
 
