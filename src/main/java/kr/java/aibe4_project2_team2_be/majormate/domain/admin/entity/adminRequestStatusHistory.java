@@ -1,7 +1,7 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
 
 import jakarta.persistence.*;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,7 +32,7 @@ public class adminRequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "changed_by", nullable = false)
-	private Member changedBy;
+	private MemberProfile changedBy;
 
 	@Column(nullable = false, length = 512, name = "message")
 	private String message;
@@ -48,7 +48,7 @@ public class adminRequestStatusHistory {
 		this.changedAt = LocalDateTime.now();
 	}
 
-	public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String reason) {
+	public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, MemberProfile actor, String reason) {
 		adminRequestStatusHistory history = new adminRequestStatusHistory();
 		history.request = request;
 		history.fromStatus = from;

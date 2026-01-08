@@ -2,15 +2,21 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.auth.service;
 
 import java.time.LocalDateTime;
 
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.CheckProviderRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.LoginRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.RefreshTokenRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.ResetPasswordRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SignupRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.CheckProviderResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.FindUsernameResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.SignupResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.TokenResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.EmailVerification.VerificationType;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.RefreshToken;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.RefreshTokenRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
@@ -37,28 +43,34 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final JwtProperties jwtProperties;
+	private final EmailService emailService;
 
 	@Transactional
 	public SignupResponse signup(SignupRequest request) {
-		// 1. 아이디 중복 검증
+		// 1. 이메일 인증 여부 확인
+		if (!emailService.isVerified(request.getEmail(), VerificationType.SIGNUP)) {
+			throw new BadRequestException(ErrorCode.EMAIL_NOT_VERIFIED);
+		}
+
+		// 2. 아이디 중복 검증
 		if (memberProfileRepository.existsByUsername(request.getUsername())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_USERNAME);
 		}
 
-		// 2. 이메일 중복 검증
+		// 3. 이메일 중복 검증
 		if (memberProfileRepository.existsByEmail(request.getEmail())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_EMAIL);
 		}
 
-		// 3. 닉네임 중복 검증
+		// 4. 닉네임 중복 검증
 		if (memberProfileRepository.existsByNickname(request.getNickname())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_NICKNAME);
 		}
 
-		// 4. 비밀번호 암호화
+		// 5. 비밀번호 암호화
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-		// 5. 회원 생성
+		// 6. 회원 생성
 		MemberProfile memberProfile = MemberProfile.builder()
 			.username(request.getUsername())
 			.email(request.getEmail())
@@ -78,6 +90,93 @@ public class AuthService {
 		return SignupResponse.from(savedMemberProfile);
 	}
 
+	/**
+	 * 이메일로 아이디 찾기
+	 */
+	@Transactional
+	public FindUsernameResponse findUsername(String email) {
+		// 1. 이메일 인증 여부 확인
+		if (!emailService.isVerified(email, VerificationType.FIND_USERNAME)) {
+			throw new BadRequestException(ErrorCode.EMAIL_NOT_VERIFIED);
+		}
+
+		// 2. 이메일로 회원 조회
+		MemberProfile memberProfile = memberProfileRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+		// 3. 소셜/일반 유저 분기 처리
+		if (memberProfile.isOAuth2User()) {
+			// 소셜 로그인 사용자인 경우, 가입된 소셜 서비스 정보와 함께 응답
+			String provider = memberProfile.getSocialAccounts().get(0).getAuthProvider().name();
+			log.info("아이디 찾기 시도 (소셜 계정) - Email: {}, Provider: {}", email, provider);
+			return FindUsernameResponse.builder()
+				.username(null)
+				.provider(provider)
+				.build();
+		} else {
+			// 일반 로그인 사용자인 경우, 아이디와 "LOCAL" 프로바이더 정보 응답
+			log.info("아이디 찾기 완료 - Email: {}", email);
+			return FindUsernameResponse.builder()
+				.username(memberProfile.getUsername())
+				.provider("LOCAL")
+				.build();
+		}
+	}
+
+	/**
+	 * 비밀번호 재설정
+	 */
+	@Transactional
+	public void resetPassword(ResetPasswordRequest request) {
+		// 1. 이메일 인증 여부 확인
+		if (!emailService.isVerified(request.getEmail(), VerificationType.RESET_PASSWORD)) {
+			throw new BadRequestException(ErrorCode.EMAIL_NOT_VERIFIED);
+		}
+
+		// 2. 이메일로 회원 조회
+		MemberProfile memberProfile = memberProfileRepository.findByEmail(request.getEmail())
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+		// 3. OAuth2 사용자는 비밀번호 재설정 불가
+		if (memberProfile.isOAuth2User()) {
+			throw new BadRequestException(ErrorCode.SOCIAL_LOGIN_REQUIRED);
+		}
+
+		// 4. 비밀번호 암호화 및 업데이트
+		String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+		memberProfile.updatePassword(encodedPassword);
+
+		log.info("비밀번호 재설정 완료 - Email: {}", request.getEmail());
+	}
+
+	/**
+	 * 계정 타입 확인 (소셜/일반 로그인 구분)
+	 */
+	@Transactional(readOnly = true)
+	public CheckProviderResponse checkProvider(CheckProviderRequest request) {
+		// 1. 이메일로 회원 조회
+		MemberProfile memberProfile = memberProfileRepository.findByEmail(request.getEmail())
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+		// 2. 소셜/일반 유저 분기 처리
+		if (memberProfile.isOAuth2User()) {
+			// 소셜 로그인 사용자인 경우
+			String provider = memberProfile.getSocialAccounts().get(0).getAuthProvider().name();
+			log.info("계정 타입 확인 (소셜 계정) - Email: {}, Provider: {}",
+				request.getEmail(), provider);
+			return CheckProviderResponse.builder()
+				.provider(provider)
+				.build();
+		} else {
+			// 일반 로그인 사용자인 경우
+			log.info("계정 타입 확인 (일반 계정) - Email: {}",
+				request.getEmail());
+			return CheckProviderResponse.builder()
+				.provider("LOCAL")
+				.build();
+		}
+	}
+
 	@Transactional
 	public TokenResponse login(LoginRequest request) {
 		// 1. 사용자 조회
@@ -86,7 +185,7 @@ public class AuthService {
 
 		// 2. OAuth2 사용자 체크
 		if (memberProfile.isOAuth2User()) {
-			throw new UnauthorizedException(ErrorCode.INVALID_PASSWORD);
+			throw new BadRequestException(ErrorCode.SOCIAL_LOGIN_REQUIRED);
 		}
 
 		// 3. 비밀번호 검증
