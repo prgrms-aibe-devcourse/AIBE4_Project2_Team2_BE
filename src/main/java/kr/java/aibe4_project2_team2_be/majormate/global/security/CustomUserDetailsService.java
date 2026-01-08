@@ -6,8 +6,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,19 +16,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-	private final MemberRepository memberRepository;
+	private final MemberProfileRepository memberProfileRepository;
 
 	@Override
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Member member = memberRepository.findById(Long.parseLong(username))
+		MemberProfile memberProfile = memberProfileRepository.findById(Long.parseLong(username))
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
 		return new CustomUserDetails(
-			member.getMemberId(),
-			member.getEmail(),
-			member.getPassword(),
-			member.getRole().name()
+			memberProfile.getMemberId(),
+			memberProfile.getEmail(),
+			memberProfile.getPassword(),
+			memberProfile.getRole().name()
 		);
 	}
 }

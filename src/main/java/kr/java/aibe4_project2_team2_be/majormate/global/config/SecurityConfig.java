@@ -17,6 +17,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.CustomOAuth2UserService;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.OAuth2AuthenticationFailureHandler;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.OAuth2AuthenticationSuccessHandler;
+import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -54,9 +60,10 @@ public class SecurityConfig {
 					"/v3/api-docs/**",
 					"/swagger-resources/**",
 					"/api-docs/**",
+					// 아래는 제거해야 함
 					"/api/members/**",
-                        "/sse-test.html",
-                        "/api/notifications/set-cookie"
+					"/api/majors/{majorId}/interview-requests",
+					"/api/interviews/4/reviews"
 				).permitAll()
 				.anyRequest().authenticated()
 			)

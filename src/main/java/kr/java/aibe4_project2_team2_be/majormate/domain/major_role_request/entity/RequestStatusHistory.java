@@ -14,7 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,10 +43,13 @@ public class RequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "changed_by", nullable = false)
-	private Member changedBy;
+	private MemberProfile changedBy;
 
 	@Column(nullable = false, length = 512, name = "message")
 	private String message;
+
+	@Column(length = 512, name = "reason")
+	private String reason;
 
 	@Column(name = "changed_at", nullable = false, updatable = false)
 	private LocalDateTime changedAt;
@@ -56,13 +59,15 @@ public class RequestStatusHistory {
 		this.changedAt = LocalDateTime.now();
 	}
 
-	public static RequestStatusHistory createHistory(MajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String msg) {
+	public static RequestStatusHistory createHistory(MajorRoleRequest request, ApplicationStatus from,
+		ApplicationStatus to, MemberProfile actor, String reason) {
 		RequestStatusHistory history = new RequestStatusHistory();
 		history.request = request;
 		history.fromStatus = from;
 		history.toStatus = to;
 		history.changedBy = actor;
-		history.message = msg;
+		history.message = request.getComment();
+		history.reason = reason;
 		history.changedAt = LocalDateTime.now();
 		return history;
 	}

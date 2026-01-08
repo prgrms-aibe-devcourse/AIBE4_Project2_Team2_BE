@@ -1,179 +1,160 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.member.service;
 
+import java.util.Objects;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.request.MemberProfileUpdateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.request.MemberDetailUpdateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberAcademicResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberDetailResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberProfileResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.DuplicateException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MemberService {
 
-	private final MemberRepository memberRepository;
+	private final MemberProfileRepository memberProfileRepository;
 	private final MemberAcademicRepository memberAcademicRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	public MemberResponse getCurrentMember(Long memberId) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
-
-		log.info("현재 사용자 정보 조회 - ID: {}, Email: {}", member.getMemberId(), member.getEmail());
-
-		return MemberResponse.from(member);
+	public MemberProfileResponse getMemberProfile(Long memberId) {
+		MemberProfile profile = getMemberProfileOrThrow(memberId);
+		return MemberProfileResponse.from(profile);
 	}
 
-	public MemberProfileResponse getProfile(Long memberId) {
-		Member member = getMemberOrThrow(memberId);
-		MemberAcademic academic = getAcademicOrThrow(member);
-		return toProfileResponse(member, academic);
+	public MemberAcademicResponse getMemberAcademic(Long memberId) {
+		MemberAcademic academic = getMemberAcademicOrThrow(memberId);
+		return MemberAcademicResponse.from(academic);
+	}
+
+	public MemberDetailResponse getMemberDetail(Long memberId) {
+		MemberProfile profile = getMemberProfileOrThrow(memberId);
+		MemberAcademic academic = getMemberAcademicOrThrow(memberId);
+		return MemberDetailResponse.from(profile, academic);
 	}
 
 	@Transactional
-	public MemberProfileResponse updateProfile(Long memberId, MemberProfileUpdateRequest profile) {
-		Member member = getMemberOrThrow(memberId);
+	public MemberDetailResponse updateMemberDetail(Long memberId, MemberDetailUpdateRequest request) {
+		MemberProfile profile = getMemberProfileOrThrow(memberId);
+		MemberAcademic academic = getMemberAcademicOrThrow(memberId);
 
-		validateCurrentPassword(member, profile.currentPassword());
+		validateCurrentPasswordOrThrow(profile, request.currentPassword());
 
-		applyMemberUpdates(member, profile);
+		applyMemberUpdates(profile, request);
+		applyAcademicUpdates(academic, request);
 
-		MemberAcademic academic = getAcademicOrThrow(member);
-		applyAcademicUpdates(academic, profile);
-
-		return toProfileResponse(member, academic);
+		return MemberDetailResponse.from(profile, academic);
 	}
 
-	private Member getMemberOrThrow(Long memberId) {
-		return memberRepository.findByMemberId(memberId)
+	private MemberProfile getMemberProfileOrThrow(Long memberId) {
+		return memberProfileRepository.findByMemberId(memberId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 	}
 
-	private MemberAcademic getAcademicOrThrow(Member member) {
-		return memberAcademicRepository.findByMember(member)
+	private MemberAcademic getMemberAcademicOrThrow(Long memberId) {
+		return memberAcademicRepository.findByMemberProfile_MemberId(memberId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_ACADEMIC_NOT_FOUND));
 	}
 
-	private void validateCurrentPassword(Member member, String currentPassword) {
+	private void validateCurrentPasswordOrThrow(MemberProfile profile, String currentPassword) {
 		if (currentPassword == null || currentPassword.isBlank()) {
 			throw new BadRequestException(ErrorCode.CURRENT_PASSWORD_REQUIRED);
 		}
-		if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
+		if (!passwordEncoder.matches(currentPassword, profile.getPassword())) {
 			throw new BadRequestException(ErrorCode.INVALID_PASSWORD);
 		}
 	}
 
-	private void applyMemberUpdates(Member member, MemberProfileUpdateRequest profile) {
-		updateNickname(member, profile);
-		updateEmail(member, profile);
-		updatePasswordIfProvided(member, profile);
-		updateProfileImageUrl(member, profile);
-		updateStatus(member, profile);
+	private void applyMemberUpdates(MemberProfile profile, MemberDetailUpdateRequest request) {
+		updateNickname(profile, request.nickname());
+		updateEmail(profile, request.email());
+		updatePasswordIfProvided(profile, request.newPassword());
+		updateProfileImageUrl(profile, request.profileImageUrl());
+		updateStatus(profile, request.status());
 	}
 
-	private void updateNickname(Member member, MemberProfileUpdateRequest profile) {
-		String nickname = profile.nickname();
-		if (nickname.equals(member.getNickname())) {
+	private void updateNickname(MemberProfile profile, String nickname) {
+		if (Objects.equals(nickname, profile.getNickname())) {
 			return;
 		}
-		if (memberRepository.existsByNickname(nickname)) {
+		if (memberProfileRepository.existsByNickname(nickname)) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_NICKNAME);
 		}
-		member.updateNickname(nickname);
+		profile.updateNickname(nickname);
 	}
 
-	private void updateEmail(Member member, MemberProfileUpdateRequest profile) {
-		String email = profile.email();
-		if (email.equals(member.getEmail())) {
+	private void updateEmail(MemberProfile profile, String email) {
+		if (Objects.equals(email, profile.getEmail())) {
 			return;
 		}
-		if (memberRepository.existsByEmail(email)) {
+		if (memberProfileRepository.existsByEmail(email)) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_EMAIL);
 		}
-		member.updateEmail(email);
+		profile.updateEmail(email);
 	}
 
-	private void updatePasswordIfProvided(Member member, MemberProfileUpdateRequest profile) {
-		String newPassword = profile.newPassword();
+	private void updatePasswordIfProvided(MemberProfile profile, String newPassword) {
 		if (newPassword == null || newPassword.isBlank()) {
 			return;
 		}
-		if (passwordEncoder.matches(newPassword, member.getPassword())) {
+		if (passwordEncoder.matches(newPassword, profile.getPassword())) {
 			throw new BadRequestException(ErrorCode.SAME_AS_OLD_PASSWORD);
 		}
-		member.updatePassword(passwordEncoder.encode(newPassword));
+		profile.updatePassword(passwordEncoder.encode(newPassword));
 	}
 
-	private void updateProfileImageUrl(Member member, MemberProfileUpdateRequest profile) {
-		String profileImageUrl = profile.profileImageUrl();
+	private void updateProfileImageUrl(MemberProfile profile, String profileImageUrl) {
 		if (profileImageUrl == null) {
-			if (member.getProfileImageUrl() != null) {
-				member.updateProfileImageUrl(null);
+			if (profile.getProfileImageUrl() != null) {
+				profile.updateProfileImageUrl(null);
 			}
 			return;
 		}
 		if (profileImageUrl.isBlank()) {
 			throw new BadRequestException(ErrorCode.INVALID_PROFILE_IMAGE_URL);
 		}
-		if (profileImageUrl.equals(member.getProfileImageUrl())) {
+		if (Objects.equals(profileImageUrl, profile.getProfileImageUrl())) {
 			return;
 		}
-		member.updateProfileImageUrl(profileImageUrl);
+		profile.updateProfileImageUrl(profileImageUrl);
 	}
 
-	private void updateStatus(Member member, MemberProfileUpdateRequest profile) {
-		MemberStatus status = profile.status();
-		if (status == member.getStatus()) {
+	private void updateStatus(MemberProfile profile, MemberStatus status) {
+		if (status == profile.getStatus()) {
 			return;
 		}
-		member.updateStatus(status);
+		profile.updateStatus(status);
 	}
 
-	private void applyAcademicUpdates(MemberAcademic academic, MemberProfileUpdateRequest profile) {
-		updateUniversity(academic, profile);
-		updateMajor(academic, profile);
+	private void applyAcademicUpdates(MemberAcademic academic, MemberDetailUpdateRequest request) {
+		updateUniversity(academic, request.university());
+		updateMajor(academic, request.major());
 	}
 
-	private void updateUniversity(MemberAcademic academic, MemberProfileUpdateRequest profile) {
-		String university = profile.university();
-		if (university.equals(academic.getUniversity())) {
+	private void updateUniversity(MemberAcademic academic, String university) {
+		if (Objects.equals(university, academic.getUniversity())) {
 			return;
 		}
 		academic.updateUniversity(university);
 	}
 
-	private void updateMajor(MemberAcademic academic, MemberProfileUpdateRequest profile) {
-		String major = profile.major();
-		if (major.equals(academic.getMajor())) {
+	private void updateMajor(MemberAcademic academic, String major) {
+		if (Objects.equals(major, academic.getMajor())) {
 			return;
 		}
 		academic.updateMajor(major);
-	}
-
-	private MemberProfileResponse toProfileResponse(Member member, MemberAcademic academic) {
-		return new MemberProfileResponse(
-			member.getName(),
-			member.getNickname(),
-			member.getEmail(),
-			member.getUsername(),
-			member.getProfileImageUrl(),
-			member.getStatus(),
-			academic.getUniversity(),
-			academic.getMajor()
-		);
 	}
 }

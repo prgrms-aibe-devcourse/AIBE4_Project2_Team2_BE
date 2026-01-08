@@ -18,7 +18,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,12 +35,21 @@ public class MajorRoleRequest {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id", nullable = false)
-	private Member member;
+	private MemberProfile memberProfile;
 
-	@Column(nullable = false, length = 512)
-	private String content;
+	@Column(name = "nickname", nullable = false, length = 50)
+	private String nickname;
 
-	@Column(nullable = false, length = 512)
+	@Column(name = "university", nullable = false, length = 100)
+	private String university;
+
+	@Column(name = "major", nullable = false, length = 100)
+	private String major;
+
+	@Column(name = "comment", nullable = false, length = 512)
+	private String comment;
+
+	@Column(name = "document_url", nullable = false, length = 512)
 	private String documentUrl;
 
 	@Enumerated(EnumType.STRING)
@@ -55,7 +64,10 @@ public class MajorRoleRequest {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "decided_by")
-	private Member decider;
+	private MemberProfile decider;
+
+	@Column(name = "reason", length = 255)
+	private String reason;
 
 	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<RequestStatusHistory> statusHistories = new ArrayList<>();
@@ -65,23 +77,27 @@ public class MajorRoleRequest {
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public static MajorRoleRequest createRequest(Member member, String content, String documentUrl) {
+	public static MajorRoleRequest createRequest(MemberProfile memberProfile, String university, String major,
+		String comment, String documentUrl) {
 		MajorRoleRequest request = new MajorRoleRequest();
-		request.member = member;
-		request.content = content;
+		request.memberProfile = memberProfile;
+		request.nickname = memberProfile.getNickname();
+		request.university = university;
+		request.major = major;
+		request.comment = comment;
 		request.documentUrl = documentUrl;
 		request.applicationStatus = ApplicationStatus.PENDING; // 초기 상태는 대기
-		
+
 		// 초기 이력 생성
 		request.statusHistories.add(
-			RequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "전공자 인증 요청을 등록했습니다.")
+			RequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, memberProfile, "")
 		);
-		
+
 		return request;
 	}
 
 	// 승인
-	public void accept(Member decider) {
+	public void accept(MemberProfile decider) {
 		validatePendingStatus(); // 대기 상태인지 검증
 		ApplicationStatus oldStatus = this.applicationStatus;
 		this.applicationStatus = ApplicationStatus.ACCEPTED;
@@ -89,12 +105,12 @@ public class MajorRoleRequest {
 		this.decidedAt = LocalDateTime.now();
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "전공자 지원 승인 되었습니다")
+			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
 		);
 	}
 
 	// 반려
-	public void reject(Member decider, String rejectMessage) {
+	public void reject(MemberProfile decider, String rejectMessage) {
 		validatePendingStatus();
 
 		if (rejectMessage == null || rejectMessage.trim().isEmpty()) {
@@ -104,6 +120,7 @@ public class MajorRoleRequest {
 		this.applicationStatus = ApplicationStatus.REJECTED;
 		this.decider = decider;
 		this.decidedAt = LocalDateTime.now();
+		this.reason = rejectMessage; // 반려 사유 저장
 
 		this.statusHistories.add(
 			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
@@ -111,31 +128,32 @@ public class MajorRoleRequest {
 	}
 
 	// 재제출
-	public void resubmit(String content, String documentUrl) {
+	public void resubmit(String comment, String documentUrl) {
 
 		if (this.applicationStatus != ApplicationStatus.REJECTED) {
 			throw new IllegalStateException("반려된 상태에서만 재제출이 가능합니다.");
 		}
 
 		ApplicationStatus oldStatus = this.applicationStatus;
-		this.content = content;
+		this.comment = comment;
 		this.documentUrl = documentUrl;
 		this.applicationStatus = ApplicationStatus.RESUBMITTED; // 상태를 '재제출'로 변경
 		this.decidedAt = null;
 		this.decider = null;
+		this.reason = null; // 재제출 시 반려 사유 초기화
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "반려 사유 확인 후 내용을 수정하여 재제출했습니다.")
+			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.memberProfile, "")
 		);
 
 	}
 
 	// 검증 로직
 	private void validatePendingStatus() {
-		if (this.applicationStatus != ApplicationStatus.PENDING && this.applicationStatus != ApplicationStatus.RESUBMITTED) {
+		if (this.applicationStatus != ApplicationStatus.PENDING
+			&& this.applicationStatus != ApplicationStatus.RESUBMITTED) {
 			throw new IllegalStateException("심사가 가능한 상태(PENDING/RESUBMITTED)가 아닙니다.");
 		}
 	}
-
 
 }
