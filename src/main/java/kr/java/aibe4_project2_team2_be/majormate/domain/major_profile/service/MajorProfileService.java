@@ -123,4 +123,20 @@ public class MajorProfileService {
 			})
 			.collect(Collectors.toList());
 	}
+
+	@Transactional(readOnly = true)
+	public MajorProfileResponse getMajorCardDetail(Long profileId) {
+		MajorProfile profile = majorProfileRepository.findById(profileId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 프로필을 찾을 수 없습니다."));
+
+		if (!profile.isActive()) {
+			throw new EntityNotFoundException("비활성화된 프로필입니다.");
+		}
+
+		Long memberId = profile.getMemberProfile().getMemberId();
+		MemberAcademic academic = memberAcademicRepository.findByMemberProfile_MemberId(memberId)
+			.orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다."));
+
+		return MajorProfileResponse.of(profile, academic);
+	}
 }
