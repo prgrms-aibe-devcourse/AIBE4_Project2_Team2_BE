@@ -11,7 +11,9 @@ public record AppliedInterviewFormResponse(
 	MajorInfo major,
 	InterviewFormBody interview,
 	InterviewFormStatus status,
-	String majorMessage
+	String majorMessage,
+	LocalDateTime created_at,
+	LocalDateTime updated_at
 ) {
 	public record MajorInfo(
 		Long majorMemberId,
@@ -52,7 +54,9 @@ public record AppliedInterviewFormResponse(
 				interviewForm.getExtraDescription()
 			),
 			interviewForm.getStatus(),
-			interviewForm.getMajorMessage()
+			interviewForm.getMajorMessage(),
+			interviewForm.getCreatedAt(),
+			interviewForm.getUpdatedAt()
 		);
 	}
 }

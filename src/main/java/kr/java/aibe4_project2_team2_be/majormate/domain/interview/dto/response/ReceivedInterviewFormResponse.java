@@ -11,7 +11,9 @@ public record ReceivedInterviewFormResponse(
 	StudentInfo student,
 	InterviewFormBody interview,
 	InterviewFormStatus status,
-	String majorMessage
+	String majorMessage,
+	LocalDateTime created_at,
+	LocalDateTime updated_at
 ) {
 	public record StudentInfo(
 		Long studentMemberId,
@@ -52,7 +54,9 @@ public record ReceivedInterviewFormResponse(
 				interviewForm.getExtraDescription()
 			),
 			interviewForm.getStatus(),
-			interviewForm.getMajorMessage()
+			interviewForm.getMajorMessage(),
+			interviewForm.getCreatedAt(),
+			interviewForm.getUpdatedAt()
 		);
 	}
 }

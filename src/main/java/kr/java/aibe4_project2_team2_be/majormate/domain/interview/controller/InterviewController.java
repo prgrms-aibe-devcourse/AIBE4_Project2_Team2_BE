@@ -27,7 +27,7 @@ public class InterviewController {
 	@GetMapping("/members/me/interviews/applied")
 	public ApiResponse<List<AppliedInterviewFormResponse>> getMyAppliedInterviewForms() {
 		//Long studentId = SecurityUtil.getCurrentMemberId();
-		Long studentId = 9L;
+		Long studentId = 1L;
 		List<AppliedInterviewFormResponse> response = interviewService.getAppliedInterviewForms(studentId);
 		if (response.isEmpty()) {
 			return ApiResponse.success(response, "신청한 인터뷰가 없습니다.");
@@ -38,7 +38,7 @@ public class InterviewController {
 	@GetMapping("/members/me/interviews/received")
 	public ApiResponse<List<ReceivedInterviewFormResponse>> getMyReceivedInterviewForms() {
 		//Long majorId = SecurityUtil.getCurrentMemberId();
-		Long majorId = 4L;
+		Long majorId = 3L;
 		List<ReceivedInterviewFormResponse> response = interviewService.getReceivedInterviewForms(majorId);
 		if (response.isEmpty()) {
 			return ApiResponse.success(response, "신청받은 인터뷰가 없습니다.");
@@ -52,7 +52,7 @@ public class InterviewController {
 		@Valid @RequestBody InterviewFormCreateRequest request
 	) {
 		//Long studentId = SecurityUtil.getCurrentMemberId();
-		Long studentId = 9L;
+		Long studentId = 1L;
 		AppliedInterviewFormResponse response = interviewService.createInterviewForm(studentId, majorId, request);
 		return ApiResponse.success(response);
 	}
