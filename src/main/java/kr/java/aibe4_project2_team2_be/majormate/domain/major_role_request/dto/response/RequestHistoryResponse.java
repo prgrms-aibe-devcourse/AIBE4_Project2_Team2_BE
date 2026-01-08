@@ -23,7 +23,7 @@ public class RequestHistoryResponse {
 
 		return RequestHistoryResponse.builder()
 			.id(history.getHistoryId())
-			.memberName(history.getRequest().getMember().getName())
+			.memberName(history.getRequest().getMemberProfile().getName())
 			.oldStatus(history.getFromStatus())
 			.newStatus(history.getToStatus())
 			.changedBy(changedByName)

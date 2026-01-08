@@ -25,7 +25,7 @@ public class MemberAcademic extends BaseEntity {
 
 	@OneToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "member_id", nullable = false, unique = true)
-	private Member member;
+	private MemberProfile memberProfile;
 
 	@Column(nullable = false, length = 20)
 	private String university;
@@ -34,9 +34,9 @@ public class MemberAcademic extends BaseEntity {
 	private String major;
 
 	@Builder
-	public MemberAcademic(Long academicId, Member member, String university, String major) {
+	public MemberAcademic(Long academicId, MemberProfile memberProfile, String university, String major) {
 		this.academicId = academicId;
-		this.member = member;
+		this.memberProfile = memberProfile;
 		this.university = university;
 		this.major = major;
 	}

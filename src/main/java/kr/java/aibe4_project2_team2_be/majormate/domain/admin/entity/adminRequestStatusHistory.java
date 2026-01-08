@@ -1,29 +1,18 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity;
+package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
+import jakarta.persistence.*;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "major_role_request_status_history")
 @Getter
 @NoArgsConstructor
-public class RequestStatusHistory {
+public class adminRequestStatusHistory {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +20,7 @@ public class RequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "request_id", nullable = false)
-	private MajorRoleRequest request;
+	private adminMajorRoleRequest request;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = true, length = 20, name = "from_status")
@@ -43,7 +32,7 @@ public class RequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "changed_by", nullable = false)
-	private MemberProfile changedBy;
+	private Member changedBy;
 
 	@Column(nullable = false, length = 512, name = "message")
 	private String message;
@@ -59,9 +48,8 @@ public class RequestStatusHistory {
 		this.changedAt = LocalDateTime.now();
 	}
 
-	public static RequestStatusHistory createHistory(MajorRoleRequest request, ApplicationStatus from,
-		ApplicationStatus to, MemberProfile actor, String reason) {
-		RequestStatusHistory history = new RequestStatusHistory();
+	public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String reason) {
+		adminRequestStatusHistory history = new adminRequestStatusHistory();
 		history.request = request;
 		history.fromStatus = from;
 		history.toStatus = to;

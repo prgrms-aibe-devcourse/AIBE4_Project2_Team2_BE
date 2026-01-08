@@ -1,33 +1,20 @@
-package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity;
+package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
+
+import jakarta.persistence.*;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 @Entity
 @Table(name = "major_role_request")
 @Getter
 @NoArgsConstructor
-public class MajorRoleRequest {
+public class adminMajorRoleRequest {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,7 +22,7 @@ public class MajorRoleRequest {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id", nullable = false)
-	private MemberProfile memberProfile;
+	private Member member;
 
 	@Column(name = "nickname", nullable = false, length = 50)
 	private String nickname;
@@ -64,40 +51,39 @@ public class MajorRoleRequest {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "decided_by")
-	private MemberProfile decider;
+	private Member decider;
 
 	@Column(name = "reason", length = 255)
 	private String reason;
 
 	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<RequestStatusHistory> statusHistories = new ArrayList<>();
+	private List<adminRequestStatusHistory> statusHistories = new ArrayList<>();
 
 	@PrePersist
 	public void prePersist() {
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public static MajorRoleRequest createRequest(MemberProfile memberProfile, String university, String major,
-		String comment, String documentUrl) {
-		MajorRoleRequest request = new MajorRoleRequest();
-		request.memberProfile = memberProfile;
-		request.nickname = memberProfile.getNickname();
+	public static adminMajorRoleRequest createRequest(Member member, String university, String major, String comment, String documentUrl) {
+		adminMajorRoleRequest request = new adminMajorRoleRequest();
+		request.member = member;
+		request.nickname = member.getNickname();
 		request.university = university;
 		request.major = major;
 		request.comment = comment;
 		request.documentUrl = documentUrl;
 		request.applicationStatus = ApplicationStatus.PENDING; // 초기 상태는 대기
-
+		
 		// 초기 이력 생성
 		request.statusHistories.add(
-			RequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, memberProfile, "")
+			adminRequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "")
 		);
-
+		
 		return request;
 	}
 
 	// 승인
-	public void accept(MemberProfile decider) {
+	public void accept(Member decider) {
 		validatePendingStatus(); // 대기 상태인지 검증
 		ApplicationStatus oldStatus = this.applicationStatus;
 		this.applicationStatus = ApplicationStatus.ACCEPTED;
@@ -105,12 +91,12 @@ public class MajorRoleRequest {
 		this.decidedAt = LocalDateTime.now();
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
+			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
 		);
 	}
 
 	// 반려
-	public void reject(MemberProfile decider, String rejectMessage) {
+	public void reject(Member decider, String rejectMessage) {
 		validatePendingStatus();
 
 		if (rejectMessage == null || rejectMessage.trim().isEmpty()) {
@@ -123,7 +109,7 @@ public class MajorRoleRequest {
 		this.reason = rejectMessage; // 반려 사유 저장
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
+			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
 		);
 	}
 
@@ -143,7 +129,7 @@ public class MajorRoleRequest {
 		this.reason = null; // 재제출 시 반려 사유 초기화
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.memberProfile, "")
+			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "")
 		);
 
 	}
@@ -155,5 +141,6 @@ public class MajorRoleRequest {
 			throw new IllegalStateException("심사가 가능한 상태(PENDING/RESUBMITTED)가 아닙니다.");
 		}
 	}
+
 
 }

@@ -4,9 +4,11 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 
 public interface MemberAcademicRepository extends JpaRepository<MemberAcademic, Long> {
-	Optional<MemberAcademic> findByMember(Member member);
+	Optional<MemberAcademic> findByMemberProfile_MemberId(Long memberId);
+
+	Optional<MemberAcademic> findByMemberProfile(MemberProfile memberProfile);
 }
