@@ -2,15 +2,19 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.auth.service;
 
 import java.time.LocalDateTime;
 
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.LoginRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.RefreshTokenRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.ResetPasswordRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SignupRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.FindUsernameResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.SignupResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.TokenResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.EmailVerification.VerificationType;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.RefreshToken;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.RefreshTokenRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
@@ -37,28 +41,34 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final JwtProperties jwtProperties;
+	private final EmailService emailService;
 
 	@Transactional
 	public SignupResponse signup(SignupRequest request) {
-		// 1. 아이디 중복 검증
+		// 1. 이메일 인증 여부 확인
+		if (!emailService.isVerified(request.getEmail(), VerificationType.SIGNUP)) {
+			throw new BadRequestException(ErrorCode.EMAIL_NOT_VERIFIED);
+		}
+
+		// 2. 아이디 중복 검증
 		if (memberRepository.existsByUsername(request.getUsername())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_USERNAME);
 		}
 
-		// 2. 이메일 중복 검증
+		// 3. 이메일 중복 검증
 		if (memberRepository.existsByEmail(request.getEmail())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_EMAIL);
 		}
 
-		// 3. 닉네임 중복 검증
+		// 4. 닉네임 중복 검증
 		if (memberRepository.existsByNickname(request.getNickname())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_NICKNAME);
 		}
 
-		// 4. 비밀번호 암호화
+		// 5. 비밀번호 암호화
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-		// 5. 회원 생성
+		// 6. 회원 생성
 		Member member = Member.builder()
 			.username(request.getUsername())
 			.email(request.getEmail())
@@ -75,6 +85,52 @@ public class AuthService {
 			savedMember.getEmail());
 
 		return SignupResponse.from(savedMember);
+	}
+
+	/**
+	 * 이메일로 아이디 찾기
+	 */
+	@Transactional
+	public FindUsernameResponse findUsername(String email, String code) {
+		// 1. 인증 코드 검증
+		emailService.verifyCode(email, code, VerificationType.FIND_USERNAME);
+
+		// 2. 이메일로 회원 조회
+		Member member = memberRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+		// 3. OAuth2 사용자는 아이디 찾기 불가
+		if (member.isOAuth2User()) {
+			throw new BadRequestException(ErrorCode.SOCIAL_LOGIN_REQUIRED);
+		}
+
+		log.info("아이디 찾기 완료 - Email: {}", email);
+
+		return FindUsernameResponse.of(member.getUsername(), member.getEmail());
+	}
+
+	/**
+	 * 비밀번호 재설정
+	 */
+	@Transactional
+	public void resetPassword(ResetPasswordRequest request) {
+		// 1. 인증 코드 검증
+		emailService.verifyCode(request.getEmail(), request.getCode(), VerificationType.RESET_PASSWORD);
+
+		// 2. 이메일로 회원 조회
+		Member member = memberRepository.findByEmail(request.getEmail())
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+		// 3. OAuth2 사용자는 비밀번호 재설정 불가
+		if (member.isOAuth2User()) {
+			throw new BadRequestException(ErrorCode.SOCIAL_LOGIN_REQUIRED);
+		}
+
+		// 4. 비밀번호 암호화 및 업데이트
+		String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+		member.updatePassword(encodedPassword);
+
+		log.info("비밀번호 재설정 완료 - Email: {}", request.getEmail());
 	}
 
 	@Transactional

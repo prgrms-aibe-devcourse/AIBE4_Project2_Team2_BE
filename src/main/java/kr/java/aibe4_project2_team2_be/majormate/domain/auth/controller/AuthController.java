@@ -8,10 +8,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.LoginRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.RefreshTokenRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.ResetPasswordRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SendVerificationCodeRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SignupRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.VerifyCodeRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.FindUsernameResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.SignupResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.TokenResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.EmailVerification.VerificationType;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.service.AuthService;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.service.EmailService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
@@ -29,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailService emailService;
     private final JwtProperties jwtProperties;
 
     @Operation(summary = "회원가입", description = "새로운 회원을 등록합니다.")
@@ -80,5 +87,35 @@ public class AuthController {
         CookieUtil.deleteCookie(request, response, "refreshToken");
 
         return ApiResponse.success("로그아웃 되었습니다.");
+    }
+
+    // ========== 이메일 인증 API ==========
+
+    @Operation(summary = "이메일 인증 코드 발송", description = "회원가입, 아이디 찾기, 비밀번호 재설정 시 이메일 인증 코드를 발송합니다. 요청 DTO에 type (SIGNUP, FIND_USERNAME, RESET_PASSWORD)을 포함해야 합니다.")
+    @PostMapping("/email/send")
+    public ApiResponse<Void> sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
+        emailService.sendVerificationCode(request.getEmail(), request.getType());
+        return ApiResponse.success("인증 코드가 발송되었습니다.");
+    }
+
+    @Operation(summary = "이메일 인증 코드 검증", description = "발송된 이메일 인증 코드를 검증합니다. 요청 DTO에 type (SIGNUP, FIND_USERNAME, RESET_PASSWORD)을 포함해야 합니다.")
+    @PostMapping("/email/verify")
+    public ApiResponse<Void> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
+        emailService.verifyCode(request.getEmail(), request.getCode(), request.getType());
+        return ApiResponse.success("이메일 인증이 완료되었습니다.");
+    }
+
+    @Operation(summary = "아이디 찾기", description = "이메일 인증 후 아이디를 조회합니다.")
+    @PostMapping("/find-username")
+    public ApiResponse<FindUsernameResponse> findUsername(@Valid @RequestBody VerifyCodeRequest request) {
+        FindUsernameResponse response = authService.findUsername(request.getEmail(), request.getCode());
+        return ApiResponse.success(response, "아이디 찾기가 완료되었습니다.");
+    }
+
+    @Operation(summary = "비밀번호 재설정", description = "이메일 인증 후 비밀번호를 재설정합니다.")
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ApiResponse.success("비밀번호가 재설정되었습니다.");
     }
 }

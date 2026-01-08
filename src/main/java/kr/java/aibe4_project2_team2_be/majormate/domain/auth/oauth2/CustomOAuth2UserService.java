@@ -72,6 +72,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return switch (registrationId.toLowerCase()) {
             case "google" -> new GoogleOAuth2UserInfo(attributes);
             case "github" -> new GithubOAuth2UserInfo(attributes);
+            case "kakao" -> new KakaoOAuth2UserInfo(attributes);
+            case "naver" -> new NaverOAuth2UserInfo(attributes);
             default -> throw new BadRequestException(ErrorCode.OAUTH2_PROVIDER_NOT_SUPPORTED);
         };
     }
@@ -117,15 +119,20 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // Generate unique username (provider + random UUID)
         String username = generateUniqueUsername(provider.name().toLowerCase());
 
+        // Use email prefix if name is not provided (max 20 characters)
+        String emailPrefix = email.split("@")[0];
+        String displayName = (name != null && !name.isEmpty()) ? name : emailPrefix;
+        displayName = displayName.substring(0, Math.min(displayName.length(), 20));
+
         // Generate unique nickname from name or email
-        String nickname = generateUniqueNickname(name != null ? name : email.split("@")[0]);
+        String nickname = generateUniqueNickname(name != null ? name : emailPrefix);
 
         // Create new member without password
         Member newMember = Member.builder()
                 .username(username)
                 .email(email)
                 .password(null)  // OAuth2 users don't have passwords
-                .name(name != null ? name : "OAuth2 User")
+                .name(displayName)
                 .nickname(nickname)
                 .status(MemberStatus.ENROLLED)
                 .role(MemberRole.STUDENT)
@@ -165,25 +172,41 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private String generateUniqueNickname(String baseName) {
         // Remove special characters and limit length
         String sanitized = baseName.replaceAll("[^가-힣a-zA-Z0-9]", "");
-        sanitized = sanitized.substring(0, Math.min(sanitized.length(), 20));
+        sanitized = sanitized.substring(0, Math.min(sanitized.length(), 15)); // Reduced to 15 to allow for suffix
 
         if (sanitized.isEmpty()) {
             sanitized = "user";
         }
 
-        String nickname = sanitized;
-        int counter = 1;
-
-        while (memberRepository.existsByNickname(nickname) && counter < 1000) {
-            nickname = sanitized + counter;
-            counter++;
+        // First try without suffix
+        if (!memberRepository.existsByNickname(sanitized)) {
+            return sanitized;
         }
 
-        if (counter >= 1000) {
+        // If duplicate, add random 4-character suffix
+        int attempts = 0;
+        String nickname;
+        do {
+            String randomSuffix = generateRandomString(4);
+            nickname = sanitized + "_" + randomSuffix;
+            attempts++;
+        } while (memberRepository.existsByNickname(nickname) && attempts < 100);
+
+        if (attempts >= 100) {
             throw new BadRequestException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
         return nickname;
+    }
+
+    private String generateRandomString(int length) {
+        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = (int) (Math.random() * chars.length());
+            sb.append(chars.charAt(index));
+        }
+        return sb.toString();
     }
 
     private String fetchGithubEmail(OAuth2UserRequest userRequest) {
