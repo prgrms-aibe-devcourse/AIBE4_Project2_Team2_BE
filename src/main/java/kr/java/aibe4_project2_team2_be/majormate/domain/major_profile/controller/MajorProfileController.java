@@ -25,7 +25,8 @@ public class MajorProfileController {
 	public ApiResponse<Long> createProfile(
 		@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
 	) {
-		Long memberId = SecurityUtil.getCurrentMemberId();
+		// Long memberId = SecurityUtil.getCurrentMemberId();
+		Long memberId = 3L;
 		Long profileId = majorProfileService.createProfile(memberId, majorProfileCreateRequest);
 
 		return ApiResponse.success(profileId);
@@ -34,7 +35,8 @@ public class MajorProfileController {
 	@PatchMapping
 	public ApiResponse<Void> updateProfile(@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
 	) {
-		Long memberId = SecurityUtil.getCurrentMemberId();
+		// Long memberId = SecurityUtil.getCurrentMemberId();
+		Long memberId = 3L;
 		majorProfileService.updateProfile(memberId, majorProfileCreateRequest);
 
 		return ApiResponse.success(null);
@@ -42,7 +44,8 @@ public class MajorProfileController {
 
 	@GetMapping("/me")
 	public ApiResponse<MajorProfileResponse> getMyProfile() {
-		Long memberId = SecurityUtil.getCurrentMemberId();
+		// Long memberId = SecurityUtil.getCurrentMemberId();
+		Long memberId = 3L;
 		MajorProfileResponse response = majorProfileService.getMyProfile(memberId);
 
 		if (response == null) {

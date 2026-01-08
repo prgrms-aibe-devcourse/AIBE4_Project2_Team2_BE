@@ -1,29 +1,20 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.entity;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.RequestStatusHistory;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,7 +31,7 @@ public class MajorProfile extends BaseEntity {
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id", nullable = false, unique = true)
-	private Member member;
+	private MemberProfile memberProfile;
 
 	@Column(name = "title", nullable = false, length = 100)
 	private String title;
@@ -51,33 +42,37 @@ public class MajorProfile extends BaseEntity {
 	@Column(name = "is_active", nullable = false)
 	private boolean isActive;
 
-	// 태그
-	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(
-		name = "major_profile_tags",
-		joinColumns = @JoinColumn(name = "major_profile_id")
-	)
-
-	@Column(name = "tag_name")
-	private List<String> tags = new ArrayList<>();
+	// 태그 (Entity로 변경)
+	@OneToMany(mappedBy = "majorProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<MajorProfileTag> tags = new ArrayList<>();
 
 	// 생성
-	public static MajorProfile createProfile(Member member, String title, String content, List<String> tags) {
+	public static MajorProfile createProfile(MemberProfile memberProfile, String title, String content, List<String> tagNames) {
 		MajorProfile profile = new MajorProfile();
-		profile.member = member;
+		profile.memberProfile = memberProfile;
 		profile.title = title;
 		profile.content = content;
 		profile.isActive = true;
-		profile.tags = tags;
+		
+		if (tagNames != null) {
+			for (String tagName : tagNames) {
+				profile.tags.add(MajorProfileTag.createTag(profile, tagName));
+			}
+		}
 		return profile;
 	}
 
 	// 수정
-	public void updateProfile(String title, String content, List<String> tags) {
+	public void updateProfile(String title, String content, List<String> tagNames) {
 		this.title = title;
 		this.content = content;
-		this.tags = tags;
+		
+		// 기존 태그 삭제 및 새 태그 추가
 		this.tags.clear();
-		if(tags != null) this.tags.addAll(tags);
+		if (tagNames != null) {
+			for (String tagName : tagNames) {
+				this.tags.add(MajorProfileTag.createTag(this, tagName));
+			}
+		}
 	}
 }

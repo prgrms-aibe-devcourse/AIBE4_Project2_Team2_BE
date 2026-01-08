@@ -1,8 +1,11 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.entity.MajorProfile;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.entity.MajorProfileTag;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,16 +13,26 @@ import lombok.Getter;
 @Builder
 public class MajorProfileResponse {
 	private Long id;
+	private String name;
+	private String nickname;
+	private String university;
+	private String major;
 	private String title;
 	private String content;
 	private List<String> tags;
 
-	public static MajorProfileResponse from(MajorProfile profile) {
+	public static MajorProfileResponse of(MajorProfile profile, MemberAcademic academic) {
 		return MajorProfileResponse.builder()
 			.id(profile.getMajorProfileId())
+			.name(profile.getMemberProfile().getName())
+			.nickname(profile.getMemberProfile().getNickname())
+			.university(academic.getUniversity())
+			.major(academic.getMajor())
 			.title(profile.getTitle())
 			.content(profile.getContent())
-			.tags(profile.getTags())
+			.tags(profile.getTags().stream()
+				.map(MajorProfileTag::getTagName)
+				.collect(Collectors.toList()))
 			.build();
 	}
 }

@@ -10,5 +10,5 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.entity.Maj
 @Repository
 public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long> {
 
-	Optional<MajorProfile> findByMember_MemberId(Long memberId);
+	Optional<MajorProfile> findByMemberProfile_MemberId(Long memberId);
 }
