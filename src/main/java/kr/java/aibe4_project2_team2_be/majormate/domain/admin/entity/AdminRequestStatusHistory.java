@@ -14,49 +14,49 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class AdminRequestStatusHistory {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long historyId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long historyId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "request_id", nullable = false)
-	private AdminMajorRoleRequest request;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id", nullable = false)
+    private AdminMajorRoleRequest request;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = true, length = 20, name = "from_status")
-	private ApplicationStatus fromStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true, length = 20, name = "from_status")
+    private ApplicationStatus fromStatus;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 20, name = "to_status")
-	private ApplicationStatus toStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, name = "to_status")
+    private ApplicationStatus toStatus;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "changed_by", nullable = false)
-	private MemberProfile changedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "changed_by", nullable = false)
+    private MemberProfile changedBy;
 
-	@Column(nullable = false, length = 512, name = "message")
-	private String message;
+    @Column(nullable = false, length = 512, name = "message")
+    private String message;
 
-	@Column(length = 512, name = "reason")
-	private String reason;
+    @Column(length = 512, name = "reason")
+    private String reason;
 
-	@Column(name = "changed_at", nullable = false, updatable = false)
-	private LocalDateTime changedAt;
+    @Column(name = "changed_at", nullable = false, updatable = false)
+    private LocalDateTime changedAt;
 
-	@PrePersist
-	public void prePersist() {
-		this.changedAt = LocalDateTime.now();
-	}
+    @PrePersist
+    public void prePersist() {
+        this.changedAt = LocalDateTime.now();
+    }
 
-	public static AdminRequestStatusHistory createHistory(AdminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, MemberProfile actor, String reason) {
-		AdminRequestStatusHistory history = new AdminRequestStatusHistory();
-		history.request = request;
-		history.fromStatus = from;
-		history.toStatus = to;
-		history.changedBy = actor;
-		history.message = "";
-		history.reason = reason;
-		history.changedAt = LocalDateTime.now();
-		return history;
-	}
+    public static AdminRequestStatusHistory createHistory(AdminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, MemberProfile actor, String reason) {
+        AdminRequestStatusHistory history = new AdminRequestStatusHistory();
+        history.request = request;
+        history.fromStatus = from;
+        history.toStatus = to;
+        history.changedBy = actor;
+        history.message = request.getComment();
+        history.reason = reason;
+        history.changedAt = LocalDateTime.now();
+        return history;
+    }
 }
