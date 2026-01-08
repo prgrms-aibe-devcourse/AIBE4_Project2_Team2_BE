@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.FindUsernameRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.LoginRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.RefreshTokenRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.ResetPasswordRequest;
@@ -107,7 +108,7 @@ public class AuthController {
 
     @Operation(summary = "아이디 찾기", description = "이메일 인증 후 아이디를 조회합니다.")
     @PostMapping("/find-username")
-    public ApiResponse<FindUsernameResponse> findUsername(@Valid @RequestBody VerifyCodeRequest request) {
+    public ApiResponse<FindUsernameResponse> findUsername(@Valid @RequestBody FindUsernameRequest request) {
         FindUsernameResponse response = authService.findUsername(request.getEmail(), request.getCode());
         return ApiResponse.success(response, "아이디 찾기가 완료되었습니다.");
     }
