@@ -10,26 +10,26 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class adminRequestHistoryResponse {
-	private Long id;
-	private String memberName;
-	private ApplicationStatus oldStatus;
-	private ApplicationStatus newStatus;
-	private String changedBy;
-	private String reason;
-	private LocalDateTime changedAt;
+    private Long id;
+    private String memberName;
+    private ApplicationStatus oldStatus;
+    private ApplicationStatus newStatus;
+    private String changedBy;
+    private String reason;
+    private LocalDateTime changedAt;
 
-	public static adminRequestHistoryResponse from(adminRequestStatusHistory history) {
-		String changedByName = (history.getChangedBy() != null) ? history.getChangedBy().getName() : "null";
+    public static adminRequestHistoryResponse from(adminRequestStatusHistory adminhistory) {
+        String changedByName = (adminhistory.getChangedBy() != null) ? adminhistory.getChangedBy().getName() : "null";
 
-		return adminRequestHistoryResponse.builder()
-			.id(history.getHistoryId())
-			.memberName(history.getRequest().getMember().getName())
-			.oldStatus(history.getFromStatus())
-			.newStatus(history.getToStatus())
-			.changedBy(changedByName)
-			.reason(history.getMessage())
-			.changedAt(history.getChangedAt())
-			.build();
-	}
+        return adminRequestHistoryResponse.builder()
+                .id(adminhistory.getHistoryId())
+                .memberName(adminhistory.getRequest().getMember().getName())
+                .oldStatus(adminhistory.getFromStatus())
+                .newStatus(adminhistory.getToStatus())
+                .changedBy(changedByName)
+                .reason(adminhistory.getMessage())
+                .changedAt(adminhistory.getChangedAt())
+                .build();
+    }
 
 }

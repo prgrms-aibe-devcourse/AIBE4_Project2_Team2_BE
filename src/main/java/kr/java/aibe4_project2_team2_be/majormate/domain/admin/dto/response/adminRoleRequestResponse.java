@@ -10,25 +10,25 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class adminRoleRequestResponse {
-	private Long id;
-	private String university;
-	private String major;
-	private ApplicationStatus applicationStatus;
-	private String comment;
-	private String reason;
-	private LocalDateTime createdAt;
-	private LocalDateTime decidedAt;
+    private Long id;
+    private String university;
+    private String major;
+    private ApplicationStatus applicationStatus;
+    private String comment;
+    private String reason;
+    private LocalDateTime createdAt;
+    private LocalDateTime decidedAt;
 
-	public static adminRoleRequestResponse from(adminMajorRoleRequest majorRoleRequest) {
-		return adminRoleRequestResponse.builder()
-			.id(majorRoleRequest.getRequestId())
-			.university(majorRoleRequest.getUniversity())
-			.major(majorRoleRequest.getMajor())
-			.applicationStatus(majorRoleRequest.getApplicationStatus())
-			.comment(majorRoleRequest.getComment())
+    public static adminRoleRequestResponse from(adminMajorRoleRequest adminmajorRoleRequest) {
+        return adminRoleRequestResponse.builder()
+                .id(adminmajorRoleRequest.getRequestId())
+                .university(adminmajorRoleRequest.getUniversity())
+                .major(adminmajorRoleRequest.getMajor())
+                .applicationStatus(adminmajorRoleRequest.getApplicationStatus())
+                .comment(adminmajorRoleRequest.getComment())
 
-			.createdAt(majorRoleRequest.getCreatedAt())
-			.decidedAt(majorRoleRequest.getDecidedAt())
-			.build();
-	}
+                .createdAt(adminmajorRoleRequest.getCreatedAt())
+                .decidedAt(adminmajorRoleRequest.getDecidedAt())
+                .build();
+    }
 }
