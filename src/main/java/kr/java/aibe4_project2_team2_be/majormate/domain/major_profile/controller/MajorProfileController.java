@@ -1,12 +1,14 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.controller;
 
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.request.MajorProfileCreateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.service.MajorProfileService;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
 import kr.java.aibe4_project2_team2_be.majormate.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +21,21 @@ public class MajorProfileController {
 
 	@PostMapping
 	public ApiResponse<Long> createProfile(
-		MajorProfileCreateRequest majorProfileCreateRequest
+		@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
 	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		Long profileId = majorProfileService.createProfile(memberId, majorProfileCreateRequest);
 
 		return ApiResponse.success(profileId);
+	}
+
+	@PatchMapping
+	public ApiResponse<Void> updateProfile(
+		@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
+	) {
+		Long memberId = SecurityUtil.getCurrentMemberId();
+		majorProfileService.updateProfile(memberId, majorProfileCreateRequest);
+
+		return ApiResponse.success(null);
 	}
 }
