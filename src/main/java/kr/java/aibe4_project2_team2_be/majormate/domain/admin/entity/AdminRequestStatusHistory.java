@@ -1,7 +1,7 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
 
 import jakarta.persistence.*;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "major_role_request_status_history")
 @Getter
 @NoArgsConstructor
-public class adminRequestStatusHistory {
+public class AdminRequestStatusHistory {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class adminRequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "request_id", nullable = false)
-	private adminMajorRoleRequest request;
+	private AdminMajorRoleRequest request;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = true, length = 20, name = "from_status")
@@ -32,7 +32,7 @@ public class adminRequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "changed_by", nullable = false)
-	private Member changedBy;
+	private MemberProfile changedBy;
 
 	@Column(nullable = false, length = 512, name = "message")
 	private String message;
@@ -48,13 +48,13 @@ public class adminRequestStatusHistory {
 		this.changedAt = LocalDateTime.now();
 	}
 
-	public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String reason) {
-		adminRequestStatusHistory history = new adminRequestStatusHistory();
+	public static AdminRequestStatusHistory createHistory(AdminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, MemberProfile actor, String reason) {
+		AdminRequestStatusHistory history = new AdminRequestStatusHistory();
 		history.request = request;
 		history.fromStatus = from;
 		history.toStatus = to;
 		history.changedBy = actor;
-		history.message = request.getComment();
+		history.message = "";
 		history.reason = reason;
 		history.changedAt = LocalDateTime.now();
 		return history;

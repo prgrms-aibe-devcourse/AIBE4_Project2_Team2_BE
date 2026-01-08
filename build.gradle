@@ -39,6 +39,8 @@ dependencies {
 
     // Database
     runtimeOnly 'com.mysql:mysql-connector-j'
+    // Thymeleaf - 템플릿 엔진
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'

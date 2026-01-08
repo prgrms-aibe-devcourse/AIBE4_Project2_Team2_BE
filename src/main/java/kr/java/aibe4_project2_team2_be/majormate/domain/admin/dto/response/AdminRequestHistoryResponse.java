@@ -1,6 +1,6 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.adminRequestStatusHistory;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.AdminRequestStatusHistory;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class adminRequestHistoryResponse {
+public class AdminRequestHistoryResponse {
     private Long id;
     private String memberName;
     private ApplicationStatus oldStatus;
@@ -18,12 +18,12 @@ public class adminRequestHistoryResponse {
     private String reason;
     private LocalDateTime changedAt;
 
-    public static adminRequestHistoryResponse from(adminRequestStatusHistory adminhistory) {
+    public static AdminRequestHistoryResponse from(AdminRequestStatusHistory adminhistory) {
         String changedByName = (adminhistory.getChangedBy() != null) ? adminhistory.getChangedBy().getName() : "null";
 
-        return adminRequestHistoryResponse.builder()
+        return AdminRequestHistoryResponse.builder()
                 .id(adminhistory.getHistoryId())
-                .memberName(adminhistory.getRequest().getMember().getName())
+                .memberName(adminhistory.getRequest().getMemberprofile().getName())
                 .oldStatus(adminhistory.getFromStatus())
                 .newStatus(adminhistory.getToStatus())
                 .changedBy(changedByName)
