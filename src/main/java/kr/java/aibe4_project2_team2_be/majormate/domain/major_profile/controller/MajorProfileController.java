@@ -1,5 +1,7 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.request.MajorProfileCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorCardResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorProfileResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.service.MajorProfileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
@@ -53,5 +56,19 @@ public class MajorProfileController {
 		}
 
 		return ApiResponse.success(response);
+	}
+
+	@PatchMapping("/status")
+	public ApiResponse<Void> toggleProfileActive() {
+		// Long memberId = SecurityUtil.getCurrentMemberId();
+		Long memberId = 3L;
+		majorProfileService.toggleProfileActive(memberId);
+
+		return ApiResponse.success(null);
+	}
+
+	@GetMapping
+	public ApiResponse<List<MajorCardResponse>> getMajorCards() {
+		return ApiResponse.success(majorProfileService.getMajorCards());
 	}
 }

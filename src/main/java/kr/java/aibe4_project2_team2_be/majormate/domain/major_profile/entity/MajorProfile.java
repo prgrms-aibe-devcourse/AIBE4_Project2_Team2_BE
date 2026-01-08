@@ -75,4 +75,9 @@ public class MajorProfile extends BaseEntity {
 			}
 		}
 	}
+
+	// 활성/비활성화
+	public void toggleActive() {
+		this.isActive = !this.isActive;
+	}
 }
