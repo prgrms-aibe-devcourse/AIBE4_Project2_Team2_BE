@@ -12,7 +12,7 @@ VALUES ('신형만', 'hyeongman', 'hyeongman.shin@example.com',
         'ENROLLED', 'MAJOR', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
        ('박지훈', 'jihoon', 'jihoon.park@example.com',
-        'parkjh', '$2a$10$Ph3198sbmwMPBvuXwsn10OnCvm7T6S7agOXPE6KN85Yu3cCthWo2a',
+        'parkjh', '$2b$10$Moq0EttUuMMZYbGq4nPVB.8YmtwJS2rCTVFwLv80jLDs36Y7AvmaG',
         'ENROLLED', 'MAJOR', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
        ('최유나', 'yuna', 'yuna.choi@example.com',
