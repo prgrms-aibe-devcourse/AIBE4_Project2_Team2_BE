@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.request.MajorProfileCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorProfileResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.entity.MajorProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.repository.MajorProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
@@ -29,6 +30,10 @@ public class MajorProfileService {
 			throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
 		}
 
+		// 이미 프로필이 있는지 확인
+		if (majorProfileRepository.findByMember_MemberId(memberId).isPresent()) {
+			throw new IllegalStateException("이미 프로필이 존재합니다.");
+		}
 
 		MajorProfile majorProfile = MajorProfile.createProfile(
 			member,
@@ -40,6 +45,8 @@ public class MajorProfileService {
 		return majorProfileRepository.save(majorProfile).getMajorProfileId();
 	}
 
+	// 수정
+
 	public void updateProfile(Long memberId, MajorProfileCreateRequest request) {
 		MajorProfile profile = majorProfileRepository.findByMember_MemberId(memberId)
 			.orElseThrow(() -> new EntityNotFoundException("프로필을 찾을 수 없습니다."));
@@ -49,5 +56,12 @@ public class MajorProfileService {
 			request.getContent(),
 			request.getTags()
 		);
+	}
+
+	@Transactional(readOnly = true)
+	public MajorProfileResponse getMyProfile(Long memberId) {
+		return majorProfileRepository.findByMember_MemberId(memberId)
+			.map(MajorProfileResponse::from)
+			.orElse(null);
 	}
 }
