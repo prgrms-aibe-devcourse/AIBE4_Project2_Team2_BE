@@ -1,12 +1,23 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
 
-import jakarta.persistence.*;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "major_role_request_status_history")
@@ -32,7 +43,7 @@ public class adminRequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "changed_by", nullable = false)
-	private Member changedBy;
+	private MemberProfile changedBy;
 
 	@Column(nullable = false, length = 512, name = "message")
 	private String message;
@@ -48,7 +59,8 @@ public class adminRequestStatusHistory {
 		this.changedAt = LocalDateTime.now();
 	}
 
-	public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String reason) {
+	public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from,
+		ApplicationStatus to, MemberProfile actor, String reason) {
 		adminRequestStatusHistory history = new adminRequestStatusHistory();
 		history.request = request;
 		history.fromStatus = from;

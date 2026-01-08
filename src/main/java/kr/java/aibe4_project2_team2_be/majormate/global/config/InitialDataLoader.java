@@ -43,16 +43,11 @@ public class InitialDataLoader implements CommandLineRunner {
 		String adminEmail = "admin@majormate.com";
 
 		if (!memberProfileRepository.existsByEmail(adminEmail)) {
-			MemberProfile admin = MemberProfile.builder()
-				.email(adminEmail)
-				.password(passwordEncoder.encode("admin1234!"))
-				.username("admin")
-				.name("관리자")
-				.nickname("Admin")
-				.status(MemberStatus.GRADUATED)
-				.role(MemberRole.ADMIN)
-				.build();
-
+			MemberProfile admin = MemberProfile.create(
+				"관리자", "Admin", "admin@majormate.com", "admin", passwordEncoder.encode("test1234!")
+			);
+			admin.updateStatus(MemberStatus.ETC);
+			admin.updateRole(MemberRole.ADMIN);
 			memberProfileRepository.save(admin);
 			log.info("✅ 관리자 계정 생성: {}", adminEmail);
 		}
@@ -61,32 +56,20 @@ public class InitialDataLoader implements CommandLineRunner {
 	private void createTestUsersIfNotExists() {
 		// 테스트 학생 계정
 		if (!memberProfileRepository.existsByEmail("student@test.com")) {
-			MemberProfile student = MemberProfile.builder()
-				.email("student@test.com")
-				.password(passwordEncoder.encode("test1234!"))
-				.username("student")
-				.name("테스트학생")
-				.nickname("학생1")
-				.status(MemberStatus.ENROLLED)
-				.role(MemberRole.STUDENT)
-				.build();
-
+			MemberProfile student = MemberProfile.create(
+				"테스트학생", "학생1", "student@test.com", "student", passwordEncoder.encode("test1234!")
+			);
 			memberProfileRepository.save(student);
 			log.info("✅ 테스트 학생 계정 생성: student@test.com");
 		}
 
 		// 테스트 전공자 계정
 		if (!memberProfileRepository.existsByEmail("major@test.com")) {
-			MemberProfile major = MemberProfile.builder()
-				.email("major@test.com")
-				.password(passwordEncoder.encode("test1234!"))
-				.username("major")
-				.name("테스트전공자")
-				.nickname("전공자1")
-				.status(MemberStatus.ENROLLED)
-				.role(MemberRole.MAJOR)
-				.build();
-
+			MemberProfile major = MemberProfile.create(
+				"테스트전공자", "전공자1", "major@test.com", "major", passwordEncoder.encode("test1234!")
+			);
+			major.updateStatus(MemberStatus.GRADUATED);
+			major.updateRole(MemberRole.MAJOR);
 			memberProfileRepository.save(major);
 			log.info("✅ 테스트 전공자 계정 생성: major@test.com");
 		}

@@ -15,10 +15,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entit
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.repository.MajorRoleRequestRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
 import lombok.RequiredArgsConstructor;
@@ -31,16 +29,14 @@ public class MajorRoleRequestService {
 	private final MajorRoleRequestRepository majorRoleRequestRepository;
 	private final MemberProfileRepository memberProfileRepository;
 	private final S3FileService s3Service;
-	private final MemberAcademicRepository memberAcademicRepository;
+	private final MemberInfoReader memberInfoReader;
 
 	// 1. 등록
 	@Transactional
 	public Long createRequest(Long memberId, RoleRequestCreateRequest requestDto, MultipartFile documentFile) {
 		MemberProfile memberProfile = memberProfileRepository.findById(memberId)
 			.orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
-
-		MemberAcademic academic = memberAcademicRepository.findByMemberProfile(memberProfile)
-			.orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다. 먼저 학적 정보를 등록해주세요."));
+		MemberAcademic academic = memberInfoReader.getOrCreateAcademic(memberId);
 
 		String documentUrl = s3Service.upload(documentFile);
 

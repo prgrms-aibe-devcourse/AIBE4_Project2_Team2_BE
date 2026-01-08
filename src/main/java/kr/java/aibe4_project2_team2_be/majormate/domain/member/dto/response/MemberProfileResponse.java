@@ -14,7 +14,6 @@ public record MemberProfileResponse(
 	MemberStatus status,
 	MemberRole role
 ) {
-
 	public static MemberProfileResponse from(MemberProfile profile) {
 		return new MemberProfileResponse(
 			profile.getMemberId(),

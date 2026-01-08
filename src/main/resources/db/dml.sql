@@ -59,10 +59,10 @@ SET @major3 := (SELECT member_id
 -- ------------------------------------------------------------
 -- 1) hyeongman -> seojun_lee (PENDING)
 -- ------------------------------------------------------------
-INSERT INTO interview (student_member_id, major_member_id,
-                       title, content, interview_method, preferred_datetime, extra_description,
-                       status, major_message,
-                       created_at, updated_at)
+INSERT INTO interview_form (student_member_id, major_member_id,
+                            title, content, interview_method, preferred_datetime, extra_description,
+                            status, major_message,
+                            created_at, updated_at)
 VALUES (@student1, @major1,
         '전공 생활 루틴과 학점 관리 팁 질문',
         '안녕하세요. 전공 수업 난이도 적응과 학점 관리를 어떻게 했는지, 시험 기간 루틴과 과제 관리 방법을 듣고 싶습니다.',
@@ -76,8 +76,8 @@ VALUES (@student1, @major1,
 SET @interview1 := LAST_INSERT_ID();
 
 INSERT INTO interview_student_snapshot (interview_id,
-                                        student_profile_image_url, student_nickname, student_status, student_university,
-                                        student_major)
+                                        profile_image_url, nickname, status, university,
+                                        major)
 SELECT
     @interview1,
     m.profile_image_url,
@@ -92,8 +92,8 @@ WHERE
     m.member_id = @student1;
 
 INSERT INTO interview_major_snapshot (interview_id,
-                                      major_profile_image_url, major_nickname, major_status, major_university,
-                                      major_major)
+                                      profile_image_url, nickname, status, university,
+                                      major)
 SELECT
     @interview1,
     m.profile_image_url,
@@ -110,10 +110,10 @@ WHERE
 -- ------------------------------------------------------------
 -- 2) hyeongman -> parkjh (ACCEPTED)
 -- ------------------------------------------------------------
-INSERT INTO interview (student_member_id, major_member_id,
-                       title, content, interview_method, preferred_datetime, extra_description,
-                       status, major_message,
-                       created_at, updated_at)
+INSERT INTO interview_form (student_member_id, major_member_id,
+                            title, content, interview_method, preferred_datetime, extra_description,
+                            status, major_message,
+                            created_at, updated_at)
 VALUES (@student1, @major2,
         '전자공학과 진로 선택 상담 요청',
         '전자공학과에서 전력/통신/반도체 중 어떤 기준으로 진로를 정했는지 궁금합니다. 학부 때 추천 과목과 프로젝트도 듣고 싶습니다.',
@@ -127,8 +127,8 @@ VALUES (@student1, @major2,
 SET @interview2 := LAST_INSERT_ID();
 
 INSERT INTO interview_student_snapshot (interview_id,
-                                        student_profile_image_url, student_nickname, student_status, student_university,
-                                        student_major)
+                                        profile_image_url, nickname, status, university,
+                                        major)
 SELECT
     @interview2,
     m.profile_image_url,
@@ -143,8 +143,8 @@ WHERE
     m.member_id = @student1;
 
 INSERT INTO interview_major_snapshot (interview_id,
-                                      major_profile_image_url, major_nickname, major_status, major_university,
-                                      major_major)
+                                      profile_image_url, nickname, status, university,
+                                      major)
 SELECT
     @interview2,
     m.profile_image_url,
@@ -161,10 +161,10 @@ WHERE
 -- ------------------------------------------------------------
 -- 3) minji99 -> yuna.choi (REJECTED)
 -- ------------------------------------------------------------
-INSERT INTO interview (student_member_id, major_member_id,
-                       title, content, interview_method, preferred_datetime, extra_description,
-                       status, major_message,
-                       created_at, updated_at)
+INSERT INTO interview_form (student_member_id, major_member_id,
+                            title, content, interview_method, preferred_datetime, extra_description,
+                            status, major_message,
+                            created_at, updated_at)
 VALUES (@student2, @major3,
         '심리학과 전공 수업 구성과 대학원 준비 질문',
         '심리학과 커리큘럼에서 통계/연구방법 과목을 어떻게 준비하면 좋은지, 대학원 진학을 고려할 때 학부에서 어떤 활동을 하면 좋은지 듣고 싶습니다.',
@@ -178,8 +178,8 @@ VALUES (@student2, @major3,
 SET @interview3 := LAST_INSERT_ID();
 
 INSERT INTO interview_student_snapshot (interview_id,
-                                        student_profile_image_url, student_nickname, student_status, student_university,
-                                        student_major)
+                                        profile_image_url, nickname, status, university,
+                                        major)
 SELECT
     @interview3,
     m.profile_image_url,
@@ -194,8 +194,8 @@ WHERE
     m.member_id = @student2;
 
 INSERT INTO interview_major_snapshot (interview_id,
-                                      major_profile_image_url, major_nickname, major_status, major_university,
-                                      major_major)
+                                      profile_image_url, nickname, status, university,
+                                      major)
 SELECT
     @interview3,
     m.profile_image_url,
@@ -212,10 +212,10 @@ WHERE
 -- ------------------------------------------------------------
 -- 4) minji99 -> seojun_lee (COMPLETED) + review 생성
 -- ------------------------------------------------------------
-INSERT INTO interview (student_member_id, major_member_id,
-                       title, content, interview_method, preferred_datetime, extra_description,
-                       status, major_message,
-                       created_at, updated_at)
+INSERT INTO interview_form (student_member_id, major_member_id,
+                            title, content, interview_method, preferred_datetime, extra_description,
+                            status, major_message,
+                            created_at, updated_at)
 VALUES (@student2, @major1,
         '기계공학과 프로젝트 경험과 취업 준비 질문',
         '학부 프로젝트에서 어떤 주제를 선택했고, 포트폴리오로 어떻게 정리했는지 궁금합니다. 취업 준비 과정에서 도움이 된 활동도 듣고 싶습니다.',
@@ -229,8 +229,8 @@ VALUES (@student2, @major1,
 SET @interview4 := LAST_INSERT_ID();
 
 INSERT INTO interview_student_snapshot (interview_id,
-                                        student_profile_image_url, student_nickname, student_status, student_university,
-                                        student_major)
+                                        profile_image_url, nickname, status, university,
+                                        major)
 SELECT
     @interview4,
     m.profile_image_url,
@@ -245,8 +245,8 @@ WHERE
     m.member_id = @student2;
 
 INSERT INTO interview_major_snapshot (interview_id,
-                                      major_profile_image_url, major_nickname, major_status, major_university,
-                                      major_major)
+                                      profile_image_url, nickname, status, university,
+                                      major)
 SELECT
     @interview4,
     m.profile_image_url,
@@ -266,8 +266,9 @@ VALUES (@interview4,
         '질문에 대해 구체적인 사례 중심으로 답변해줘서 도움이 많이 됐습니다. 특히 프로젝트 주제 선정 기준과 정리 방식이 명확해서 바로 적용할 수 있었습니다.',
         CURRENT_TIMESTAMP);
 
-SELECT interview_id, student_member_id, major_member_id, status, title
-FROM interview
-ORDER BY
-    interview_id;
+SELECT *
+FROM interview_student_snapshot;
+
+SELECT *
+FROM interview_major_snapshot;
 
