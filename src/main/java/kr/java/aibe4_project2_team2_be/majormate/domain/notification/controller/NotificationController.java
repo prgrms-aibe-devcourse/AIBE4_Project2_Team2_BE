@@ -56,30 +56,4 @@ public class NotificationController {
         return notificationService.subscribe(memberId);
     }
 
-    // 테스트용 알림발송 API
-    @PostMapping("/send-test")
-    public String sendTest(@RequestParam Long receiverId, @RequestParam String content) {
-        eventPublisher.publishEvent(new NotificationEvent(
-                receiverId,
-                null,
-                "TEST_EVENT",
-                content,
-                "/test-url"
-        ));
-        return "이벤트 발행 성공!";
-    }
-
-    // 테스트용 쿠키 API
-    @GetMapping("/set-cookie")
-    public ResponseEntity<String> setTestCookie(@RequestParam String token, HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("accessToken", token)
-                .path("/")
-                .httpOnly(true)
-                .maxAge(60 * 60)
-                .build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body("쿠키 발급 완료");
-    }
 }
