@@ -1,6 +1,17 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.member.entity;
 
-import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.SocialAccount;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
@@ -10,13 +21,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member extends BaseEntity {
+public class MemberProfile extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,11 +56,11 @@ public class Member extends BaseEntity {
 	@Column(nullable = false, length = 20)
 	private MemberRole role;
 
-	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "memberProfile", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<SocialAccount> socialAccounts = new ArrayList<>();
 
 	@Builder
-	public Member(
+	public MemberProfile(
 		Long memberId,
 		String name, String nickname, String email, String username, String password, String profileImageUrl,
 		MemberStatus status, MemberRole role

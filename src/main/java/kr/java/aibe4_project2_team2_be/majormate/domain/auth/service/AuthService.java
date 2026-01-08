@@ -13,8 +13,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.Signup
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.TokenResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.RefreshToken;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.RefreshTokenRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.Member;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class AuthService {
 
-	private final MemberRepository memberRepository;
+	private final MemberProfileRepository memberProfileRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
@@ -41,17 +41,17 @@ public class AuthService {
 	@Transactional
 	public SignupResponse signup(SignupRequest request) {
 		// 1. 아이디 중복 검증
-		if (memberRepository.existsByUsername(request.getUsername())) {
+		if (memberProfileRepository.existsByUsername(request.getUsername())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_USERNAME);
 		}
 
 		// 2. 이메일 중복 검증
-		if (memberRepository.existsByEmail(request.getEmail())) {
+		if (memberProfileRepository.existsByEmail(request.getEmail())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_EMAIL);
 		}
 
 		// 3. 닉네임 중복 검증
-		if (memberRepository.existsByNickname(request.getNickname())) {
+		if (memberProfileRepository.existsByNickname(request.getNickname())) {
 			throw new DuplicateException(ErrorCode.DUPLICATE_NICKNAME);
 		}
 
@@ -59,7 +59,7 @@ public class AuthService {
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 
 		// 5. 회원 생성
-		Member member = Member.builder()
+		MemberProfile memberProfile = MemberProfile.builder()
 			.username(request.getUsername())
 			.email(request.getEmail())
 			.password(encodedPassword)
@@ -69,39 +69,41 @@ public class AuthService {
 			.role(MemberRole.STUDENT)
 			.build();
 
-		Member savedMember = memberRepository.save(member);
+		MemberProfile savedMemberProfile = memberProfileRepository.save(memberProfile);
 
-		log.info("회원가입 완료 - ID: {}, Username: {}, Email: {}", savedMember.getMemberId(), savedMember.getUsername(),
-			savedMember.getEmail());
+		log.info("회원가입 완료 - ID: {}, Username: {}, Email: {}", savedMemberProfile.getMemberId(),
+			savedMemberProfile.getUsername(),
+			savedMemberProfile.getEmail());
 
-		return SignupResponse.from(savedMember);
+		return SignupResponse.from(savedMemberProfile);
 	}
 
 	@Transactional
 	public TokenResponse login(LoginRequest request) {
 		// 1. 사용자 조회
-		Member member = memberRepository.findByUsername(request.getUsername())
+		MemberProfile memberProfile = memberProfileRepository.findByUsername(request.getUsername())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
 		// 2. OAuth2 사용자 체크
-		if (member.isOAuth2User()) {
+		if (memberProfile.isOAuth2User()) {
 			throw new UnauthorizedException(ErrorCode.INVALID_PASSWORD);
 		}
 
 		// 3. 비밀번호 검증
-		if (member.getPassword() == null ||
-			!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
+		if (memberProfile.getPassword() == null ||
+			!passwordEncoder.matches(request.getPassword(), memberProfile.getPassword())) {
 			throw new UnauthorizedException(ErrorCode.INVALID_PASSWORD);
 		}
 
 		// 4. 토큰 생성
-		String accessToken = jwtTokenProvider.createAccessToken(member.getMemberId(), member.getRole().name());
-		String refreshToken = jwtTokenProvider.createRefreshToken(member.getMemberId());
+		String accessToken = jwtTokenProvider.createAccessToken(memberProfile.getMemberId(),
+			memberProfile.getRole().name());
+		String refreshToken = jwtTokenProvider.createRefreshToken(memberProfile.getMemberId());
 
 		// 5. RefreshToken 저장
-		saveOrUpdateRefreshToken(member.getMemberId(), refreshToken);
+		saveOrUpdateRefreshToken(memberProfile.getMemberId(), refreshToken);
 
-		log.info("로그인 성공 - ID: {}, Username: {}", member.getMemberId(), member.getUsername());
+		log.info("로그인 성공 - ID: {}, Username: {}", memberProfile.getMemberId(), memberProfile.getUsername());
 
 		// 6. 토큰 만료 시간 (밀리초 -> 초 변환)
 		Long expiresIn = jwtProperties.getAccessTokenValidity() / 1000;
@@ -127,13 +129,14 @@ public class AuthService {
 		}
 
 		// 4. 회원 조회
-		Member member = memberRepository.findById(refreshToken.getMemberId())
+		MemberProfile memberProfile = memberProfileRepository.findById(refreshToken.getMemberId())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
 		// 5. 새 AccessToken 생성
-		String newAccessToken = jwtTokenProvider.createAccessToken(member.getMemberId(), member.getRole().name());
+		String newAccessToken = jwtTokenProvider.createAccessToken(memberProfile.getMemberId(),
+			memberProfile.getRole().name());
 
-		log.info("토큰 갱신 완료 - ID: {}", member.getMemberId());
+		log.info("토큰 갱신 완료 - ID: {}", memberProfile.getMemberId());
 
 		Long expiresIn = jwtProperties.getAccessTokenValidity() / 1000;
 
