@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "major_role_request")
 @Getter
 @NoArgsConstructor
-public class MajorRoleRequest {
+public class adminMajorRoleRequest {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,15 +57,15 @@ public class MajorRoleRequest {
 	private String reason;
 
 	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<RequestStatusHistory> statusHistories = new ArrayList<>();
+	private List<adminRequestStatusHistory> statusHistories = new ArrayList<>();
 
 	@PrePersist
 	public void prePersist() {
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public static MajorRoleRequest createRequest(Member member, String university, String major, String comment, String documentUrl) {
-		MajorRoleRequest request = new MajorRoleRequest();
+	public static adminMajorRoleRequest createRequest(Member member, String university, String major, String comment, String documentUrl) {
+		adminMajorRoleRequest request = new adminMajorRoleRequest();
 		request.member = member;
 		request.nickname = member.getNickname();
 		request.university = university;
@@ -76,7 +76,7 @@ public class MajorRoleRequest {
 		
 		// 초기 이력 생성
 		request.statusHistories.add(
-			RequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "")
+			adminRequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "")
 		);
 		
 		return request;
@@ -91,7 +91,7 @@ public class MajorRoleRequest {
 		this.decidedAt = LocalDateTime.now();
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
+			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
 		);
 	}
 
@@ -109,7 +109,7 @@ public class MajorRoleRequest {
 		this.reason = rejectMessage; // 반려 사유 저장
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
+			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
 		);
 	}
 
@@ -129,7 +129,7 @@ public class MajorRoleRequest {
 		this.reason = null; // 재제출 시 반려 사유 초기화
 
 		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "")
+			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "")
 		);
 
 	}

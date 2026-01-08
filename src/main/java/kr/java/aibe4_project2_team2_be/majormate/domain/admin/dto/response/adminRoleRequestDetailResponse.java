@@ -1,6 +1,6 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.MajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.adminMajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
-public class RoleRequestDetailResponse {
+public class adminRoleRequestDetailResponse {
 	private Long id;
 	private String name;
 	private String username;
@@ -23,10 +23,10 @@ public class RoleRequestDetailResponse {
 	private ApplicationStatus applicationStatus;
 	private LocalDateTime createdAt;
 	private LocalDateTime decidedAt;
-	private List<RequestHistoryResponse> histories;
+	private List<adminRequestHistoryResponse> histories;
 
-	public static RoleRequestDetailResponse from(MajorRoleRequest majorRoleRequest) {
-		return RoleRequestDetailResponse.builder()
+	public static adminRoleRequestDetailResponse from(adminMajorRoleRequest majorRoleRequest) {
+		return adminRoleRequestDetailResponse.builder()
 			.id(majorRoleRequest.getRequestId())
 			.name(majorRoleRequest.getMember().getName())
 			.nickname(majorRoleRequest.getNickname())
@@ -39,7 +39,7 @@ public class RoleRequestDetailResponse {
 			.createdAt(majorRoleRequest.getCreatedAt())
 			.decidedAt(majorRoleRequest.getDecidedAt())
 			.histories(majorRoleRequest.getStatusHistories().stream()
-				.map(RequestHistoryResponse::from)
+				.map(adminRequestHistoryResponse::from)
 				.collect(Collectors.toList()))
 			.build();
 	}

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "major_role_request_status_history")
 @Getter
 @NoArgsConstructor
-public class RequestStatusHistory {
+public class adminRequestStatusHistory {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class RequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "request_id", nullable = false)
-	private MajorRoleRequest request;
+	private adminMajorRoleRequest request;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = true, length = 20, name = "from_status")
@@ -48,8 +48,8 @@ public class RequestStatusHistory {
 		this.changedAt = LocalDateTime.now();
 	}
 
-	public static RequestStatusHistory createHistory(MajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String reason) {
-		RequestStatusHistory history = new RequestStatusHistory();
+	public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from, ApplicationStatus to, Member actor, String reason) {
+		adminRequestStatusHistory history = new adminRequestStatusHistory();
 		history.request = request;
 		history.fromStatus = from;
 		history.toStatus = to;
