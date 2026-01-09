@@ -11,7 +11,7 @@
         .image-box { border: 1px solid #ccc; padding: 10px; text-align: center; background: #fafafa; }
         .image-box img { max-width: 100%; height: auto; }
         .btn-group { margin-top: 20px; text-align: center; }
-        .btn { padding: 10px 20px; cursor: pointer; text-decoration: none; color: white; border: none; font-size: 16px; margin: 5px;}
+        .btn { padding: 10px 20px; cursor: pointer; text-decoration: none; color: white; border: none; font-size: 16px; margin: 5px; display: inline-block;}
         .btn-approve { background-color: #28a745; }
         .btn-reject { background-color: #dc3545; }
         .btn-list { background-color: #6c757d; }
@@ -55,11 +55,43 @@
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-approve">승인</button>
-        <button class="btn btn-reject">반려</button>
+
+        <form th:action="@{/admin/requests/{id}/accept(id=${req.id})}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-approve" onclick="return confirm('이 사용자를 승인하시겠습니까?');">승인</button>
+        </form>
+
+        <button type="button" class="btn btn-reject" th:onclick="'rejectRequest(' + ${req.id} + ')'">반려</button>
+
         <a href="/admin/requests" class="btn btn-list">목록으로</a>
     </div>
+
+    <form id="rejectForm" method="post" style="display:none;">
+        <input type="hidden" name="reason" id="rejectReason" />
+    </form>
+
 </div>
+
+<script>
+    function rejectRequest(id) {
+        // 1. 브라우저 팝업으로 사유 입력받기
+        const reason = prompt("반려 사유를 입력해주세요 (필수):");
+
+        // 2. 취소했거나 내용이 없으면 중단
+        if (reason === null || reason.trim() === "") {
+            alert("반려 사유를 반드시 입력해야 합니다.");
+            return;
+        }
+
+        // 3. 폼에 주소와 사유를 채워넣고 전송(Submit)
+        const form = document.getElementById('rejectForm');
+        const reasonInput = document.getElementById('rejectReason');
+
+        form.action = '/admin/requests/' + id + '/reject'; // 주소 동적 설정
+        reasonInput.value = reason; // 사유 입력
+
+        form.submit(); // 전송
+    }
+</script>
 
 </body>
 </html>

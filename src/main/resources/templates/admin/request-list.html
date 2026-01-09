@@ -7,7 +7,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         th { background-color: #f4f4f4; }
-        .btn { padding: 5px 10px; cursor: pointer; }
+        .btn { padding: 5px 10px; cursor: pointer; text-decoration: none; color: black; border: 1px solid #ccc; display: inline-block; }
     </style>
 </head>
 <body>
@@ -17,7 +17,7 @@
 <table>
     <thead>
     <tr>
-        <th>requestNo</th>
+        <th>No</th>
         <th>신청자</th>
         <th>대학</th>
         <th>전공</th>
@@ -41,10 +41,10 @@
         <td th:text="${req.universityName}">서울대</td>
         <td th:text="${req.majorName}">컴공</td>
         <td th:text="${req.applicationStatus}">PENDING</td>
-        <td th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+        <td th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-01-09</td>
+
         <td>
-            <button class="btn">승인</button>
-            <button class="btn">반려</button>
+            <a th:href="@{/admin/requests/{id}(id=${req.id})}" class="btn">심사하기</a>
         </td>
     </tr>
     </tbody>
