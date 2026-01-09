@@ -87,20 +87,20 @@ public class AdminMajorRoleRequestService {
 
 	//  관리자 기능 구현
 
-	// 3. 관리자 - 요청 목록 조회 (대기중 & 재제출 상태만)
+	// 1. 관리자 - 요청 목록 조회 (대기중 & 재제출 상태만)
 	public List<AdminMajorRoleRequest> getPendingRequests() {
 		return majorRoleRequestRepository.findByApplicationStatusInOrderByCreatedAtDesc(
 			List.of(ApplicationStatus.PENDING, ApplicationStatus.RESUBMITTED)
 		);
 	}
 
-	// 4. 관리자 - 요청 상세 조회
+	// 2. 관리자 - 요청 상세 조회
 	public AdminMajorRoleRequest getRequestDetail(Long requestId) {
 		return majorRoleRequestRepository.findById(requestId)
 			.orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
 	}
 
-	// 5. 관리자 - 승인
+	// 3. 관리자 - 승인
 	@Transactional
 	public void acceptRequest(Long requestId, Long adminId) {
 		AdminMajorRoleRequest request = getRequestDetail(requestId);
@@ -114,7 +114,7 @@ public class AdminMajorRoleRequestService {
 		request.getMember().updateRole(MemberRole.MAJOR);
 	}
 
-	// 6. 관리자 - 반려
+	// 4. 관리자 - 반려
 	@Transactional
 	public void rejectRequest(Long requestId, Long adminId, String reason) {
 		AdminMajorRoleRequest request = getRequestDetail(requestId);
