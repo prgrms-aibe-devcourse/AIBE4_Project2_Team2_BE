@@ -1,49 +1,54 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>전공자 등업 신청 목록</title>
+    <meta charset="UTF-8" />
+    <title>전공자 승인 요청 목록</title>
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f2f2f2; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #f4f4f4; }
         .btn { padding: 5px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
-<h1>📋 전공자 등업 신청 관리</h1>
+
+<h2>전공자 권한 신청 목록 (관리자)</h2>
 
 <table>
     <thead>
     <tr>
-        <th>ID</th>
-        <th>닉네임</th>
-        <th>대학 / 전공</th>
-        <th>증빙서류</th>
-        <th>신청 멘트</th>
+        <th>requestNo</th>
+        <th>신청자</th>
+        <th>대학</th>
+        <th>전공</th>
         <th>상태</th>
+        <th>신청일</th>
         <th>관리</th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="request : ${requests}">
-        <td th:text="${request.id}">1</td>
-        <td th:text="${request.nickname}">홍길동</td>
+    <tr th:each="req : ${requests}">
+        <td th:text="${req.id}">1</td>
+
         <td>
-            <span th:text="${request.university}">서울대</span> /
-            <span th:text="${request.major}">컴공</span>
+            <a th:href="@{/admin/requests/{id}(id=${req.id})}"
+               th:text="${req.memberName}"
+               style="color: blue; text-decoration: underline; cursor: pointer;">
+                홍길동
+            </a>
         </td>
+
+        <td th:text="${req.universityName}">서울대</td>
+        <td th:text="${req.majorName}">컴공</td>
+        <td th:text="${req.applicationStatus}">PENDING</td>
+        <td th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
         <td>
-            <a th:href="${request.documentUrl}" target="_blank">서류보기</a>
-        </td>
-        <td th:text="${request.comment}">열심히 하겠습니다.</td>
-        <td th:text="${request.applicationStatus}">PENDING</td>
-        <td>
-            <button type="button">승인</button>
-            <button type="button">거절</button>
+            <button class="btn">승인</button>
+            <button class="btn">반려</button>
         </td>
     </tr>
     </tbody>
 </table>
+
 </body>
 </html>

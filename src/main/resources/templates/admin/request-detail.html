@@ -1,97 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>요청 상세 정보</title>
+    <meta charset="UTF-8" />
+    <title>전공자 신청 상세</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        .info-row { margin-bottom: 10px; }
-        .label { font-weight: bold; display: inline-block; width: 100px; }
-
-        /* 버튼 스타일 */
-        .btn-group { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-accept { background-color: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; }
-        .btn-reject { background-color: #dc3545; color: white; border: none; padding: 10px 20px; cursor: pointer; }
-        .btn-list { background-color: #6c757d; color: white; text-decoration: none; padding: 10px 20px; display: inline-block; }
-
-        /* 이력 테이블 */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; font-size: 0.9em; }
-        th { background-color: #f8f9fa; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .info-table th, .info-table td { border: 1px solid #ddd; padding: 10px; }
+        .info-table th { background-color: #f4f4f4; width: 150px; }
+        .image-box { border: 1px solid #ccc; padding: 10px; text-align: center; background: #fafafa; }
+        .image-box img { max-width: 100%; height: auto; }
+        .btn-group { margin-top: 20px; text-align: center; }
+        .btn { padding: 10px 20px; cursor: pointer; text-decoration: none; color: white; border: none; font-size: 16px; margin: 5px;}
+        .btn-approve { background-color: #28a745; }
+        .btn-reject { background-color: #dc3545; }
+        .btn-list { background-color: #6c757d; }
     </style>
 </head>
 <body>
 
-<h2>📄 요청 상세 정보</h2>
+<div class="container">
+    <h2>📄 전공자 권한 신청 상세 정보</h2>
 
-<div class="section">
-    <h3>기본 정보</h3>
-    <div class="info-row"><span class="label">신청번호:</span> <span th:text="${request.requestId}"></span></div>
-    <div class="info-row"><span class="label">닉네임:</span> <span th:text="${request.nickname}"></span></div>
-    <div class="info-row"><span class="label">학교:</span> <span th:text="${request.university}"></span></div>
-    <div class="info-row"><span class="label">전공:</span> <span th:text="${request.major}"></span></div>
-    <div class="info-row"><span class="label">신청일:</span> <span th:text="${#temporals.format(request.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
-
-    <hr>
-    <h4>신청 코멘트</h4>
-    <p th:text="${request.comment}" style="background: #f9f9f9; padding: 10px;">열심히 하겠습니다.</p>
-</div>
-
-<div class="section">
-    <h3>증빙 서류</h3>
-    <p>
-        <img th:if="${request.documentUrl != null}" th:src="${request.documentUrl}" alt="증빙서류" style="max-width: 100%; height: auto; border: 1px solid #ccc;">
-
-        <br>
-        <a th:if="${request.documentUrl != null}" th:href="${request.documentUrl}" target="_blank">[새 창에서 원본 보기]</a>
-        <span th:unless="${request.documentUrl != null}">첨부된 파일이 없습니다.</span>
-    </p>
-</div>
-
-<div class="section" style="border-color: #007bff;">
-    <h3>심사 처리</h3>
-
-    <form method="post" th:action="@{/admin/request/{id}/accept(id=${request.requestId})}"
-          style="display: inline-block;" onsubmit="return confirm('정말 승인하시겠습니까?');">
-        <button type="submit" class="btn-accept">✅ 승인하기</button>
-    </form>
-
-    <form method="post" th:action="@{/admin/request/{id}/reject(id=${request.requestId})}"
-          style="margin-top: 10px; background: #fff0f0; padding: 10px;" onsubmit="return confirm('반려하시겠습니까?');">
-
-        <label>반려 사유: </label>
-        <input type="text" name="reason" placeholder="반려 사유를 입력하세요" required style="width: 300px; padding: 5px;">
-        <button type="submit" class="btn-reject">❌ 반려하기</button>
-    </form>
-</div>
-
-<div class="section">
-    <h3>처리 이력 (History)</h3>
-    <table>
-        <thead>
+    <table class="info-table">
         <tr>
-            <th>상태</th>
-            <th>처리 일시</th>
-            <th>처리자</th>
-            <th>비고 (사유)</th>
+            <th>신청자</th>
+            <td th:text="${req.memberName}">홍길동</td>
         </tr>
-        </thead>
-        <tbody>
-        <tr th:each="history : ${request.statusHistories}">
-            <td th:text="${history.status}">PENDING</td>
-            <td th:text="${#temporals.format(history.changedAt, 'yyyy-MM-dd HH:mm')}"></td>
-
-            <td th:text="${history.changer != null ? history.changer.nickname : '-'}"></td>
-
-            <td th:text="${history.reason}"></td>
+        <tr>
+            <th>학교 / 전공</th>
+            <td>
+                <span th:text="${req.universityName}">서울대</span> /
+                <span th:text="${req.majorName}">컴공</span>
+            </td>
         </tr>
-        </tbody>
+        <tr>
+            <th>신청 상태</th>
+            <td th:text="${req.applicationStatus}">PENDING</td>
+        </tr>
+        <tr>
+            <th>신청일</th>
+            <td th:text="${#temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm')}">2026-01-09</td>
+        </tr>
+        <tr>
+            <th>신청 사유</th>
+            <td th:text="${req.comment}">졸업 증명서 제출합니다.</td>
+        </tr>
     </table>
-</div>
 
-<div style="margin-top: 20px; text-align: center;">
-    <a href="/admin/requests" class="btn-list">목록으로 돌아가기</a>
+    <h3>📷 증빙 서류</h3>
+    <div class="image-box">
+        <img th:if="${req.documentUrl != null}" th:src="${req.documentUrl}" alt="증빙서류" />
+        <p th:unless="${req.documentUrl != null}">첨부된 이미지가 없습니다.</p>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-approve">승인</button>
+        <button class="btn btn-reject">반려</button>
+        <a href="/admin/requests" class="btn btn-list">목록으로</a>
+    </div>
 </div>
 
 </body>
