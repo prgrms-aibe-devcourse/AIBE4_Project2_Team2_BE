@@ -18,6 +18,9 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+  # 배포 환경에서는 성능을 위해 캐시 켜기
+  thymeleaf:
+    cache: true
 
 jwt:
   secret: ${JWT_SECRET}
