@@ -1,6 +1,5 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity;
 
-import jakarta.persistence.*;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
 import lombok.Getter;
@@ -24,16 +23,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "major_role_request")
 @Getter
 @NoArgsConstructor
-public class adminMajorRoleRequest {
+public class AdminMajorRoleRequest {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,15 +71,15 @@ public class adminMajorRoleRequest {
 	private String reason;
 
 	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<adminRequestStatusHistory> statusHistories = new ArrayList<>();
+	private List<AdminRequestStatusHistory> statusHistories = new ArrayList<>();
 
 	@PrePersist
 	public void prePersist() {
 		this.createdAt = LocalDateTime.now();
 	}
 
-	public static adminMajorRoleRequest createRequest(MemberProfile member, String university, String major, String comment, String documentUrl) {
-		adminMajorRoleRequest request = new adminMajorRoleRequest();
+	public static AdminMajorRoleRequest createRequest(MemberProfile member, String university, String major, String comment, String documentUrl) {
+		AdminMajorRoleRequest request = new AdminMajorRoleRequest();
 		request.member = member;
 		request.nickname = member.getNickname();
 		request.university = university;
@@ -95,7 +90,7 @@ public class adminMajorRoleRequest {
 
 		// 초기 이력 생성
 		request.statusHistories.add(
-			adminRequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "")
+			AdminRequestStatusHistory.createHistory(request, null, ApplicationStatus.PENDING, member, "")
 		);
 
 		return request;
@@ -110,7 +105,7 @@ public class adminMajorRoleRequest {
 		this.decidedAt = LocalDateTime.now();
 
 		this.statusHistories.add(
-			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
+			AdminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
 		);
 	}
 
@@ -128,7 +123,7 @@ public class adminMajorRoleRequest {
 		this.reason = rejectMessage; // 반려 사유 저장
 
 		this.statusHistories.add(
-			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
+			AdminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
 		);
 	}
 
@@ -148,7 +143,7 @@ public class adminMajorRoleRequest {
 		this.reason = null; // 재제출 시 반려 사유 초기화
 
 		this.statusHistories.add(
-			adminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "")
+			AdminRequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, this.member, "")
 		);
 
 	}

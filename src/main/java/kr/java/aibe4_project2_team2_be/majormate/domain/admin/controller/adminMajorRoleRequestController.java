@@ -2,11 +2,11 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.admin.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.request.adminRequestRejectRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.adminRoleRequestDetailResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.adminRoleRequestResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.adminMajorRoleRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.adminMajorRoleRequestService;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.request.AdminRequestRejectRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.AdminRoleRequestDetailResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.AdminRoleRequestResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.AdminMajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.AdminMajorRoleRequestService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 @Tag(name = "Major Role Request", description = "관리자의 전공자 인증 요청 API")
-public class adminMajorRoleRequestController {
+public class AdminMajorRoleRequestController {
 
-	private final adminMajorRoleRequestService adminmajorRoleRequestService;
+	private final AdminMajorRoleRequestService adminmajorRoleRequestService;
 	private final JwtTokenProvider jwtTokenProvider;
 
     /*1. 전공자 인증 요청 등록
@@ -82,15 +82,15 @@ public class adminMajorRoleRequestController {
 	// 3. 관리자 - 요청 목록 조회 (대기중 & 재제출)
 	@Operation(summary = "관리자 - 요청 목록 조회", description = "대기 중(PENDING) 또는 재제출(RESUBMITTED) 상태의 요청 목록을 조회합니다.")
 	@GetMapping(value = "/major-role-requests/list")
-	public ApiResponse<List<adminRoleRequestResponse>> getPendingRequests(
+	public ApiResponse<List<AdminRoleRequestResponse>> getPendingRequests(
 		@RequestHeader("Authorization") String token
 	) {
 		// 서비스에서 엔티티 리스트 조회
-		List<adminMajorRoleRequest> requests = adminmajorRoleRequestService.getPendingRequests();
+		List<AdminMajorRoleRequest> requests = adminmajorRoleRequestService.getPendingRequests();
 
 		// 엔티티 -> DTO 변환
-		List<adminRoleRequestResponse> response = requests.stream()
-			.map(adminRoleRequestResponse::from)
+		List<AdminRoleRequestResponse> response = requests.stream()
+			.map(AdminRoleRequestResponse::from)
 			.collect(Collectors.toList());
 
 		return ApiResponse.success(response);
@@ -99,12 +99,12 @@ public class adminMajorRoleRequestController {
 	// 4. 관리자 - 요청 상세 조회 (이력 포함)
 	@Operation(summary = "관리자 - 요청 상세 조회", description = "특정 전공자 인증 요청의 상세 정보와 히스토리를 조회합니다.")
 	@GetMapping("/major-role-requests/{requestId}/detail")
-	public ApiResponse<adminRoleRequestDetailResponse> getRequestDetail(
+	public ApiResponse<AdminRoleRequestDetailResponse> getRequestDetail(
 		@PathVariable Long requestId,
 		@RequestHeader("Authorization") String token
 	) {
-		adminMajorRoleRequest request = adminmajorRoleRequestService.getRequestDetail(requestId);
-		adminRoleRequestDetailResponse response = adminRoleRequestDetailResponse.from(request);
+		AdminMajorRoleRequest request = adminmajorRoleRequestService.getRequestDetail(requestId);
+		AdminRoleRequestDetailResponse response = AdminRoleRequestDetailResponse.from(request);
 		return ApiResponse.success(response);
 	}
 
@@ -126,7 +126,7 @@ public class adminMajorRoleRequestController {
 	public ApiResponse<Void> rejectRequest(
 		@PathVariable Long requestId,
 		@RequestHeader("Authorization") String token,
-		@RequestBody adminRequestRejectRequest rejectDto
+		@RequestBody AdminRequestRejectRequest rejectDto
 	) {
 		Long adminId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
 		adminmajorRoleRequestService.rejectRequest(requestId, adminId, rejectDto.getReason());

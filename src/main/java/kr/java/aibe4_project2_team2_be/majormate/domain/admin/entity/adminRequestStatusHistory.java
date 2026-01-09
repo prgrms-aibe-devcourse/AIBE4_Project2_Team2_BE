@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "major_role_request_status_history")
 @Getter
 @NoArgsConstructor
-public class adminRequestStatusHistory {
+public class AdminRequestStatusHistory {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +31,7 @@ public class adminRequestStatusHistory {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "request_id", nullable = false)
-	private adminMajorRoleRequest request;
+	private AdminMajorRoleRequest request;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = true, length = 20, name = "from_status")
@@ -59,9 +59,9 @@ public class adminRequestStatusHistory {
 		this.changedAt = LocalDateTime.now();
 	}
 
-	public static adminRequestStatusHistory createHistory(adminMajorRoleRequest request, ApplicationStatus from,
-		ApplicationStatus to, MemberProfile actor, String reason) {
-		adminRequestStatusHistory history = new adminRequestStatusHistory();
+	public static AdminRequestStatusHistory createHistory(AdminMajorRoleRequest request, ApplicationStatus from,
+                                                          ApplicationStatus to, MemberProfile actor, String reason) {
+		AdminRequestStatusHistory history = new AdminRequestStatusHistory();
 		history.request = request;
 		history.fromStatus = from;
 		history.toStatus = to;

@@ -5,6 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class adminRequestRejectRequest {
+public class AdminRequestRejectRequest {
     private String reason; // 반려 사유
 }

@@ -6,10 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.adminMajorRoleRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.repository.adminMajorRoleRequestRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.entity.AdminMajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.repository.AdminMajorRoleRequestRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
@@ -20,9 +19,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class adminMajorRoleRequestService {
+public class AdminMajorRoleRequestService {
 
-	private final adminMajorRoleRequestRepository majorRoleRequestRepository;
+	private final AdminMajorRoleRequestRepository majorRoleRequestRepository;
 	private final MemberProfileRepository memberProfileRepository;
 	private final S3FileService s3Service;
 	private final MemberAcademicRepository memberAcademicRepository;
@@ -89,14 +88,14 @@ public class adminMajorRoleRequestService {
 	//  관리자 기능 구현
 
 	// 3. 관리자 - 요청 목록 조회 (대기중 & 재제출 상태만)
-	public List<adminMajorRoleRequest> getPendingRequests() {
+	public List<AdminMajorRoleRequest> getPendingRequests() {
 		return majorRoleRequestRepository.findByApplicationStatusInOrderByCreatedAtDesc(
 			List.of(ApplicationStatus.PENDING, ApplicationStatus.RESUBMITTED)
 		);
 	}
 
 	// 4. 관리자 - 요청 상세 조회
-	public adminMajorRoleRequest getRequestDetail(Long requestId) {
+	public AdminMajorRoleRequest getRequestDetail(Long requestId) {
 		return majorRoleRequestRepository.findById(requestId)
 			.orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
 	}
@@ -104,7 +103,7 @@ public class adminMajorRoleRequestService {
 	// 5. 관리자 - 승인
 	@Transactional
 	public void acceptRequest(Long requestId, Long adminId) {
-		adminMajorRoleRequest request = getRequestDetail(requestId);
+		AdminMajorRoleRequest request = getRequestDetail(requestId);
 		MemberProfile admin = memberProfileRepository.findById(adminId)
 			.orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
 
@@ -118,7 +117,7 @@ public class adminMajorRoleRequestService {
 	// 6. 관리자 - 반려
 	@Transactional
 	public void rejectRequest(Long requestId, Long adminId, String reason) {
-		adminMajorRoleRequest request = getRequestDetail(requestId);
+		AdminMajorRoleRequest request = getRequestDetail(requestId);
 		MemberProfile admin = memberProfileRepository.findById(adminId)
 			.orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
 
