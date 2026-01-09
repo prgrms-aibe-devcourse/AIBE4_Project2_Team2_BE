@@ -60,7 +60,8 @@ public class SecurityConfig {
 					"/swagger-resources/**",
 					"/api-docs/**",
 					// 아래는 제거해야 함
-					"/api/**"
+					"/api/**",
+                        "/admin/**"
 				).permitAll()
 				.requestMatchers("/api/auth/logout", "/api/auth/refresh").authenticated()
 				.requestMatchers("/api/auth/**").permitAll()

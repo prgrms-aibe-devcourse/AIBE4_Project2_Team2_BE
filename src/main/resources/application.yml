@@ -7,3 +7,16 @@ spring:
 
   profiles:
     active: dev
+
+  # 파일 업로드 용량 제한 (공통)
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  # Thymeleaf 공통 설정
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"> <head>
+    <meta charset="UTF-8">
+    <title>관리자 페이지 - 전공 신청 목록</title>
+</head>
+<body>
+<h1>📋 전공자 등업 신청 목록</h1>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>전공</th>
+        <th>상태</th>
+        <th>상세보기</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="request : ${requests}">
+        <td th:text="${request.id}">1</td>
+
+        <td th:text="${request.major}">컴퓨터공학과</td>
+
+        <td th:text="${request.applicationStatus}">PENDING</td> <td>
+        <a th:href="@{/admin/view/requests/{id}(id=${request.id})}">상세보기</a>
+    </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
