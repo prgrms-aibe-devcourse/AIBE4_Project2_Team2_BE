@@ -10,10 +10,16 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
 
+  thymeleaf:
+    # 운영 환경에서는 캐시 활성화 (성능 향상)
+    cache: true
+
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
+  # 배포 환경에서는 성능을 위해 캐시 켜기
+
 
 jwt:
   secret: ${JWT_SECRET}

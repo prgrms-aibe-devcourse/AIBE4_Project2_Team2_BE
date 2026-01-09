@@ -16,4 +16,6 @@ public interface MajorRoleRequestRepository extends JpaRepository<MajorRoleReque
 	// 혹은 상태 리스트로 조회 (PENDING 이거나 RESUBMITTED 인 것들 한번에 조회)
 	@EntityGraph(attributePaths = "member")
 	List<MajorRoleRequest> findByApplicationStatusInOrderByCreatedAtDesc(List<ApplicationStatus> statuses);
+    // 신청일(createdAt) 기준 내림차순(최신순) 조회
+    List<MajorRoleRequest> findAllByOrderByCreatedAtDesc();
 }
