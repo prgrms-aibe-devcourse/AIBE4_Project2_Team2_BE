@@ -1,5 +1,10 @@
 package kr.java.aibe4_project2_team2_be.majormate.global.config;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.CustomOAuth2UserService;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.OAuth2AuthenticationFailureHandler;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.OAuth2AuthenticationSuccessHandler;
+import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

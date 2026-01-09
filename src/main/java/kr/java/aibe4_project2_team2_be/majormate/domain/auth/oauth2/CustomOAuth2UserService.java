@@ -22,8 +22,6 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.SocialAc
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.AuthProvider;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
@@ -69,13 +67,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		return new CustomOAuth2User(memberProfile, attributes);
 	}
 
-	private OAuth2UserInfo getOAuth2UserInfo(String registrationId, Map<String, Object> attributes) {
-		return switch (registrationId.toLowerCase()) {
-			case "google" -> new GoogleOAuth2UserInfo(attributes);
-			case "github" -> new GithubOAuth2UserInfo(attributes);
-			default -> throw new BadRequestException(ErrorCode.OAUTH2_PROVIDER_NOT_SUPPORTED);
-		};
-	}
+    private OAuth2UserInfo getOAuth2UserInfo(String registrationId, Map<String, Object> attributes) {
+        return switch (registrationId.toLowerCase()) {
+            case "google" -> new GoogleOAuth2UserInfo(attributes);
+            case "github" -> new GithubOAuth2UserInfo(attributes);
+            case "kakao" -> new KakaoOAuth2UserInfo(attributes);
+            case "naver" -> new NaverOAuth2UserInfo(attributes);
+            default -> throw new BadRequestException(ErrorCode.OAUTH2_PROVIDER_NOT_SUPPORTED);
+        };
+    }
 
 	private MemberProfile findOrCreateMember(OAuth2UserInfo userInfo, String registrationId) {
 		AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase());
@@ -118,19 +118,18 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		// Generate unique username (provider + random UUID)
 		String username = generateUniqueUsername(provider.name().toLowerCase());
 
+		// Use email prefix if name is not provided (max 20 characters)
+		String emailPrefix = email.split("@")[0];
+		String displayName = (name != null && !name.isEmpty()) ? name : emailPrefix;
+		displayName = displayName.substring(0, Math.min(displayName.length(), 20));
+
 		// Generate unique nickname from name or email
-		String nickname = generateUniqueNickname(name != null ? name : email.split("@")[0]);
+		String nickname = generateUniqueNickname(name != null ? name : emailPrefix);
 
 		// Create new member without password
-		MemberProfile newMemberProfile = MemberProfile.builder()
-			.username(username)
-			.email(email)
-			.password(null)  // OAuth2 users don't have passwords
-			.name(name != null ? name : "OAuth2 User")
-			.nickname(nickname)
-			.status(MemberStatus.ENROLLED)
-			.role(MemberRole.STUDENT)
-			.build();
+		MemberProfile newMemberProfile = MemberProfile.create(
+			name, nickname, email, username, null
+		);
 
 		MemberProfile savedMemberProfile = memberProfileRepository.save(newMemberProfile);
 
@@ -163,29 +162,45 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		return username;
 	}
 
-	private String generateUniqueNickname(String baseName) {
-		// Remove special characters and limit length
-		String sanitized = baseName.replaceAll("[^가-힣a-zA-Z0-9]", "");
-		sanitized = sanitized.substring(0, Math.min(sanitized.length(), 20));
+    private String generateUniqueNickname(String baseName) {
+        // Remove special characters and limit length
+        String sanitized = baseName.replaceAll("[^가-힣a-zA-Z0-9]", "");
+        sanitized = sanitized.substring(0, Math.min(sanitized.length(), 15)); // Reduced to 15 to allow for suffix
 
 		if (sanitized.isEmpty()) {
 			sanitized = "user";
 		}
 
-		String nickname = sanitized;
-		int counter = 1;
+        // First try without suffix
+        if (!memberProfileRepository.existsByNickname(sanitized)) { // Fixed to memberProfileRepository
+            return sanitized;
+        }
 
-		while (memberProfileRepository.existsByNickname(nickname) && counter < 1000) {
-			nickname = sanitized + counter;
-			counter++;
-		}
+        // If duplicate, add random 4-character suffix
+        int attempts = 0;
+        String nickname;
+        do {
+            String randomSuffix = generateRandomString(4);
+            nickname = sanitized + "_" + randomSuffix;
+            attempts++;
+        } while (memberProfileRepository.existsByNickname(nickname) && attempts < 100); // Fixed to memberProfileRepository
 
-		if (counter >= 1000) {
-			throw new BadRequestException(ErrorCode.DUPLICATE_NICKNAME);
-		}
+        if (attempts >= 100) {
+            throw new BadRequestException(ErrorCode.DUPLICATE_NICKNAME);
+        }
 
 		return nickname;
 	}
+
+    private String generateRandomString(int length) {
+        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = (int) (Math.random() * chars.length());
+            sb.append(chars.charAt(index));
+        }
+        return sb.toString();
+    }
 
 	private String fetchGithubEmail(OAuth2UserRequest userRequest) {
 		try {

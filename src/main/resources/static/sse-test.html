@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>알림 자동 테스트</title>
+    <style>
+        body { padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; }
+        h2 { color: #333; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .box { background: white; border: 1px solid #ddd; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex: 1; min-width: 300px; }
+        .log-area { background: #1e1e1e; color: #00ff00; height: 300px; overflow-y: auto; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; }
+        .item { margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; }
+
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; transition: 0.3s; }
+        button:hover { opacity: 0.9; }
+
+        .btn-login { background-color: #4285F4; color: white; text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 6px; }
+        .btn-send { background-color: #28a745; color: white; }
+        .btn-clear { background-color: #6c757d; color: white; margin-top: 10px;}
+
+        input { padding: 10px; width: calc(100% - 22px); margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+
+        #status-indicator { font-weight: bold; padding: 5px 10px; border-radius: 4px; display: inline-block; margin-bottom: 15px;}
+        .status-connected { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-disconnected { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+
+<h2>📡 실시간 알림 대시보드</h2>
+
+<div id="login-section" style="display: none; margin-bottom: 20px;">
+    <a href="/oauth2/authorization/google" class="btn-login">G Google 로그인하러 가기</a>
+    <p style="color: #666; font-size: 0.9em; margin-top: 5px;">* 로그인이 완료되면 자동으로 이 페이지로 돌아옵니다.</p>
+</div>
+
+<div class="container">
+    <div class="box">
+        <h3>🔌 연결 상태</h3>
+        <div id="status-indicator" class="status-disconnected">🔴 연결 끊김 (인증 필요)</div>
+        <br>
+        <button onclick="connect()" style="background-color: #007bff; color: white;">🔄 재연결 시도</button>
+        <hr>
+
+        <h3>📨 테스트 메시지 전송</h3>
+        <input type="number" id="receiverId" placeholder="받는 사람 ID (내 ID: 4)" value="4">
+        <input type="text" id="msg" placeholder="보낼 메시지 내용" value="테스트 알림입니다!">
+        <button onclick="sendNotification()" class="btn-send">전송 하기</button>
+    </div>
+
+    <div class="box" style="flex: 2;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>📜 실시간 로그</h3>
+            <button onclick="document.getElementById('log').innerHTML=''" class="btn-clear" style="padding: 5px 10px; font-size: 0.8em;">로그 지우기</button>
+        </div>
+        <div id="log" class="log-area"></div>
+    </div>
+</div>
+
+<script>
+    let eventSource = null;
+
+    // 페이지 로드 시 자동으로 연결 시도
+    window.onload = function() {
+        console.log("페이지 로드됨. SSE 연결 시도...");
+        connect();
+    };
+
+    function connect() {
+        if(eventSource) {
+            eventSource.close();
+        }
+
+        // 쿠키가 있다고 가정하고 바로 연결 시도
+        const url = '/api/notifications/subscribe';
+        eventSource = new EventSource(url);
+
+        eventSource.onopen = () => {
+            updateStatus(true);
+            addLog('SYSTEM', '✅ 서버와 연결되었습니다.');
+            document.getElementById('login-section').style.display = 'none'; // 로그인 버튼 숨기기
+        };
+
+        eventSource.addEventListener('notification', (e) => {
+            const data = JSON.parse(e.data); // JSON 파싱 시도
+            addLog('🔔 알림', `[${data.type}] ${data.content}`);
+        });
+
+        // 더미 데이터 수신 (연결 유지용)
+        eventSource.addEventListener('connect', (e) => {
+            // addLog('PING', '서버와 연결 확인됨');
+        });
+
+        eventSource.onerror = (e) => {
+            updateStatus(false);
+            // 에러가 났다는 건 쿠키가 없거나 만료된 것일 확률이 높음
+            document.getElementById('login-section').style.display = 'block';
+            addLog('ERROR', '⛔ 연결이 끊어졌습니다. 로그인이 필요할 수 있습니다.');
+            eventSource.close();
+        };
+    }
+
+    function sendNotification() {
+        const id = document.getElementById('receiverId').value;
+        const content = document.getElementById('msg').value;
+
+        addLog('SEND', `전송 시도 -> ID: ${id}, 내용: ${content}`);
+
+        fetch(`/api/notifications/send-test?receiverId=${id}&content=${content}`, {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok) {
+                    addLog('SUCCESS', '전송 성공! (오른쪽 알림 수신 확인)');
+                } else {
+                    addLog('FAIL', `전송 실패 (Status: ${response.status})`);
+                }
+            })
+            .catch(err => addLog('FAIL', `에러 발생: ${err}`));
+    }
+
+    function updateStatus(isConnected) {
+        const indicator = document.getElementById('status-indicator');
+        if (isConnected) {
+            indicator.className = 'status-connected';
+            indicator.innerHTML = '🟢 실시간 연결됨';
+        } else {
+            indicator.className = 'status-disconnected';
+            indicator.innerHTML = '🔴 연결 끊김';
+        }
+    }
+
+    function addLog(type, msg) {
+        const logDiv = document.getElementById('log');
+        const time = new Date().toLocaleTimeString();
+        const color = type === 'ERROR' || type === 'FAIL' ? 'red' : (type === '🔔 알림' ? 'yellow' : 'white');
+
+        logDiv.innerHTML = `<div class="item" style="color: ${color}">[${time}] [${type}] ${msg}</div>` + logDiv.innerHTML;
+    }
+</script>
+</body>
+</html>

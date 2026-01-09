@@ -29,13 +29,20 @@ public enum ErrorCode {
 	OAUTH2_AUTHENTICATION_FAILED("AUTH_008", "OAuth2 인증에 실패했습니다.", HttpStatus.UNAUTHORIZED),
 	SOCIAL_LOGIN_REQUIRED("AUTH_009", "소셜 로그인이 필요합니다.", HttpStatus.BAD_REQUEST),
 
+	// Email Verification
+	VERIFICATION_CODE_NOT_FOUND("AUTH_010", "인증 코드를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+	VERIFICATION_CODE_EXPIRED("AUTH_011", "인증 코드가 만료되었습니다.", HttpStatus.BAD_REQUEST),
+	INVALID_VERIFICATION_CODE("AUTH_012", "인증 코드가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
+	ALREADY_VERIFIED("AUTH_013", "이미 인증되었습니다.", HttpStatus.BAD_REQUEST),
+	EMAIL_SEND_FAILED("AUTH_014", "이메일 발송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+	EMAIL_NOT_VERIFIED("AUTH_015", "이메일 인증이 필요합니다.", HttpStatus.BAD_REQUEST),
+
 	// Member
 	MEMBER_NOT_FOUND("MEMBER_001", "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 	DUPLICATE_NICKNAME("MEMBER_002", "이미 사용 중인 닉네임입니다.", HttpStatus.CONFLICT),
 	DUPLICATE_EMAIL("MEMBER_003", "이미 사용 중인 이메일입니다.", HttpStatus.CONFLICT),
 	DUPLICATE_USERNAME("MEMBER_004", "이미 사용 중인 아이디입니다.", HttpStatus.CONFLICT),
 	INVALID_MEMBER_STATUS("MEMBER_005", "유효하지 않은 회원 상태입니다.", HttpStatus.BAD_REQUEST),
-	MEMBER_ACADEMIC_NOT_FOUND("MEMBER_006", "회원 학적 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 	CURRENT_PASSWORD_REQUIRED("MEMBER_007", "현재 비밀번호를 입력해 주세요.", HttpStatus.BAD_REQUEST),
 	SAME_AS_OLD_PASSWORD("MEMBER_008", "기존 비밀번호와 동일한 비밀번호로 변경할 수 없습니다.", HttpStatus.BAD_REQUEST),
 	INVALID_PROFILE_IMAGE_URL("MEMBER_009", "유효하지 않은 프로필 이미지 URL입니다.", HttpStatus.BAD_REQUEST),
@@ -43,6 +50,8 @@ public enum ErrorCode {
 	// Major_Profile
 	PROFILE_NOT_FOUND("PROFILE_001", "프로필을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 	PROFILE_ALREADY_EXISTS("PROFILE_002", "이미 프로필이 존재합니다.", HttpStatus.CONFLICT),
+	MAJOR_ACADEMIC_REQUIRED("PROFILE_003", "전공자 학적 정보가 필요합니다.", HttpStatus.BAD_REQUEST),
+	MAJOR_ROLE_REQUIRED("AUTH_006", "전공자가 아닙니다.", HttpStatus.FORBIDDEN),
 
 	// Major_Card
 	CARD_NOT_FOUND("CARD_001", "카드를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -66,7 +75,6 @@ public enum ErrorCode {
 	UNAUTHORIZED_INTERVIEW_ACCESS("INTERVIEW_006", "인터뷰에 대한 권한이 없습니다.", HttpStatus.FORBIDDEN),
 	INTERVIEW_TARGET_NOT_MAJOR("INTERVIEW_007", "인터뷰 신청 대상이 전공자가 아닙니다.", HttpStatus.BAD_REQUEST),
 	INTERVIEW_SELF_REQUEST_NOT_ALLOWED("INTERVIEW_008", "본인에게 인터뷰를 신청할 수 없습니다.", HttpStatus.BAD_REQUEST),
-	INTERVIEW_REQUEST_EMPTY("INTERVIEW_009", "신청한 인터뷰가 없습니다.", HttpStatus.NOT_FOUND),
 
 	// Review
 	REVIEW_NOT_FOUND("REVIEW_001", "후기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

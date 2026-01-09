@@ -95,7 +95,7 @@
 | created_at  | DATETIME | NOT NULL             | 생성일시   |
 | updated_at  | DATETIME | NOT NULL             | 수정일시   |
 
-### 8. interview (인터뷰)
+### 8. interviewForm (인터뷰)
 
 | 컬럼명                  | 타입           | 제약조건               | 설명                           |
 |----------------------|--------------|--------------------|------------------------------|
@@ -177,7 +177,7 @@ memberProfile (1) --- (N) major_card
 memberProfile (1) --- (N) major_card_like
 memberProfile (1) --- (N) question
 memberProfile (1) --- (N) answer
-memberProfile (1) --- (N) interview (as major)
+memberProfile (1) --- (N) interviewForm (as major)
 memberProfile (1) --- (N) interview_application (as applicant)
 memberProfile (1) --- (N) review
 memberProfile (1) --- (N) major_role_request
@@ -188,8 +188,8 @@ major_card (1) --- (N) question
 
 question (1) --- (1) answer
 
-interview (1) --- (N) interview_application
-interview (1) --- (N) review
+interviewForm (1) --- (N) interview_application
+interviewForm (1) --- (N) review
 
 major_role_request (1) --- (N) major_role_request_status_history
 ```
@@ -202,7 +202,7 @@ major_role_request (1) --- (N) major_role_request_status_history
 
 - `major_card`: (university, major), (is_public, created_at)
 - `question`: (card_id, created_at)
-- `interview`: (status, interview_date)
+- `interviewForm`: (status, interview_date)
 - `major_role_request`: (status, created_at)
 
 ### 조회 성능 최적화

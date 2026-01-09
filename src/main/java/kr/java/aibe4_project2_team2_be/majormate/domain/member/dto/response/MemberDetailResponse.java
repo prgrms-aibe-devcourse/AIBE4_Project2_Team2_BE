@@ -17,7 +17,6 @@ public record MemberDetailResponse(
 	String major,
 	MemberRole role
 ) {
-
 	public static MemberDetailResponse from(MemberProfile profile, MemberAcademic academic) {
 		return new MemberDetailResponse(
 			profile.getMemberId(),

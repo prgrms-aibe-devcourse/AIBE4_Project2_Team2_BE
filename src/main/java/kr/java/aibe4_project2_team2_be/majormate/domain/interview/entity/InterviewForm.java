@@ -11,10 +11,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewStatus;
+import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.request.InterviewFormCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Interview extends BaseEntity {
+public class InterviewForm extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +39,7 @@ public class Interview extends BaseEntity {
 	@Column(nullable = false)
 	private Long majorMemberId;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 255)
 	private String title;
 
 	@Column(nullable = false, columnDefinition = "TEXT")
@@ -56,18 +56,16 @@ public class Interview extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
-	private InterviewStatus status;
+	private InterviewFormStatus status;
 
 	@Column(columnDefinition = "TEXT")
 	private String majorMessage;
 
-	@Builder
-	public Interview(
-		Long interviewId, Long studentMemberId, Long majorMemberId,
+	private InterviewForm(
+		Long studentMemberId, Long majorMemberId,
 		String title, String content, String interviewMethod, LocalDateTime preferredDatetime, String extraDescription,
-		InterviewStatus status, String majorMessage
+		InterviewFormStatus status, String majorMessage
 	) {
-		this.interviewId = interviewId;
 		this.studentMemberId = studentMemberId;
 		this.majorMemberId = majorMemberId;
 		this.title = title;
@@ -75,7 +73,21 @@ public class Interview extends BaseEntity {
 		this.interviewMethod = interviewMethod;
 		this.preferredDatetime = preferredDatetime;
 		this.extraDescription = extraDescription;
-		this.status = (status == null) ? InterviewStatus.PENDING : status;
+		this.status = status;
 		this.majorMessage = majorMessage;
+	}
+
+	public static InterviewForm create(Long studentId, Long majorId, InterviewFormCreateRequest request) {
+		return new InterviewForm(
+			studentId,
+			majorId,
+			request.title(),
+			request.content(),
+			request.interviewMethod(),
+			request.preferredDatetime(),
+			request.extraDescription(),
+			InterviewFormStatus.PENDING,
+			null
+		);
 	}
 }

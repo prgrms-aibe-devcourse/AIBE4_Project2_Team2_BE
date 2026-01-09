@@ -57,6 +57,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         int cookieMaxAge = (int) (jwtProperties.getRefreshTokenValidity() / 1000);
         CookieUtil.addCookie(response, "refreshToken", refreshToken, cookieMaxAge);
 
+        int accessCookieMaxAge = (int) (jwtProperties.getAccessTokenValidity() / 1000);
+        CookieUtil.addCookie(response, "accessToken", accessToken, accessCookieMaxAge);
+
+
         log.info("OAuth2 login success - Member ID: {}, Role: {}", memberId, role);
 
         // Redirect to frontend with access token only

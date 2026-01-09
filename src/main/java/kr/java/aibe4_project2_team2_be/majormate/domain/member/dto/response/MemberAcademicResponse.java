@@ -9,7 +9,6 @@ public record MemberAcademicResponse(
 	String university,
 	String major
 ) {
-
 	public static MemberAcademicResponse from(MemberAcademic academic) {
 		return new MemberAcademicResponse(
 			academic.getMemberProfile().getMemberId(),
