@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminMajorRoleRequestService {
+public class AdminService {
 
     // 관리자용 가짜 Repo가 아니라, 진짜 Repo를 주입받습니다.
     private final MajorRoleRequestRepository majorRoleRequestRepository;
