@@ -55,5 +55,16 @@ public class NotificationController {
 
         return notificationService.subscribe(memberId);
     }
+    @PostMapping("/send-test")
+    public String sendTest(@RequestParam Long receiverId, @RequestParam String content) {
+        eventPublisher.publishEvent(new NotificationEvent(
+                receiverId,
+                null,
+                "TEST_EVENT",
+                content,
+                "/test-url"
+        ));
+        return "이벤트 발행 성공!";
+    }
 
 }

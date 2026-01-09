@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,7 +45,7 @@ public class NotificationService {
     @Transactional
     public void send(Long receiverId, Long senderId, String type, String content, String url) {
 
-        notificationRepository.save(Notification.builder()
+        Notification notification = notificationRepository.save(Notification.builder()
                 .receiverId(receiverId)
                 .senderId(senderId)
                 .notificationType(type)
@@ -52,12 +53,26 @@ public class NotificationService {
                 .relatedUrl(url)
                 .build());
 
-
         SseEmitter emitter = emitters.get(receiverId);
+
         if (emitter != null) {
             try {
-                emitter.send(SseEmitter.event().name("notification").data(content));
+                // map으로 변경, string > JSON으로 내보냄
+                Map<String, String> eventData = new HashMap<>();
+                eventData.put("type", type);
+                eventData.put("content", content);
+                eventData.put("url", url);
+                eventData.put("id", String.valueOf(notification.getId()));
+
+                emitter.send(SseEmitter.event()
+                        .name("notification")
+                        .id(String.valueOf(notification.getId()))
+                        .data(eventData));
+
+                log.info("SSE 알림 전송 성공 [ReceiverId: {}]", receiverId);
+
             } catch (IOException e) {
+                log.error("SSE 전송 실패. Emitter 삭제: {}", receiverId);
                 emitters.remove(receiverId);
             }
         }
@@ -65,7 +80,6 @@ public class NotificationService {
 
     @EventListener
     public void handleNotificationEvent(NotificationEvent event) {
-        // 기존에 만들어둔 send 메서드 재활용!
         this.send(
                 event.receiverId(),
                 event.senderId(),
