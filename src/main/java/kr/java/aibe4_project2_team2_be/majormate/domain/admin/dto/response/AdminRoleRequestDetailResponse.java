@@ -33,7 +33,7 @@ public class AdminRoleRequestDetailResponse {
                 .username(adminmajorRoleRequest.getMember().getUsername())
                 .universityName(adminmajorRoleRequest.getUniversity())
                 .majorName(adminmajorRoleRequest.getMajor())
-                .content(adminmajorRoleRequest.getComment())
+
                 .documentUrl(adminmajorRoleRequest.getDocumentUrl())
                 .applicationStatus(adminmajorRoleRequest.getApplicationStatus())
                 .createdAt(adminmajorRoleRequest.getCreatedAt())

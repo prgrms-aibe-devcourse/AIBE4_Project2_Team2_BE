@@ -24,62 +24,9 @@ public class AdminMajorRoleRequestController {
 	private final AdminMajorRoleRequestService adminmajorRoleRequestService;
 	private final JwtTokenProvider jwtTokenProvider;
 
-    /*1. 전공자 인증 요청 등록
-	@Operation(summary = "전공자 인증 요청 등록", description = "전공자 인증을 위한 요청을 등록합니다.")
-	@PostMapping(value = "major-requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ApiResponse<Long> createRequest(
-		 @RequestHeader("Authorization") String token,
-		@Valid @RequestPart("request") adminRoleRequestCreateRequest requestDto,
-		@RequestPart("file") MultipartFile file
-	) {
-		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
-		Long memberId = 2L; // 테스트용 하드코딩
-		Long requestId = adminmajorRoleRequestService.createRequest(memberId, requestDto, file);
-		return ApiResponse.success(requestId);
-	}
-
-	// 2. 전공자 인증 요청 재제출
-	@Operation(summary = "전공자 인증 요청 재제출", description = "반려된 요청을 수정하여 재제출합니다.")
-	@PutMapping(value = "major-requests/{requestId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ApiResponse<Void> resubmitRequest(
-		@PathVariable Long requestId,
-		// @RequestHeader("Authorization") String token,
-		@Valid @RequestPart("request") adminRoleRequestCreateRequest requestDto,
-		@RequestPart("file") MultipartFile file
-	) {
-		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
-		Long memberId = 2L; // 테스트용 하드코딩
-		adminmajorRoleRequestService.resubmitRequest(requestId, memberId, requestDto.getContent(), file);
-		return ApiResponse.success(null);
-	}
-
-	@Operation(summary = "내 요청 목록 조회", description = "자신이 신청한 전공자 인증 요청 목록을 조회합니다.")
-	@GetMapping("major-requests/me")
-	public ApiResponse<List<adminRoleRequestResponse>> getMyRequests(
-		// @RequestHeader("Authorization") String token
-	) {
-		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
-		Long memberId = 2L; // 테스트용 하드코딩
-		List<adminRoleRequestResponse> responses = adminmajorRoleRequestService.getMyRequests(memberId);
-		return ApiResponse.success(responses);
-	}
-
-	@Operation(summary = "전공자 인증 요청 상세 조회", description = "특정 전공자 인증 요청의 상세 정보를 조회합니다.")
-	@GetMapping("major-requests/{requestId}")
-	public ApiResponse<adminRoleRequestDetailResponse> MyGetRequestDetail(
-		@PathVariable Long requestId
-		// @RequestHeader("Authorization") String token
-	) {
-		// Long memberId = jwtTokenProvider.getMemberIdFromToken(token.substring(7));
-		Long memberId = 2L; // 테스트용 하드코딩
-		adminRoleRequestDetailResponse response = adminmajorRoleRequestService.MyGetRequestDetail(requestId, memberId);
-		return ApiResponse.success(response);
-	} */
-
-
 	// 관리자 기능 (목록 조회 & 상세 조회)
 
-	// 3. 관리자 - 요청 목록 조회 (대기중 & 재제출)
+	// 1. 관리자 - 요청 목록 조회 (대기중 & 재제출)
 	@Operation(summary = "관리자 - 요청 목록 조회", description = "대기 중(PENDING) 또는 재제출(RESUBMITTED) 상태의 요청 목록을 조회합니다.")
 	@GetMapping(value = "/major-role-requests/list")
 	public ApiResponse<List<AdminRoleRequestResponse>> getPendingRequests(
@@ -96,19 +43,19 @@ public class AdminMajorRoleRequestController {
 		return ApiResponse.success(response);
 	}
 
-	// 4. 관리자 - 요청 상세 조회 (이력 포함)
+	// 2. 관리자 - 요청 상세 조회 (이력 포함)
 	@Operation(summary = "관리자 - 요청 상세 조회", description = "특정 전공자 인증 요청의 상세 정보와 히스토리를 조회합니다.")
 	@GetMapping("/major-role-requests/{requestId}/detail")
 	public ApiResponse<AdminRoleRequestDetailResponse> getRequestDetail(
-		@PathVariable Long requestId,
-		@RequestHeader("Authorization") String token
+		@PathVariable Long requestId
+		//@RequestHeader("Authorization") String token
 	) {
 		AdminMajorRoleRequest request = adminmajorRoleRequestService.getRequestDetail(requestId);
 		AdminRoleRequestDetailResponse response = AdminRoleRequestDetailResponse.from(request);
 		return ApiResponse.success(response);
 	}
 
-	// 5. 관리자 - 요청 승인
+	// 3. 관리자 - 요청 승인
 	@Operation(summary = "관리자 - 요청 승인", description = "전공자 인증 요청을 승인합니다.")
 	@PostMapping("/major-role-requests/{requestId}/accept")
 	public ApiResponse<Void> acceptRequest(
@@ -120,7 +67,7 @@ public class AdminMajorRoleRequestController {
 		return ApiResponse.success(null);
 	}
 
-	// 6. 관리자 - 요청 반려
+	// 4. 관리자 - 요청 반려
 	@Operation(summary = "관리자 - 요청 반려", description = "전공자 인증 요청을 반려합니다.")
 	@PostMapping("/major-role-requests/{requestId}/reject")
 	public ApiResponse<Void> rejectRequest(

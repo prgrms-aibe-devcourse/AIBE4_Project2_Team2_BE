@@ -8,12 +8,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
 @Repository
 public interface AdminMajorRoleRequestRepository extends JpaRepository<AdminMajorRoleRequest, Long> {
-    List<AdminMajorRoleRequest> findAllByMember_MemberIdOrderByCreatedAtDesc(Long memberId);
 
-    // 혹은 상태 리스트로 조회 (PENDING 이거나 RESUBMITTED 인 것들 한번에 조회)
-    @EntityGraph(attributePaths = "member")
+    // [중요 수정] MemberProfile -> Memberprofile (대문자 P를 소문자 p로 변경)
+    // Entity의 필드명이 'memberprofile'이므로 메서드 이름도 이를 따라야 합니다.
+    List<AdminMajorRoleRequest> findAllByMemberprofile_MemberIdOrderByCreatedAtDesc(Long memberId);
+
+    // [중요 수정] attributePaths도 "memberprofile" (소문자 p)로 일치시킴
+    @EntityGraph(attributePaths = "memberprofile")
     List<AdminMajorRoleRequest> findByApplicationStatusInOrderByCreatedAtDesc(List<ApplicationStatus> statuses);
 }

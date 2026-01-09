@@ -61,8 +61,13 @@ public class SecurityConfig {
 					"/swagger-resources/**",
 					"/api-docs/**",
 					// 아래는 제거해야 함
-					"/api/**"
+					"/api/members/**",
+					"/api/majors/{majorId}/interview-requests",
+					"/api/interviews/4/reviews",
+                        "/admin/**"
 				).permitAll()
+                    // admin 임시 허용 ( 형민 ) thymeleaf 테스트
+                    .requestMatchers("/admin/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			.oauth2Login(oauth2 -> oauth2

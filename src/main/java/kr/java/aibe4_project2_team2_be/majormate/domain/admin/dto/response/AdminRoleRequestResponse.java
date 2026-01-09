@@ -14,7 +14,6 @@ public class AdminRoleRequestResponse {
     private String university;
     private String major;
     private ApplicationStatus applicationStatus;
-    private String comment;
     private String reason;
     private LocalDateTime createdAt;
     private LocalDateTime decidedAt;
@@ -25,7 +24,6 @@ public class AdminRoleRequestResponse {
                 .university(adminmajorRoleRequest.getUniversity())
                 .major(adminmajorRoleRequest.getMajor())
                 .applicationStatus(adminmajorRoleRequest.getApplicationStatus())
-                .comment(adminmajorRoleRequest.getComment())
 
                 .createdAt(adminmajorRoleRequest.getCreatedAt())
                 .decidedAt(adminmajorRoleRequest.getDecidedAt())
