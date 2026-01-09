@@ -1,7 +1,7 @@
 // AdminViewController
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.controller;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.AdminMajorRoleRequestService;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.AdminService;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminViewController {
 
-    private final AdminMajorRoleRequestService adminService;
+    private final AdminService adminService;
 
     // 전공자 신청 목록 페이지
     @GetMapping("/requests")
@@ -34,12 +34,13 @@ public class AdminViewController {
     // 상세 페이지
     @GetMapping("/request/{requestId}")
     public String requestDetailPage(@PathVariable Long requestId, Model model) {
-        // 1. 서비스에서 요청(Entity) 하나를 가져옴 (여기 안에 이력 리스트가 이미 들어있음!)
+        // 1. 서비스에서 데이터 가져오기
         MajorRoleRequest request = adminService.getRequestDetail(requestId);
 
         // 2. 모델에 담기
         model.addAttribute("request", request);
 
-        return "admin/request-detail.html"; // 상세 페이지 HTML
+        // 3. HTML 파일 위치 알려주기 (templates/admin/request-detail.html)
+        return "admin/request-detail";
     }
 }
