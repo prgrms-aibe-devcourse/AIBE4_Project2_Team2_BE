@@ -1,16 +1,20 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.review.entity;
 
+import static java.util.Objects.*;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "review")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
@@ -29,9 +33,9 @@ public class Review extends BaseEntity {
 	private String content;
 
 	private Review(Long interviewId, int rating, String content) {
-		this.interviewId = interviewId;
-		this.rating = rating;
-		this.content = content;
+		this.interviewId = requireNonNull(interviewId, "interviewId must not be null");
+		this.rating = requireRating(rating);
+		this.content = requireText(content, "content");
 	}
 
 	public static Review create(Long interviewId, int rating, String content) {
@@ -39,7 +43,21 @@ public class Review extends BaseEntity {
 	}
 
 	public void update(int rating, String content) {
-		this.rating = rating;
-		this.content = content;
+		this.rating = requireRating(rating);
+		this.content = requireText(content, "content");
+	}
+
+	private static String requireText(String value, String fieldName) {
+		if (value == null || value.isBlank()) {
+			throw new IllegalArgumentException(fieldName + " must not be blank");
+		}
+		return value;
+	}
+
+	private static int requireRating(int rating) {
+		if (rating < 1 || rating > 5) {
+			throw new IllegalArgumentException("rating must be between 1 and 5");
+		}
+		return rating;
 	}
 }

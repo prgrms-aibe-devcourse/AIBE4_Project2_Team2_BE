@@ -11,6 +11,8 @@ import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.Intervie
 
 public interface InterviewFormRepository extends JpaRepository<InterviewForm, Long> {
 
+	List<InterviewForm> findByInterviewIdIn(List<Long> interviewIds);
+
 	Page<InterviewForm> findByStudentMemberId(Long studentMemberId, Pageable pageable);
 
 	Page<InterviewForm> findByMajorMemberId(Long majorMemberId, Pageable pageable);

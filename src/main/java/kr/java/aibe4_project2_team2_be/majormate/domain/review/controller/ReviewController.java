@@ -2,6 +2,8 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.review.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +17,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.review.dto.request.Revie
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.dto.response.ReceivedReviewResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.dto.response.WrittenReviewResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.service.ReviewService;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.PageResponsesNew;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,46 +29,56 @@ public class ReviewController {
 	private final ReviewService reviewService;
 
 	@GetMapping("/members/me/reviews/written")
-	public ApiResponse<List<WrittenReviewResponse>> getMyWrittenReviews() {
+	public ApiResponseNew<java.util.List<WrittenReviewResponse>> getMyWrittenReviews(Pageable pageable) {
 		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 3L;
-		List<WrittenReviewResponse> response = reviewService.getWrittenReviews(memberId);
-		if (response.isEmpty()) {
-			return ApiResponse.success(response, "작성한 후기가 없습니다.");
-		}
-		return ApiResponse.success(response);
+		Long memberId = 6L;
+		Page<WrittenReviewResponse> page = reviewService.getWrittenReviews(memberId, pageable);
+		return PageResponsesNew.of(page);
+	}
+
+	@GetMapping("/members/me/reviews/written/{reviewId}")
+	public ApiResponseNew<WrittenReviewResponse> getMyWrittenReviewDetail(@PathVariable Long reviewId) {
+		//Long memberId = SecurityUtil.getCurrentMemberId();
+		Long memberId = 6L;
+		WrittenReviewResponse response = reviewService.getWrittenReviewDetail(memberId, reviewId);
+		return ApiResponseNew.success(response);
 	}
 
 	@GetMapping("/members/me/reviews/received")
-	public ApiResponse<List<ReceivedReviewResponse>> getMyReceivedReviews() {
+	public ApiResponseNew<List<ReceivedReviewResponse>> getMyReceivedReviews(Pageable pageable) {
 		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long majorId = 15L;
-		List<ReceivedReviewResponse> response = reviewService.getReceivedReviews(majorId);
-		if (response.isEmpty()) {
-			return ApiResponse.success(response, "작성된 후기가 없습니다.");
-		}
-		return ApiResponse.success(response);
+		Long memberId = 3L;
+		Page<ReceivedReviewResponse> page = reviewService.getReceivedReviews(memberId, pageable);
+		return PageResponsesNew.of(page);
+	}
+
+	@GetMapping("/members/me/reviews/received/{reviewId}")
+	public ApiResponseNew<ReceivedReviewResponse> getMyReceivedReviewDetail(@PathVariable Long reviewId) {
+		//Long memberId = SecurityUtil.getCurrentMemberId();
+		Long memberId = 3L;
+		ReceivedReviewResponse response = reviewService.getReceivedReviewDetail(memberId, reviewId);
+		return ApiResponseNew.success(response);
 	}
 
 	@PostMapping("/interviews/{interviewId}/reviews")
-	public ApiResponse<WrittenReviewResponse> createReview(
+	public ApiResponseNew<WrittenReviewResponse> createReview(
 		@PathVariable Long interviewId,
 		@Valid @RequestBody ReviewRequest request
 	) {
-		//Long studentId = SecurityUtil.getCurrentMemberId();
-		Long studentId = 3L;
-		WrittenReviewResponse response = reviewService.createReview(studentId, interviewId, request);
-		return ApiResponse.success(response);
+		//Long memberId = SecurityUtil.getCurrentMemberId();
+		Long memberId = 6L;
+		WrittenReviewResponse response = reviewService.createReview(memberId, interviewId, request);
+		return ApiResponseNew.success(response);
 	}
 
 	@PatchMapping("/interviews/{interviewId}/reviews")
-	public ApiResponse<WrittenReviewResponse> updateReview(
+	public ApiResponseNew<WrittenReviewResponse> updateReview(
 		@PathVariable Long interviewId,
 		@Valid @RequestBody ReviewRequest request
 	) {
-		//Long studentId = SecurityUtil.getCurrentMemberId();
-		Long studentId = 3L;
-		WrittenReviewResponse response = reviewService.updateReview(studentId, interviewId, request);
-		return ApiResponse.success(response);
+		//Long memberId = SecurityUtil.getCurrentMemberId();
+		Long memberId = 6L;
+		WrittenReviewResponse response = reviewService.updateReview(memberId, interviewId, request);
+		return ApiResponseNew.success(response);
 	}
 }

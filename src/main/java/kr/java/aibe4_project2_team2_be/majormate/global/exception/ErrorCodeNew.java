@@ -22,6 +22,9 @@ public enum ErrorCodeNew {
 	),
 	COMMON_409(HttpStatus.CONFLICT, "COMMON_409", "요청이 현재 상태와 충돌합니다."),
 	COMMON_500(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500", "서버 오류가 발생했습니다."),
+	COMMON_500_SNAPSHOT_MISSING(
+		HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500_SNAPSHOT_MISSING", "요청 처리에 필요한 스냅샷 데이터가 없습니다."
+	),
 
 	// Auth
 	AUTH_401(HttpStatus.UNAUTHORIZED, "AUTH_401", "인증이 필요합니다."),
@@ -78,14 +81,31 @@ public enum ErrorCodeNew {
 	INTERVIEW_400_TARGET_NOT_MAJOR(
 		HttpStatus.BAD_REQUEST, "INTERVIEW_400_TARGET_NOT_MAJOR", "인터뷰 대상은 전공자여야 합니다."
 	),
-	INTERVIEW_409_ALREADY_EXISTS(
-		HttpStatus.CONFLICT, "INTERVIEW_409_ALREADY_EXISTS", "진행 중인 인터뷰 신청이 이미 존재합니다."
-	),
 	INTERVIEW_400_INVALID_STATE(
 		HttpStatus.BAD_REQUEST, "INTERVIEW_400_INVALID_STATE", "현재 상태에서는 요청을 처리할 수 없습니다."
 	),
+	INTERVIEW_409_ALREADY_EXISTS(
+		HttpStatus.CONFLICT, "INTERVIEW_409_ALREADY_EXISTS", "진행 중인 인터뷰 신청이 이미 존재합니다."
+	),
 	INTERVIEW_500_SNAPSHOT_MISSING(
 		HttpStatus.INTERNAL_SERVER_ERROR, "INTERVIEW_500_SNAPSHOT_MISSING", "인터뷰 스냅샷 데이터가 존재하지 않습니다."
+	),
+
+	// Review
+	REVIEW_400_INTERVIEW_NOT_COMPLETED(
+		HttpStatus.BAD_REQUEST, "REVIEW_400_INTERVIEW_NOT_COMPLETED", "완료된 인터뷰에 대해서만 후기를 작성할 수 있습니다."
+	),
+	REVIEW_403_NOT_OWNER(
+		HttpStatus.FORBIDDEN, "REVIEW_403_NOT_OWNER", "본인이 작성할 수 있는 후기가 아닙니다."
+	),
+	REVIEW_403_NOT_RECEIVER(
+		HttpStatus.FORBIDDEN, "REVIEW_403_NOT_RECEIVER", "본인이 받은 후기가 아닙니다."
+	),
+	REVIEW_404(
+		HttpStatus.NOT_FOUND, "REVIEW_404", "후기 정보를 찾을 수 없습니다."
+	),
+	REVIEW_409_ALREADY_EXISTS(
+		HttpStatus.CONFLICT, "REVIEW_409_ALREADY_EXISTS", "이미 해당 인터뷰에 대한 후기가 존재합니다."
 	),
 
 	// Major role request
