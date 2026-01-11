@@ -9,8 +9,9 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.Member
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -22,14 +23,25 @@ public class MemberInfoReader {
 	private final MemberAcademicRepository memberAcademicRepository;
 
 	public MemberProfile getProfileOrThrow(Long memberId) {
-		return memberProfileRepository.findByMemberId(memberId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+		return memberProfileRepository.findById(memberId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MEMBER_404));
+	}
+
+	public MemberProfile getProfileWithAcademicOrThrow(Long memberId) {
+		return memberProfileRepository.findWithAcademicByMemberId(memberId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MEMBER_404));
 	}
 
 	@Transactional
-	public MemberAcademic getOrCreateAcademic(Long memberId) {
-		return memberAcademicRepository.findByMemberProfile_MemberId(memberId)
-			.orElseGet(() -> createAcademic(memberId));
+	public void createAcademicIfAbsent(MemberProfile profile) {
+		if (profile.getAcademic() != null) {
+			return;
+		}
+
+		MemberAcademic academic = MemberAcademic.create(profile);
+		profile.attachAcademic(academic);
+
+		memberAcademicRepository.save(academic);
 	}
 
 	public void validateMajorRoleOrThrow(Long memberId) {
@@ -37,11 +49,5 @@ public class MemberInfoReader {
 		if (profile.getRole() != MemberRole.MAJOR) {
 			throw new BusinessException(ErrorCode.MAJOR_ROLE_REQUIRED);
 		}
-	}
-
-	private MemberAcademic createAcademic(Long memberId) {
-		MemberProfile memberProfile = getProfileOrThrow(memberId);
-		MemberAcademic memberAcademic = MemberAcademic.create(memberProfile);
-		return memberAcademicRepository.save(memberAcademic);
 	}
 }

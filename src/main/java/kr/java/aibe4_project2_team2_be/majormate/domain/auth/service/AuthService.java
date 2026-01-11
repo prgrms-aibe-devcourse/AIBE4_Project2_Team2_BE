@@ -2,7 +2,6 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.auth.service;
 
 import java.time.LocalDateTime;
 
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +21,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.RefreshT
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.DuplicateException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
@@ -69,7 +69,7 @@ public class AuthService {
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 
 		// 5. 회원 생성
-		MemberProfile memberProfile = MemberProfile.create(
+		MemberProfile memberProfile = MemberProfile.createLocal(
 			request.getName(), request.getNickname(), request.getEmail(), request.getUsername(), encodedPassword
 		);
 

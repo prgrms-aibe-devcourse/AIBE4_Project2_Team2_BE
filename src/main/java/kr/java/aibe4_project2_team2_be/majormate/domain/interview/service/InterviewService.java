@@ -18,8 +18,6 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.Intervi
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewFormRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewMajorSnapshotRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewStudentSnapshotRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
@@ -84,28 +82,30 @@ public class InterviewService {
 	public AppliedInterviewFormResponse createInterviewForm(
 		Long studentId, Long majorId, InterviewFormCreateRequest request
 	) {
-		validateCreateFormRequestOrThrow(studentId, majorId);
+		// validateCreateFormRequestOrThrow(studentId, majorId);
+		//
+		// memberInfoReader.validateMajorRoleOrThrow(majorId);
+		// validateReapplyAllowedOrThrow(studentId, majorId);
+		//
+		// MemberProfile student = memberInfoReader.getProfileWithAcademicOrThrow(studentId);
+		// MemberProfile major = memberInfoReader.getProfileWithAcademicOrThrow(majorId);
+		//
+		// MemberAcademic studentAcademic = memberInfoReader.createAcademic(studentId);
+		// MemberAcademic majorAcademic = memberInfoReader.createAcademic(majorId);
+		//
+		// InterviewForm saved = interviewFormRepository.save(InterviewForm.create(studentId, majorId, request));
+		//
+		// interviewStudentSnapshotRepository.save(
+		// 	InterviewStudentSnapshot.create(saved, student, studentAcademic)
+		// );
+		//
+		// InterviewMajorSnapshot majorSnapshot = interviewMajorSnapshotRepository.save(
+		// 	InterviewMajorSnapshot.create(saved, major, majorAcademic)
+		// );
+		//
+		// return AppliedInterviewFormResponse.from(majorSnapshot, saved);
 
-		memberInfoReader.validateMajorRoleOrThrow(majorId);
-		validateReapplyAllowedOrThrow(studentId, majorId);
-
-		MemberProfile student = memberInfoReader.getProfileOrThrow(studentId);
-		MemberProfile major = memberInfoReader.getProfileOrThrow(majorId);
-
-		MemberAcademic studentAcademic = memberInfoReader.getOrCreateAcademic(studentId);
-		MemberAcademic majorAcademic = memberInfoReader.getOrCreateAcademic(majorId);
-
-		InterviewForm saved = interviewFormRepository.save(InterviewForm.create(studentId, majorId, request));
-
-		interviewStudentSnapshotRepository.save(
-			InterviewStudentSnapshot.create(saved, student, studentAcademic)
-		);
-
-		InterviewMajorSnapshot majorSnapshot = interviewMajorSnapshotRepository.save(
-			InterviewMajorSnapshot.create(saved, major, majorAcademic)
-		);
-
-		return AppliedInterviewFormResponse.from(majorSnapshot, saved);
+		return null;
 	}
 
 	private void validateCreateFormRequestOrThrow(Long studentId, Long majorId) {
