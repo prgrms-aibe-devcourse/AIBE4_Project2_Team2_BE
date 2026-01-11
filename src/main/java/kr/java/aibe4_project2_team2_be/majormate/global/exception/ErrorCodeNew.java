@@ -13,22 +13,38 @@ import lombok.Getter;
 public enum ErrorCodeNew {
 
 	// Common
-	COMMON_400(HttpStatus.BAD_REQUEST, "COMMON_400", "요청 값이 올바르지 않습니다."),
-	COMMON_401(HttpStatus.UNAUTHORIZED, "COMMON_401", "인증이 필요합니다."),
-	COMMON_403(HttpStatus.FORBIDDEN, "COMMON_403", "접근 권한이 없습니다."),
-	COMMON_404(HttpStatus.NOT_FOUND, "COMMON_404", "리소스를 찾을 수 없습니다."),
+	COMMON_400(
+		HttpStatus.BAD_REQUEST, "COMMON_400", "요청 값이 올바르지 않습니다."
+	),
+	COMMON_401(
+		HttpStatus.UNAUTHORIZED, "COMMON_401", "인증이 필요합니다."
+	),
+	COMMON_403(
+		HttpStatus.FORBIDDEN, "COMMON_403", "접근 권한이 없습니다."
+	),
+	COMMON_404(
+		HttpStatus.NOT_FOUND, "COMMON_404", "리소스를 찾을 수 없습니다."
+	),
 	COMMON_405_METHOD_NOT_ALLOWED(
 		HttpStatus.METHOD_NOT_ALLOWED, "COMMON_405_METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메서드입니다."
 	),
-	COMMON_409(HttpStatus.CONFLICT, "COMMON_409", "요청이 현재 상태와 충돌합니다."),
-	COMMON_500(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500", "서버 오류가 발생했습니다."),
+	COMMON_409(
+		HttpStatus.CONFLICT, "COMMON_409", "요청이 현재 상태와 충돌합니다."
+	),
+	COMMON_500(
+		HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500", "서버 오류가 발생했습니다."
+	),
 	COMMON_500_SNAPSHOT_MISSING(
 		HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500_SNAPSHOT_MISSING", "요청 처리에 필요한 스냅샷 데이터가 없습니다."
 	),
 
 	// Auth
-	AUTH_401(HttpStatus.UNAUTHORIZED, "AUTH_401", "인증이 필요합니다."),
-	AUTH_403(HttpStatus.FORBIDDEN, "AUTH_403", "접근 권한이 없습니다."),
+	AUTH_401(
+		HttpStatus.UNAUTHORIZED, "AUTH_401", "인증이 필요합니다."
+	),
+	AUTH_403(
+		HttpStatus.FORBIDDEN, "AUTH_403", "접근 권한이 없습니다."
+	),
 
 	// Member
 	MEMBER_400_PASSWORD_REQUIRED(
@@ -52,15 +68,6 @@ public enum ErrorCodeNew {
 	MEMBER_400_SAME_AS_OLD_PASSWORD(
 		HttpStatus.BAD_REQUEST, "MEMBER_400_SAME_AS_OLD_PASSWORD", "새 비밀번호는 기존 비밀번호와 다르게 설정해야 합니다."
 	),
-	MEMBER_409_DUPLICATE_NICKNAME(
-		HttpStatus.CONFLICT, "MEMBER_409_DUPLICATE_NICKNAME", "이미 사용 중인 닉네임입니다."
-	),
-	MEMBER_409_DUPLICATE_EMAIL(
-		HttpStatus.CONFLICT, "MEMBER_409_DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다."
-	),
-	MEMBER_409_DUPLICATE_USERNAME(
-		HttpStatus.CONFLICT, "MEMBER_409_DUPLICATE_USERNAME", "이미 사용 중인 아이디입니다."
-	),
 	MEMBER_400_INVALID_ROLE_TRANSITION(
 		HttpStatus.BAD_REQUEST, "MEMBER_400_INVALID_ROLE_TRANSITION", "역할 변경 요청이 올바르지 않습니다."
 	),
@@ -70,11 +77,17 @@ public enum ErrorCodeNew {
 	MEMBER_404(
 		HttpStatus.NOT_FOUND, "MEMBER_404", "회원 정보를 찾을 수 없습니다."
 	),
+	MEMBER_409_DUPLICATE_NICKNAME(
+		HttpStatus.CONFLICT, "MEMBER_409_DUPLICATE_NICKNAME", "이미 사용 중인 닉네임입니다."
+	),
+	MEMBER_409_DUPLICATE_EMAIL(
+		HttpStatus.CONFLICT, "MEMBER_409_DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다."
+	),
+	MEMBER_409_DUPLICATE_USERNAME(
+		HttpStatus.CONFLICT, "MEMBER_409_DUPLICATE_USERNAME", "이미 사용 중인 아이디입니다."
+	),
 
 	// Interview
-	INTERVIEW_404(
-		HttpStatus.NOT_FOUND, "INTERVIEW_404", "인터뷰 신청 정보를 찾을 수 없습니다."
-	),
 	INTERVIEW_400_SELF_REQUEST_NOT_ALLOWED(
 		HttpStatus.BAD_REQUEST, "INTERVIEW_400_SELF_REQUEST_NOT_ALLOWED", "자기 자신에게 인터뷰를 신청할 수 없습니다."
 	),
@@ -83,6 +96,9 @@ public enum ErrorCodeNew {
 	),
 	INTERVIEW_400_INVALID_STATE(
 		HttpStatus.BAD_REQUEST, "INTERVIEW_400_INVALID_STATE", "현재 상태에서는 요청을 처리할 수 없습니다."
+	),
+	INTERVIEW_404(
+		HttpStatus.NOT_FOUND, "INTERVIEW_404", "인터뷰 신청 정보를 찾을 수 없습니다."
 	),
 	INTERVIEW_409_ALREADY_EXISTS(
 		HttpStatus.CONFLICT, "INTERVIEW_409_ALREADY_EXISTS", "진행 중인 인터뷰 신청이 이미 존재합니다."
