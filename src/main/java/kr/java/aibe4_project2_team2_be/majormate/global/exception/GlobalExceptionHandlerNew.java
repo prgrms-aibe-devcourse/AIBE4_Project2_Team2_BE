@@ -12,6 +12,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -23,7 +24,7 @@ import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.Error
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-// @RestControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandlerNew {
 
 	@ExceptionHandler(BusinessExceptionNew.class)

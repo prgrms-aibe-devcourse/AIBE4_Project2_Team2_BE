@@ -63,4 +63,8 @@ public class SocialAccount {
 		this.providerId = providerId;
 		this.createdAt = LocalDateTime.now();
 	}
+
+	public void attachMemberProfile(MemberProfile memberProfile) {
+		this.memberProfile = memberProfile;
+	}
 }

@@ -7,19 +7,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.request.MemberDetailUpdateRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberAcademicResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberDetailResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberProfileResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.request.MemberInfoUpdateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberInfoResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.DuplicateException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -31,62 +27,57 @@ public class MemberService {
 	private final MemberProfileRepository memberProfileRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	public MemberProfileResponse getMemberProfile(Long memberId) {
-		MemberProfile profile = memberInfoReader.getProfileOrThrow(memberId);
-		return MemberProfileResponse.from(profile);
+	public MemberInfoResponse getMemberInfo(Long memberId) {
+		MemberProfile profile = memberInfoReader.getProfileWithAcademicOrThrow(memberId);
+		return MemberInfoResponse.from(profile);
 	}
 
 	@Transactional
-	public MemberAcademicResponse getMemberAcademic(Long memberId) {
-		MemberAcademic academic = memberInfoReader.getOrCreateAcademic(memberId);
-		return MemberAcademicResponse.from(academic);
-	}
+	public MemberInfoResponse updateMemberInfo(Long memberId, MemberInfoUpdateRequest request) {
+		MemberProfile profile = memberInfoReader.getProfileWithAcademicOrThrow(memberId);
 
-	@Transactional
-	public MemberDetailResponse getMemberDetail(Long memberId) {
-		MemberProfile profile = memberInfoReader.getProfileOrThrow(memberId);
-		MemberAcademic academic = memberInfoReader.getOrCreateAcademic(memberId);
-		return MemberDetailResponse.from(profile, academic);
-	}
+		validateCurrentPasswordByPolicyOrThrow(profile, request.currentPassword());
+		validatePasswordChangePolicyOrThrow(profile, request.newPassword());
 
-	@Transactional
-	public MemberDetailResponse updateMemberDetail(Long memberId, MemberDetailUpdateRequest request) {
-		MemberProfile profile = memberInfoReader.getProfileOrThrow(memberId);
-		MemberAcademic academic = memberInfoReader.getOrCreateAcademic(memberId);
-
-		validateCurrentPasswordOrThrow(profile, request.currentPassword());
-		validateMajorAcademicRequiredOrThrow(profile, request.university(), request.major());
-
-		applyMemberUpdates(profile, request);
-		applyAcademicUpdates(academic, request);
-
-		return MemberDetailResponse.from(profile, academic);
-	}
-
-	private void validateCurrentPasswordOrThrow(MemberProfile profile, String currentPassword) {
-		if (isBlank(currentPassword)) {
-			throw new BadRequestException(ErrorCode.CURRENT_PASSWORD_REQUIRED);
-		}
-		if (!passwordEncoder.matches(currentPassword, profile.getPassword())) {
-			throw new BadRequestException(ErrorCode.INVALID_PASSWORD);
-		}
-	}
-
-	private void validateMajorAcademicRequiredOrThrow(MemberProfile profile, String university, String major) {
-		if (profile.getRole() != MemberRole.MAJOR) {
-			return;
-		}
-		if (isBlank(university) || isBlank(major)) {
-			throw new BusinessException(ErrorCode.MAJOR_ACADEMIC_REQUIRED);
-		}
-	}
-
-	private void applyMemberUpdates(MemberProfile profile, MemberDetailUpdateRequest request) {
 		updateNickname(profile, request.nickname());
 		updateEmail(profile, request.email());
+
 		updatePasswordIfProvided(profile, request.newPassword());
 		updateProfileImageUrl(profile, request.profileImageUrl());
 		updateStatus(profile, request.status());
+
+		MemberAcademic academic = resolveAcademicForUpdate(profile, request);
+		applyAcademicUpdates(academic, request);
+
+		return MemberInfoResponse.from(profile);
+	}
+
+	private void validateCurrentPasswordByPolicyOrThrow(MemberProfile profile, String currentPassword) {
+		if (!profile.isLocalUser()) {
+			if (currentPassword != null && !currentPassword.isBlank()) {
+				throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_CURRENT_PASSWORD_NOT_ALLOWED);
+			}
+			return;
+		}
+
+		if (isBlank(currentPassword)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_CURRENT_PASSWORD_REQUIRED);
+		}
+		if (!profile.hasPassword()) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_PASSWORD_REQUIRED);
+		}
+		if (!passwordEncoder.matches(currentPassword, profile.getPassword())) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_CURRENT_PASSWORD_MISMATCH);
+		}
+	}
+
+	private void validatePasswordChangePolicyOrThrow(MemberProfile profile, String newPassword) {
+		if (isBlank(newPassword)) {
+			return;
+		}
+		if (!profile.isLocalUser()) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_PASSWORD_CHANGE_NOT_ALLOWED);
+		}
 	}
 
 	private void updateNickname(MemberProfile profile, String nickname) {
@@ -94,7 +85,7 @@ public class MemberService {
 			return;
 		}
 		if (memberProfileRepository.existsByNickname(nickname)) {
-			throw new DuplicateException(ErrorCode.DUPLICATE_NICKNAME);
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_NICKNAME);
 		}
 		profile.updateNickname(nickname);
 	}
@@ -104,7 +95,7 @@ public class MemberService {
 			return;
 		}
 		if (memberProfileRepository.existsByEmail(email)) {
-			throw new DuplicateException(ErrorCode.DUPLICATE_EMAIL);
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_EMAIL);
 		}
 		profile.updateEmail(email);
 	}
@@ -113,14 +104,17 @@ public class MemberService {
 		if (isBlank(newPassword)) {
 			return;
 		}
-		if (passwordEncoder.matches(newPassword, profile.getPassword())) {
-			throw new BadRequestException(ErrorCode.SAME_AS_OLD_PASSWORD);
+		if (profile.hasPassword() && passwordEncoder.matches(newPassword, profile.getPassword())) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_SAME_AS_OLD_PASSWORD);
 		}
 		profile.updatePassword(passwordEncoder.encode(newPassword));
 	}
 
 	private void updateProfileImageUrl(MemberProfile profile, String profileImageUrl) {
-		if (isBlank(profileImageUrl)) {
+		if (profileImageUrl == null) {
+			return;
+		}
+		if (profileImageUrl.isBlank()) {
 			if (profile.getProfileImageUrl() != null) {
 				profile.updateProfileImageUrl(null);
 			}
@@ -132,46 +126,85 @@ public class MemberService {
 		profile.updateProfileImageUrl(profileImageUrl);
 	}
 
-	private void updateStatus(MemberProfile profile, String status) {
-		if (isBlank(status)) {
+	private void updateStatus(MemberProfile profile, MemberStatus status) {
+		if (status == null) {
 			return;
 		}
-		MemberStatus newStatus = parseStatusOrThrow(status.toUpperCase());
-		if (newStatus == profile.getStatus()) {
+		if (status == profile.getStatus()) {
 			return;
 		}
-		profile.updateStatus(newStatus);
+		profile.updateStatus(status);
 	}
 
-	private MemberStatus parseStatusOrThrow(String status) {
-		try {
-			return MemberStatus.valueOf(status);
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(ErrorCode.INVALID_MEMBER_STATUS);
+	private MemberAcademic resolveAcademicForUpdate(MemberProfile profile, MemberInfoUpdateRequest request) {
+		MemberAcademic academic = profile.getAcademic();
+
+		boolean academicUpdateRequested = request.university() != null || request.major() != null;
+		boolean majorRequiresAcademic = profile.getRole() == MemberRole.MAJOR;
+
+		if (academic == null && (academicUpdateRequested || majorRequiresAcademic)) {
+			memberInfoReader.createAcademicIfAbsent(profile);
+			academic = profile.getAcademic();
 		}
+
+		if (profile.getRole() == MemberRole.MAJOR) {
+			String finalUniversity = resolveFinalValue(
+				academic != null ? academic.getUniversity() : null,
+				request.university()
+			);
+			String finalMajor = resolveFinalValue(
+				academic != null ? academic.getMajor() : null,
+				request.major()
+			);
+
+			if (isBlank(finalUniversity) || isBlank(finalMajor)) {
+				throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_ACADEMIC_REQUIRED);
+			}
+		}
+
+		return academic;
 	}
 
-	private void applyAcademicUpdates(MemberAcademic academic, MemberDetailUpdateRequest request) {
+	private void applyAcademicUpdates(MemberAcademic academic, MemberInfoUpdateRequest request) {
+		if (academic == null) {
+			return;
+		}
 		updateUniversity(academic, request.university());
 		updateMajor(academic, request.major());
 	}
 
 	private void updateUniversity(MemberAcademic academic, String university) {
-		updateIfNotBlankAndChanged(university, academic.getUniversity(), academic::updateUniversity);
+		applyNullablePatch(university, academic.getUniversity(), academic::updateUniversity);
 	}
 
 	private void updateMajor(MemberAcademic academic, String major) {
-		updateIfNotBlankAndChanged(major, academic.getMajor(), academic::updateMajor);
+		applyNullablePatch(major, academic.getMajor(), academic::updateMajor);
 	}
 
-	private void updateIfNotBlankAndChanged(String newValue, String currentValue, Consumer<String> updateAction) {
-		if (isBlank(newValue)) {
+	private void applyNullablePatch(String newValue, String currentValue, Consumer<String> updater) {
+		if (newValue == null) {
+			return;
+		}
+		if (newValue.isBlank()) {
+			if (currentValue != null) {
+				updater.accept(null);
+			}
 			return;
 		}
 		if (Objects.equals(newValue, currentValue)) {
 			return;
 		}
-		updateAction.accept(newValue);
+		updater.accept(newValue);
+	}
+
+	private String resolveFinalValue(String current, String requestValue) {
+		if (requestValue == null) {
+			return current;
+		}
+		if (requestValue.isBlank()) {
+			return null;
+		}
+		return requestValue;
 	}
 
 	private boolean isBlank(String value) {

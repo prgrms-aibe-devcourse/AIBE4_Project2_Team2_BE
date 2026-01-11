@@ -2,9 +2,13 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.review.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +25,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.review.dto.response.Writ
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.entity.Review;
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.repository.ReviewRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,131 +38,165 @@ public class ReviewService {
 	private final InterviewFormRepository interviewFormRepository;
 	private final InterviewStudentSnapshotRepository interviewStudentSnapshotRepository;
 	private final InterviewMajorSnapshotRepository interviewMajorSnapshotRepository;
-
 	private final MemberInfoReader memberInfoReader;
 
-	public List<WrittenReviewResponse> getWrittenReviews(Long studentId) {
-		List<Long> interviewIds = interviewFormRepository.findInterviewIdsByStudentMemberId(studentId);
-		if (interviewIds.isEmpty()) {
-			return List.of();
-		}
-
-		List<Review> reviews = reviewRepository.findByInterviewIdInOrderByCreatedAtDesc(interviewIds);
+	public Page<WrittenReviewResponse> getWrittenReviews(Long memberId, Pageable pageable) {
+		Page<Review> page = reviewRepository.findWrittenByStudent(memberId, pageable);
+		List<Review> reviews = page.getContent();
 		if (reviews.isEmpty()) {
-			return List.of();
+			return Page.empty(pageable);
 		}
 
-		List<Long> reviewInterviewIds = extractInterviewIds(reviews);
+		List<Long> interviewIds = extractInterviewIds(reviews);
 
 		Map<Long, InterviewForm> formMap = indexByInterviewId(
-			interviewFormRepository.findAllById(reviewInterviewIds),
+			interviewFormRepository.findAllById(interviewIds),
 			InterviewForm::getInterviewId
 		);
 
 		Map<Long, InterviewMajorSnapshot> majorSnapshotMap = indexByInterviewId(
-			interviewMajorSnapshotRepository.findByInterviewIdIn(reviewInterviewIds),
+			interviewMajorSnapshotRepository.findByInterviewIdIn(interviewIds),
 			InterviewMajorSnapshot::getInterviewId
 		);
 
-		return reviews.stream()
-			.map(review -> {
-				Long interviewId = review.getInterviewId();
-				InterviewForm form = getOrInternalError(formMap, interviewId);
-				InterviewMajorSnapshot snapshot = getOrInternalError(majorSnapshotMap, interviewId);
-				return WrittenReviewResponse.from(review, form, snapshot);
+		List<WrittenReviewResponse> content = reviews.stream()
+			.map(r -> {
+				Long interviewId = r.getInterviewId();
+				InterviewForm form = getOrInternalSnapshotMissing(formMap, interviewId);
+				InterviewMajorSnapshot snap = getOrInternalSnapshotMissing(majorSnapshotMap, interviewId);
+				return WrittenReviewResponse.fromSummary(r, form, snap);
 			})
 			.toList();
+
+		return new PageImpl<>(content, pageable, page.getTotalElements());
 	}
 
-	public List<ReceivedReviewResponse> getReceivedReviews(Long majorId) {
-		memberInfoReader.validateMajorRoleOrThrow(majorId);
+	public WrittenReviewResponse getWrittenReviewDetail(Long memberId, Long interviewId) {
+		InterviewForm form = getInterviewFormOrThrow(interviewId);
+		validateWrittenOwnerOrThrow(memberId, form);
 
-		List<Long> interviewIds = interviewFormRepository.findInterviewIdsByMajorMemberId(majorId);
-		if (interviewIds.isEmpty()) {
-			return List.of();
-		}
+		Review review = getReviewByInterviewIdOrThrow(interviewId);
+		InterviewMajorSnapshot majorSnapshot = getMajorSnapshotOrInternalError(interviewId);
 
-		List<Review> reviews = reviewRepository.findByInterviewIdInOrderByCreatedAtDesc(interviewIds);
+		return WrittenReviewResponse.fromDetail(review, form, majorSnapshot);
+	}
+
+	public Page<ReceivedReviewResponse> getReceivedReviews(Long memberId, Pageable pageable) {
+		memberInfoReader.validateMajorRoleOrThrow(memberId);
+
+		Page<Review> page = reviewRepository.findReceivedByMajor(memberId, pageable);
+		List<Review> reviews = page.getContent();
 		if (reviews.isEmpty()) {
-			return List.of();
+			return Page.empty(pageable);
 		}
 
-		List<Long> reviewInterviewIds = extractInterviewIds(reviews);
+		List<Long> interviewIds = extractInterviewIds(reviews);
+
+		Map<Long, InterviewForm> formMap = indexByInterviewId(
+			interviewFormRepository.findAllById(interviewIds),
+			InterviewForm::getInterviewId
+		);
 
 		Map<Long, InterviewStudentSnapshot> studentSnapshotMap = indexByInterviewId(
-			interviewStudentSnapshotRepository.findByInterviewIdIn(reviewInterviewIds),
+			interviewStudentSnapshotRepository.findByInterviewIdIn(interviewIds),
 			InterviewStudentSnapshot::getInterviewId
 		);
 
-		return reviews.stream()
-			.map(review -> ReceivedReviewResponse.from(
-				review,
-				getOrInternalError(studentSnapshotMap, review.getInterviewId())
-			))
+		List<ReceivedReviewResponse> content = reviews.stream()
+			.map(r -> {
+				Long interviewId = r.getInterviewId();
+				InterviewForm form = getOrInternalSnapshotMissing(formMap, interviewId);
+				InterviewStudentSnapshot snap = getOrInternalSnapshotMissing(studentSnapshotMap, interviewId);
+				return ReceivedReviewResponse.fromSummary(r, form, snap);
+			})
 			.toList();
+
+		return new PageImpl<>(content, pageable, page.getTotalElements());
+	}
+
+	public ReceivedReviewResponse getReceivedReviewDetail(Long memberId, Long interviewId) {
+		memberInfoReader.validateMajorRoleOrThrow(memberId);
+
+		InterviewForm form = getInterviewFormOrThrow(interviewId);
+		validateReceivedOwnerOrThrow(memberId, form);
+
+		Review review = getReviewByInterviewIdOrThrow(interviewId);
+		InterviewStudentSnapshot studentSnapshot = getStudentSnapshotOrInternalError(interviewId);
+
+		return ReceivedReviewResponse.fromDetail(review, form, studentSnapshot);
 	}
 
 	@Transactional
 	public WrittenReviewResponse createReview(Long memberId, Long interviewId, ReviewRequest request) {
-		InterviewForm interviewForm = getInterviewFormOrThrow(interviewId);
+		InterviewForm form = getInterviewFormOrThrow(interviewId);
 
-		validateOwnerOrThrow(memberId, interviewForm);
-		validateInterviewCompletedOrThrow(interviewForm);
+		validateWrittenOwnerOrThrow(memberId, form);
+		validateInterviewCompletedOrThrow(form);
 		validateReviewNotExistsOrThrow(interviewId);
 
 		Review saved = reviewRepository.save(Review.create(interviewId, request.rating(), request.content()));
-
 		InterviewMajorSnapshot majorSnapshot = getMajorSnapshotOrInternalError(interviewId);
 
-		return WrittenReviewResponse.from(saved, interviewForm, majorSnapshot);
+		return WrittenReviewResponse.fromDetail(saved, form, majorSnapshot);
 	}
 
 	@Transactional
 	public WrittenReviewResponse updateReview(Long memberId, Long interviewId, ReviewRequest request) {
-		InterviewForm interviewForm = getInterviewFormOrThrow(interviewId);
+		InterviewForm form = getInterviewFormOrThrow(interviewId);
 
-		validateOwnerOrThrow(memberId, interviewForm);
-		validateInterviewCompletedOrThrow(interviewForm);
+		validateWrittenOwnerOrThrow(memberId, form);
+		validateInterviewCompletedOrThrow(form);
 
 		Review review = getReviewByInterviewIdOrThrow(interviewId);
 		review.update(request.rating(), request.content());
 
 		InterviewMajorSnapshot majorSnapshot = getMajorSnapshotOrInternalError(interviewId);
 
-		return WrittenReviewResponse.from(review, interviewForm, majorSnapshot);
+		return WrittenReviewResponse.fromDetail(review, form, majorSnapshot);
 	}
 
 	private InterviewForm getInterviewFormOrThrow(Long interviewId) {
 		return interviewFormRepository.findById(interviewId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.INTERVIEW_NOT_FOUND));
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
 	}
 
 	private Review getReviewByInterviewIdOrThrow(Long interviewId) {
 		return reviewRepository.findByInterviewId(interviewId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.REVIEW_NOT_FOUND));
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.REVIEW_404));
 	}
 
-	private void validateOwnerOrThrow(Long memberId, InterviewForm interviewForm) {
-		if (interviewForm.getStudentMemberId() == null || !memberId.equals(interviewForm.getStudentMemberId())) {
-			throw new BusinessException(ErrorCode.UNAUTHORIZED_REVIEW_ACCESS);
+	private void validateWrittenOwnerOrThrow(Long memberId, InterviewForm form) {
+		if (!Objects.equals(form.getStudentMemberId(), memberId)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.REVIEW_403_NOT_OWNER);
 		}
 	}
 
-	private void validateInterviewCompletedOrThrow(InterviewForm interviewForm) {
-		if (interviewForm.getStatus() != InterviewFormStatus.COMPLETED) {
-			throw new BusinessException(ErrorCode.INTERVIEW_CLOSED);
+	private void validateReceivedOwnerOrThrow(Long memberId, InterviewForm form) {
+		if (!Objects.equals(form.getMajorMemberId(), memberId)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.REVIEW_403_NOT_RECEIVER);
+		}
+	}
+
+	private void validateInterviewCompletedOrThrow(InterviewForm form) {
+		if (form.getStatus() != InterviewFormStatus.COMPLETED) {
+			throw new BusinessExceptionNew(ErrorCodeNew.REVIEW_400_INTERVIEW_NOT_COMPLETED);
 		}
 	}
 
 	private void validateReviewNotExistsOrThrow(Long interviewId) {
 		if (reviewRepository.existsByInterviewId(interviewId)) {
-			throw new BusinessException(ErrorCode.REVIEW_ALREADY_EXISTS);
+			throw new BusinessExceptionNew(ErrorCodeNew.REVIEW_409_ALREADY_EXISTS);
 		}
 	}
 
 	private InterviewMajorSnapshot getMajorSnapshotOrInternalError(Long interviewId) {
 		return interviewMajorSnapshotRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR));
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.COMMON_500_SNAPSHOT_MISSING));
+	}
+
+	private InterviewStudentSnapshot getStudentSnapshotOrInternalError(Long interviewId) {
+		return interviewStudentSnapshotRepository.findById(interviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.COMMON_500_SNAPSHOT_MISSING));
 	}
 
 	private List<Long> extractInterviewIds(List<Review> reviews) {
@@ -169,8 +206,8 @@ public class ReviewService {
 			.toList();
 	}
 
-	private <S> Map<Long, S> indexByInterviewId(List<S> snapshots, Function<S, Long> idExtractor) {
-		return snapshots.stream()
+	private <S> Map<Long, S> indexByInterviewId(List<S> items, Function<S, Long> idExtractor) {
+		return items.stream()
 			.collect(Collectors.toMap(
 				idExtractor,
 				Function.identity(),
@@ -178,10 +215,10 @@ public class ReviewService {
 			));
 	}
 
-	private <S> S getOrInternalError(Map<Long, S> map, Long key) {
+	private <S> S getOrInternalSnapshotMissing(Map<Long, S> map, Long key) {
 		S value = map.get(key);
 		if (value == null) {
-			throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_500_SNAPSHOT_MISSING);
 		}
 		return value;
 	}
