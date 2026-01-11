@@ -20,9 +20,10 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.RefreshToken
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.RefreshTokenRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.DuplicateException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtProperties;
@@ -52,17 +53,17 @@ public class AuthService {
 
 		// 2. 아이디 중복 검증
 		if (memberProfileRepository.existsByUsername(request.getUsername())) {
-			throw new DuplicateException(ErrorCode.DUPLICATE_USERNAME);
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_USERNAME);
 		}
 
 		// 3. 이메일 중복 검증
 		if (memberProfileRepository.existsByEmail(request.getEmail())) {
-			throw new DuplicateException(ErrorCode.DUPLICATE_EMAIL);
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_EMAIL);
 		}
 
 		// 4. 닉네임 중복 검증
 		if (memberProfileRepository.existsByNickname(request.getNickname())) {
-			throw new DuplicateException(ErrorCode.DUPLICATE_NICKNAME);
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_NICKNAME);
 		}
 
 		// 5. 비밀번호 암호화

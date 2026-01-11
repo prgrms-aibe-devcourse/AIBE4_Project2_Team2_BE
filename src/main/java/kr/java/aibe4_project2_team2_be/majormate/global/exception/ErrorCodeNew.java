@@ -17,6 +17,9 @@ public enum ErrorCodeNew {
 	COMMON_401(HttpStatus.UNAUTHORIZED, "COMMON_401", "인증이 필요합니다."),
 	COMMON_403(HttpStatus.FORBIDDEN, "COMMON_403", "접근 권한이 없습니다."),
 	COMMON_404(HttpStatus.NOT_FOUND, "COMMON_404", "리소스를 찾을 수 없습니다."),
+	COMMON_405_METHOD_NOT_ALLOWED(
+		HttpStatus.METHOD_NOT_ALLOWED, "COMMON_405_METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메서드입니다."
+	),
 	COMMON_409(HttpStatus.CONFLICT, "COMMON_409", "요청이 현재 상태와 충돌합니다."),
 	COMMON_500(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500", "서버 오류가 발생했습니다."),
 
@@ -52,6 +55,9 @@ public enum ErrorCodeNew {
 	MEMBER_409_DUPLICATE_EMAIL(
 		HttpStatus.CONFLICT, "MEMBER_409_DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다."
 	),
+	MEMBER_409_DUPLICATE_USERNAME(
+		HttpStatus.CONFLICT, "MEMBER_409_DUPLICATE_USERNAME", "이미 사용 중인 아이디입니다."
+	),
 	MEMBER_400_INVALID_ROLE_TRANSITION(
 		HttpStatus.BAD_REQUEST, "MEMBER_400_INVALID_ROLE_TRANSITION", "역할 변경 요청이 올바르지 않습니다."
 	),
@@ -63,8 +69,24 @@ public enum ErrorCodeNew {
 	),
 
 	// Interview
-	INTERVIEW_404(HttpStatus.NOT_FOUND, "INTERVIEW_404", "인터뷰 신청 정보를 찾을 수 없습니다."),
-	INTERVIEW_400_INVALID_STATE(HttpStatus.BAD_REQUEST, "INTERVIEW_400_INVALID_STATE", "현재 상태에서는 처리할 수 없습니다."),
+	INTERVIEW_404(
+		HttpStatus.NOT_FOUND, "INTERVIEW_404", "인터뷰 신청 정보를 찾을 수 없습니다."
+	),
+	INTERVIEW_400_SELF_REQUEST_NOT_ALLOWED(
+		HttpStatus.BAD_REQUEST, "INTERVIEW_400_SELF_REQUEST_NOT_ALLOWED", "자기 자신에게 인터뷰를 신청할 수 없습니다."
+	),
+	INTERVIEW_400_TARGET_NOT_MAJOR(
+		HttpStatus.BAD_REQUEST, "INTERVIEW_400_TARGET_NOT_MAJOR", "인터뷰 대상은 전공자여야 합니다."
+	),
+	INTERVIEW_409_ALREADY_EXISTS(
+		HttpStatus.CONFLICT, "INTERVIEW_409_ALREADY_EXISTS", "진행 중인 인터뷰 신청이 이미 존재합니다."
+	),
+	INTERVIEW_400_INVALID_STATE(
+		HttpStatus.BAD_REQUEST, "INTERVIEW_400_INVALID_STATE", "현재 상태에서는 요청을 처리할 수 없습니다."
+	),
+	INTERVIEW_500_SNAPSHOT_MISSING(
+		HttpStatus.INTERNAL_SERVER_ERROR, "INTERVIEW_500_SNAPSHOT_MISSING", "인터뷰 스냅샷 데이터가 존재하지 않습니다."
+	),
 
 	// Major role request
 	MAJOR_REQUEST_400_STATUS_REQUIRED(
@@ -76,13 +98,22 @@ public enum ErrorCodeNew {
 	MAJOR_REQUEST_400_INVALID_STATUS(
 		HttpStatus.BAD_REQUEST, "MAJOR_REQUEST_400_INVALID_STATUS", "전공자 신청은 재학생 또는 졸업생만 가능합니다."
 	),
+	MAJOR_ROLE_REQUEST_403_NOT_OWNER(
+		HttpStatus.FORBIDDEN, "MAJOR_ROLE_REQUEST_403_NOT_OWNER", "해당 전공자 지원서를 수정할 권한이 없습니다."
+	),
 	MAJOR_REQUEST_404(
 		HttpStatus.NOT_FOUND, "MAJOR_REQUEST_404", "전공자 신청 정보를 찾을 수 없습니다."
 	),
 
 	// Major
 	MAJOR_400_ACADEMIC_REQUIRED(
-		HttpStatus.BAD_REQUEST, "MAJOR_400_ACADEMIC_REQUIRED", "전공자(MAJOR)는 대학교와 학과 정보가 필수입니다."
+		HttpStatus.BAD_REQUEST, "MAJOR_400_ACADEMIC_REQUIRED", "전공자는 대학교와 학과 정보가 필수입니다."
+	),
+	MAJOR_400_STATUS_REQUIRED(
+		HttpStatus.BAD_REQUEST, "MAJOR_400_STATUS_REQUIRED", "전공자 상태 정보가 없어 인터뷰 신청을 처리할 수 없습니다."
+	),
+	MAJOR_403_ROLE_REQUIRED(
+		HttpStatus.FORBIDDEN, "MAJOR_403_ROLE_REQUIRED", "MAJOR 권한이 필요합니다."
 	);
 
 	private final HttpStatus httpStatus;

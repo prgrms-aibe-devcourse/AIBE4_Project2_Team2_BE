@@ -21,7 +21,6 @@ import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberSt
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -91,7 +90,7 @@ public class MajorRoleRequestService {
 			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
 
 		if (!request.getMemberProfile().getMemberId().equals(memberId)) {
-			throw new ForbiddenException();
+			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_ROLE_REQUEST_403_NOT_OWNER);
 		}
 
 		s3Service.delete(request.getDocumentUrl());
@@ -115,7 +114,7 @@ public class MajorRoleRequestService {
 		// 본인 확인 (관리자 권한 체크 로직 추가 필요)
 		if (!request.getMemberProfile().getMemberId().equals(memberId)) {
 			// TODO: 관리자인 경우 통과시키는 로직 추가
-			throw new ForbiddenException();
+			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_403);
 		}
 		return RoleRequestDetailResponse.from(request);
 	}

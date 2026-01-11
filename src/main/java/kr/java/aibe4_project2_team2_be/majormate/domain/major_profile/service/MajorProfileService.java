@@ -19,8 +19,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProf
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -36,9 +36,9 @@ public class MajorProfileService {
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다"));
 
 		if (memberProfile.getRole() != MemberRole.MAJOR) {
-			throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
+			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_403);
 		}
-		
+
 		// 이미 프로필이 있는지 확인
 		if (majorProfileRepository.findByMemberProfile_MemberId(memberId).isPresent()) {
 			throw new IllegalStateException("이미 프로필이 존재합니다.");
@@ -78,12 +78,13 @@ public class MajorProfileService {
 
 		MemberAcademic academic = memberAcademicRepository.findByMemberProfile_MemberId(memberId)
 			.orElseThrow(() -> new EntityNotFoundException("학적 정보를 찾을 수 없습니다."));
-		
+
 		return MajorProfileResponse.of(profile, academic);
 	}
 
 	public void toggleProfileActive(Long memberId) {
-		MajorProfile profile = majorProfileRepository.findByMemberProfile_MemberId(memberId).orElseThrow(() -> new EntityNotFoundException("프로필을 찾을 수 없습니다."));
+		MajorProfile profile = majorProfileRepository.findByMemberProfile_MemberId(memberId)
+			.orElseThrow(() -> new EntityNotFoundException("프로필을 찾을 수 없습니다."));
 		profile.toggleActive();
 	}
 
@@ -117,7 +118,8 @@ public class MajorProfileService {
 				MemberAcademic academic = academicMap.get(profile.getMemberProfile().getMemberId());
 				// 학적 정보가 없는 경우 예외 처리 또는 기본값 처리 (여기서는 예외 발생)
 				if (academic == null) {
-					throw new EntityNotFoundException("학적 정보가 누락된 회원이 있습니다. ID: " + profile.getMemberProfile().getMemberId());
+					throw new EntityNotFoundException(
+						"학적 정보가 누락된 회원이 있습니다. ID: " + profile.getMemberProfile().getMemberId());
 				}
 				return MajorCardResponse.of(profile, academic);
 			})

@@ -6,6 +6,9 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +21,13 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.Intervi
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewFormRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewMajorSnapshotRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewStudentSnapshotRepository;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
+import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,11 +41,12 @@ public class InterviewService {
 
 	private final MemberInfoReader memberInfoReader;
 
-	public List<AppliedInterviewFormResponse> getAppliedInterviewForms(Long studentId) {
-		List<InterviewForm> forms = interviewFormRepository.findByStudentMemberIdOrderByCreatedAtDesc(studentId);
+	public Page<AppliedInterviewFormResponse> getAppliedInterviewForms(Long requesterId, Pageable pageable) {
+		Page<InterviewForm> page = interviewFormRepository.findByStudentMemberId(requesterId, pageable);
 
+		List<InterviewForm> forms = page.getContent();
 		if (forms.isEmpty()) {
-			return List.of();
+			return Page.empty(pageable);
 		}
 
 		List<Long> interviewIds = extractInterviewIds(forms);
@@ -49,19 +56,58 @@ public class InterviewService {
 			InterviewMajorSnapshot::getInterviewId
 		);
 
-		return forms.stream()
-			.map(form -> AppliedInterviewFormResponse.from(
-				getOrInternalError(majorSnapshotMap, form.getInterviewId()), form
-			)).toList();
+		List<AppliedInterviewFormResponse> content = forms.stream()
+			.map(form -> AppliedInterviewFormResponse.fromSummary(
+				getOrSnapshotMissing(majorSnapshotMap, form.getInterviewId()),
+				form
+			))
+			.toList();
+
+		return new PageImpl<>(content, pageable, page.getTotalElements());
 	}
 
-	public List<ReceivedInterviewFormResponse> getReceivedInterviewForms(Long majorId) {
+	public Page<AppliedInterviewFormResponse> getAppliedCompletedInterviewForms(Long studentId, Pageable pageable) {
+		Page<InterviewForm> page = interviewFormRepository.findByStudentMemberIdAndStatus(
+			studentId, InterviewFormStatus.COMPLETED, pageable
+		);
+
+		if (page.isEmpty()) {
+			return Page.empty(pageable);
+		}
+
+		List<InterviewForm> forms = page.getContent();
+		List<Long> interviewIds = forms.stream()
+			.map(InterviewForm::getInterviewId)
+			.distinct()
+			.toList();
+
+		Map<Long, InterviewMajorSnapshot> majorSnapshotMap = interviewMajorSnapshotRepository.findByInterviewIdIn(
+				interviewIds)
+			.stream()
+			.collect(Collectors.toMap(
+				InterviewMajorSnapshot::getInterviewId,
+				Function.identity(),
+				(a, b) -> a
+			));
+
+		List<AppliedInterviewFormResponse> content = forms.stream()
+			.map(form -> AppliedInterviewFormResponse.fromSummary(
+				getOrSnapshotMissing(majorSnapshotMap, form.getInterviewId()),
+				form
+			))
+			.toList();
+
+		return new PageImpl<>(content, pageable, page.getTotalElements());
+	}
+
+	public Page<ReceivedInterviewFormResponse> getReceivedInterviewForms(Long majorId, Pageable pageable) {
 		memberInfoReader.validateMajorRoleOrThrow(majorId);
 
-		List<InterviewForm> forms = interviewFormRepository.findByMajorMemberIdOrderByCreatedAtAsc(majorId);
+		Page<InterviewForm> page = interviewFormRepository.findByMajorMemberId(majorId, pageable);
 
+		List<InterviewForm> forms = page.getContent();
 		if (forms.isEmpty()) {
-			return List.of();
+			return Page.empty(pageable);
 		}
 
 		List<Long> interviewIds = extractInterviewIds(forms);
@@ -71,61 +117,165 @@ public class InterviewService {
 			InterviewStudentSnapshot::getInterviewId
 		);
 
-		return forms.stream()
-			.map(form -> ReceivedInterviewFormResponse.from(
-				getOrInternalError(studentSnapshotMap, form.getInterviewId()),
+		List<ReceivedInterviewFormResponse> content = forms.stream()
+			.map(form -> ReceivedInterviewFormResponse.fromSummary(
+				getOrSnapshotMissing(studentSnapshotMap, form.getInterviewId()),
 				form
-			)).toList();
+			))
+			.toList();
+
+		return new PageImpl<>(content, pageable, page.getTotalElements());
+	}
+
+	public AppliedInterviewFormResponse getAppliedInterviewFormDetail(Long requesterId, Long interviewId) {
+		InterviewForm form = interviewFormRepository.findById(interviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+
+		if (!Objects.equals(form.getStudentMemberId(), requesterId)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+		}
+
+		InterviewMajorSnapshot snapshot = interviewMajorSnapshotRepository.findById(interviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_500_SNAPSHOT_MISSING));
+
+		return AppliedInterviewFormResponse.fromDetail(snapshot, form);
+	}
+
+	public ReceivedInterviewFormResponse getReceivedInterviewFormDetail(Long majorId, Long interviewId) {
+		memberInfoReader.validateMajorRoleOrThrow(majorId);
+
+		InterviewForm form = interviewFormRepository.findById(interviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+
+		if (!Objects.equals(form.getMajorMemberId(), majorId)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+		}
+
+		InterviewStudentSnapshot snapshot = interviewStudentSnapshotRepository.findById(interviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_500_SNAPSHOT_MISSING));
+
+		return ReceivedInterviewFormResponse.fromDetail(snapshot, form);
 	}
 
 	@Transactional
-	public AppliedInterviewFormResponse createInterviewForm(
-		Long studentId, Long majorId, InterviewFormCreateRequest request
-	) {
-		// validateCreateFormRequestOrThrow(studentId, majorId);
-		//
-		// memberInfoReader.validateMajorRoleOrThrow(majorId);
-		// validateReapplyAllowedOrThrow(studentId, majorId);
-		//
-		// MemberProfile student = memberInfoReader.getProfileWithAcademicOrThrow(studentId);
-		// MemberProfile major = memberInfoReader.getProfileWithAcademicOrThrow(majorId);
-		//
-		// MemberAcademic studentAcademic = memberInfoReader.createAcademic(studentId);
-		// MemberAcademic majorAcademic = memberInfoReader.createAcademic(majorId);
-		//
-		// InterviewForm saved = interviewFormRepository.save(InterviewForm.create(studentId, majorId, request));
-		//
-		// interviewStudentSnapshotRepository.save(
-		// 	InterviewStudentSnapshot.create(saved, student, studentAcademic)
-		// );
-		//
-		// InterviewMajorSnapshot majorSnapshot = interviewMajorSnapshotRepository.save(
-		// 	InterviewMajorSnapshot.create(saved, major, majorAcademic)
-		// );
-		//
-		// return AppliedInterviewFormResponse.from(majorSnapshot, saved);
+	public AppliedInterviewFormResponse createInterviewForm(Long requesterId, Long targetMajorId,
+		InterviewFormCreateRequest request) {
 
-		return null;
+		validateCreateRequestOrThrow(requesterId, targetMajorId);
+
+		MemberProfile requester = memberInfoReader.getProfileOrThrow(requesterId);
+		MemberProfile targetMajor = memberInfoReader.getProfileOrThrow(targetMajorId);
+
+		validateInterviewApplyRuleOrThrow(requester, targetMajor);
+
+		validateReapplyAllowedOrThrow(requesterId, targetMajorId);
+
+		MemberAcademic requesterAcademic = memberInfoReader.getAcademicOrNull(requesterId);
+		MemberAcademic targetMajorAcademic = memberInfoReader.getAcademicOrNull(targetMajorId);
+
+		validateMajorSnapshotRequiredOrThrow(targetMajor, targetMajorAcademic);
+
+		InterviewForm saved = interviewFormRepository.save(InterviewForm.create(requesterId, targetMajorId, request));
+
+		InterviewStudentSnapshot studentSnapshot = interviewStudentSnapshotRepository.save(
+			InterviewStudentSnapshot.create(saved, requester, requesterAcademic)
+		);
+
+		InterviewMajorSnapshot majorSnapshot = interviewMajorSnapshotRepository.save(
+			InterviewMajorSnapshot.create(saved, targetMajor, targetMajorAcademic)
+		);
+
+		return AppliedInterviewFormResponse.fromDetail(majorSnapshot, saved);
 	}
 
-	private void validateCreateFormRequestOrThrow(Long studentId, Long majorId) {
-		if (studentId == null || majorId == null) {
-			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+	@Transactional
+	public void accept(Long majorId, Long interviewId, String message) {
+		memberInfoReader.validateMajorRoleOrThrow(majorId);
+
+		InterviewForm form = interviewFormRepository.findById(interviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+
+		if (!Objects.equals(form.getMajorMemberId(), majorId)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
 		}
-		if (Objects.equals(studentId, majorId)) {
-			throw new BusinessException(ErrorCode.INTERVIEW_SELF_REQUEST_NOT_ALLOWED);
+		if (form.getStatus() != InterviewFormStatus.PENDING) {
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+		}
+
+		form.accept(message);
+	}
+
+	@Transactional
+	public void reject(Long majorId, Long interviewId, String message) {
+		memberInfoReader.validateMajorRoleOrThrow(majorId);
+
+		InterviewForm form = interviewFormRepository.findById(interviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+
+		if (!Objects.equals(form.getMajorMemberId(), majorId)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+		}
+		if (form.getStatus() != InterviewFormStatus.PENDING) {
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+		}
+
+		form.reject(message);
+	}
+
+	@Transactional
+	public void complete(Long majorId, Long interviewId) {
+		memberInfoReader.validateMajorRoleOrThrow(majorId);
+
+		InterviewForm form = interviewFormRepository.findById(interviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+
+		if (!Objects.equals(form.getMajorMemberId(), majorId)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+		}
+		if (form.getStatus() != InterviewFormStatus.ACCEPTED) {
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+		}
+
+		form.complete();
+	}
+
+	private void validateCreateRequestOrThrow(Long requesterId, Long targetMajorId) {
+		if (requesterId == null || targetMajorId == null) {
+			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_400);
+		}
+		if (Objects.equals(requesterId, targetMajorId)) {
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_SELF_REQUEST_NOT_ALLOWED);
 		}
 	}
 
-	private void validateReapplyAllowedOrThrow(Long studentId, Long majorId) {
+	private void validateInterviewApplyRuleOrThrow(MemberProfile requester, MemberProfile targetMajor) {
+		if (targetMajor.getRole() != MemberRole.MAJOR) {
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_TARGET_NOT_MAJOR);
+		}
+
+		if (requester.getRole() == MemberRole.ADMIN) {
+			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+		}
+	}
+
+	private void validateReapplyAllowedOrThrow(Long requesterId, Long targetMajorId) {
 		boolean hasActiveRequest = interviewFormRepository.existsByStudentMemberIdAndMajorMemberIdAndStatusIn(
-			studentId,
-			majorId,
+			requesterId,
+			targetMajorId,
 			List.of(InterviewFormStatus.PENDING, InterviewFormStatus.ACCEPTED)
 		);
 
 		if (hasActiveRequest) {
-			throw new BusinessException(ErrorCode.APPLICATION_ALREADY_EXISTS);
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_409_ALREADY_EXISTS);
+		}
+	}
+
+	private void validateMajorSnapshotRequiredOrThrow(MemberProfile major, MemberAcademic academic) {
+		if (major.getStatus() == null) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_STATUS_REQUIRED);
+		}
+		if (academic == null || isBlank(academic.getUniversity()) || isBlank(academic.getMajor())) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_ACADEMIC_REQUIRED);
 		}
 	}
 
@@ -145,11 +295,15 @@ public class InterviewService {
 			));
 	}
 
-	private <S> S getOrInternalError(Map<Long, S> map, Long key) {
+	private <S> S getOrSnapshotMissing(Map<Long, S> map, Long key) {
 		S value = map.get(key);
 		if (value == null) {
-			throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_500_SNAPSHOT_MISSING);
 		}
 		return value;
+	}
+
+	private boolean isBlank(String value) {
+		return value == null || value.isBlank();
 	}
 }

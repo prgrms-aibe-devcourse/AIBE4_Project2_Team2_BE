@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.InterviewForm;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.InterviewMajorSnapshot;
-import kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity.InterviewStudentSnapshot;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewFormRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewMajorSnapshotRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.repository.InterviewStudentSnapshotRepository;
@@ -39,64 +38,66 @@ public class ReviewService {
 	private final MemberInfoReader memberInfoReader;
 
 	public List<WrittenReviewResponse> getWrittenReviews(Long studentId) {
-		List<Long> interviewIds = interviewFormRepository.findInterviewIdsByStudentMemberId(studentId);
-		if (interviewIds.isEmpty()) {
-			return List.of();
-		}
-
-		List<Review> reviews = reviewRepository.findByInterviewIdInOrderByCreatedAtDesc(interviewIds);
-		if (reviews.isEmpty()) {
-			return List.of();
-		}
-
-		List<Long> reviewInterviewIds = extractInterviewIds(reviews);
-
-		Map<Long, InterviewForm> formMap = indexByInterviewId(
-			interviewFormRepository.findAllById(reviewInterviewIds),
-			InterviewForm::getInterviewId
-		);
-
-		Map<Long, InterviewMajorSnapshot> majorSnapshotMap = indexByInterviewId(
-			interviewMajorSnapshotRepository.findByInterviewIdIn(reviewInterviewIds),
-			InterviewMajorSnapshot::getInterviewId
-		);
-
-		return reviews.stream()
-			.map(review -> {
-				Long interviewId = review.getInterviewId();
-				InterviewForm form = getOrInternalError(formMap, interviewId);
-				InterviewMajorSnapshot snapshot = getOrInternalError(majorSnapshotMap, interviewId);
-				return WrittenReviewResponse.from(review, form, snapshot);
-			})
-			.toList();
+		// List<Long> interviewIds = interviewFormRepository.findInterviewIdsByStudentMemberId(studentId);
+		// if (interviewIds.isEmpty()) {
+		// 	return List.of();
+		// }
+		//
+		// List<Review> reviews = reviewRepository.findByInterviewIdInOrderByCreatedAtDesc(interviewIds);
+		// if (reviews.isEmpty()) {
+		// 	return List.of();
+		// }
+		//
+		// List<Long> reviewInterviewIds = extractInterviewIds(reviews);
+		//
+		// Map<Long, InterviewForm> formMap = indexByInterviewId(
+		// 	interviewFormRepository.findAllById(reviewInterviewIds),
+		// 	InterviewForm::getInterviewId
+		// );
+		//
+		// Map<Long, InterviewMajorSnapshot> majorSnapshotMap = indexByInterviewId(
+		// 	interviewMajorSnapshotRepository.findByInterviewIdIn(reviewInterviewIds),
+		// 	InterviewMajorSnapshot::getInterviewId
+		// );
+		//
+		// return reviews.stream()
+		// 	.map(review -> {
+		// 		Long interviewId = review.getInterviewId();
+		// 		InterviewForm form = getOrInternalError(formMap, interviewId);
+		// 		InterviewMajorSnapshot snapshot = getOrInternalError(majorSnapshotMap, interviewId);
+		// 		return WrittenReviewResponse.from(review, form, snapshot);
+		// 	})
+		// 	.toList();
+		return null;
 	}
 
 	public List<ReceivedReviewResponse> getReceivedReviews(Long majorId) {
-		memberInfoReader.validateMajorRoleOrThrow(majorId);
-
-		List<Long> interviewIds = interviewFormRepository.findInterviewIdsByMajorMemberId(majorId);
-		if (interviewIds.isEmpty()) {
-			return List.of();
-		}
-
-		List<Review> reviews = reviewRepository.findByInterviewIdInOrderByCreatedAtDesc(interviewIds);
-		if (reviews.isEmpty()) {
-			return List.of();
-		}
-
-		List<Long> reviewInterviewIds = extractInterviewIds(reviews);
-
-		Map<Long, InterviewStudentSnapshot> studentSnapshotMap = indexByInterviewId(
-			interviewStudentSnapshotRepository.findByInterviewIdIn(reviewInterviewIds),
-			InterviewStudentSnapshot::getInterviewId
-		);
-
-		return reviews.stream()
-			.map(review -> ReceivedReviewResponse.from(
-				review,
-				getOrInternalError(studentSnapshotMap, review.getInterviewId())
-			))
-			.toList();
+		// memberInfoReader.validateMajorRoleOrThrow(majorId);
+		//
+		// List<Long> interviewIds = interviewFormRepository.findInterviewIdsByMajorMemberId(majorId);
+		// if (interviewIds.isEmpty()) {
+		// 	return List.of();
+		// }
+		//
+		// List<Review> reviews = reviewRepository.findByInterviewIdInOrderByCreatedAtDesc(interviewIds);
+		// if (reviews.isEmpty()) {
+		// 	return List.of();
+		// }
+		//
+		// List<Long> reviewInterviewIds = extractInterviewIds(reviews);
+		//
+		// Map<Long, InterviewStudentSnapshot> studentSnapshotMap = indexByInterviewId(
+		// 	interviewStudentSnapshotRepository.findByInterviewIdIn(reviewInterviewIds),
+		// 	InterviewStudentSnapshot::getInterviewId
+		// );
+		//
+		// return reviews.stream()
+		// 	.map(review -> ReceivedReviewResponse.from(
+		// 		review,
+		// 		getOrInternalError(studentSnapshotMap, review.getInterviewId())
+		// 	))
+		// 	.toList();
+		return null;
 	}
 
 	@Transactional
