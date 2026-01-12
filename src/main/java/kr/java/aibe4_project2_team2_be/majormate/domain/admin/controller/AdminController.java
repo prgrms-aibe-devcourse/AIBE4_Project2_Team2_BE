@@ -104,7 +104,7 @@ public class AdminController {
     public String reject(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
         if (reason == null || reason.trim().isEmpty()) {
-            return "redirect:/admin/requests/" + id; // 사유 없으면 다시 상세 페이지로
+            return "redirect:/admin/requests/" + id; //
         }
         adminService.rejectRequest(id, adminId, reason);
         // 반려 완료 후 '반려된 목록' 페이지로 이동
