@@ -66,7 +66,7 @@ public class MajorRoleRequest {
 	@JoinColumn(name = "decided_by")
 	private MemberProfile decider;
 
-	@Column(name = "reason", length = 255)
+	@Column(name = "reason", length = 512)
 	private String reason;
 
 	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
