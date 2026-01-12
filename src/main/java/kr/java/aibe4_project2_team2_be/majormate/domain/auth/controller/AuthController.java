@@ -22,7 +22,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.EmailVerific
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.service.AuthService;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.service.EmailService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtProperties;
 import kr.java.aibe4_project2_team2_be.majormate.global.util.CookieUtil;
@@ -78,7 +78,7 @@ public class AuthController {
     public ApiResponse<TokenResponse> refresh(HttpServletRequest request) {
         // Get refresh token from cookie
         Cookie refreshTokenCookie = CookieUtil.getCookie(request, "refreshToken")
-                .orElseThrow(() -> new UnauthorizedException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
+                .orElseThrow(() -> new UnauthorizedException(ErrorCodeNew.AUTH_401_REFRESH_TOKEN_NOT_FOUND));
 
         RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest(refreshTokenCookie.getValue());
         TokenResponse response = authService.refresh(refreshTokenRequest);
