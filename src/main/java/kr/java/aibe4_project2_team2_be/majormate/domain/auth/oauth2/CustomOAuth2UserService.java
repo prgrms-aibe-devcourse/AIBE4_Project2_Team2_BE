@@ -92,11 +92,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			return memberProfile;
 		}
 
-		// 2. Check if email already exists (account linking)
+		// 2. Check if email already exists
 		MemberProfile memberProfile = memberProfileRepository.findByEmail(email).orElse(null);
 
 		if (memberProfile != null) {
-			// Link OAuth2 account to existing account
+			// 로컬 계정이 이미 존재하는 경우 소셜 로그인 거부
+			if (!memberProfile.isOAuth2User()) {
+				log.warn("OAuth2 login failed - Email already registered as local account: {}", email);
+				throw new BadRequestException(ErrorCodeNew.MEMBER_409_DUPLICATE_EMAIL);
+			}
+
+			// 다른 소셜 계정으로 이미 가입된 경우, 해당 소셜 계정 추가 (멀티 소셜 연동)
 			log.info("Linking OAuth2 account to existing account - Email: {}, Provider: {}", email, provider);
 			SocialAccount newSocialAccount = SocialAccount.builder()
 				.memberProfile(memberProfile)
