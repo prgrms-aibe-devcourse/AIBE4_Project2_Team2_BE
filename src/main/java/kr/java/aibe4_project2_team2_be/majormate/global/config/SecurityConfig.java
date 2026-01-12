@@ -52,7 +52,6 @@ public class SecurityConfig {
 					"/",
 					"/error",
 					"/favicon.ico",
-					"/api/auth/**",
 					"/oauth2/**",
 					"/login/oauth2/**",
 					"/swagger-ui/**",
@@ -64,6 +63,8 @@ public class SecurityConfig {
 					"/api/**",
                         "/admin/**"
 				).permitAll()
+				.requestMatchers("/api/auth/logout", "/api/auth/refresh").authenticated()
+				.requestMatchers("/api/auth/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			.oauth2Login(oauth2 -> oauth2

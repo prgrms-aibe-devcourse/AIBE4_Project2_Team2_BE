@@ -22,7 +22,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.SocialAc
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.AuthProvider;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +57,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		}
 
 		if (userInfo.getEmail() == null || userInfo.getEmail().isEmpty()) {
-			throw new BadRequestException(ErrorCode.OAUTH2_EMAIL_NOT_FOUND);
+			throw new BadRequestException(ErrorCodeNew.AUTH_400_OAUTH2_EMAIL_NOT_FOUND);
 		}
 
 		// Find or create member
@@ -73,7 +73,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			case "github" -> new GithubOAuth2UserInfo(attributes);
 			case "kakao" -> new KakaoOAuth2UserInfo(attributes);
 			case "naver" -> new NaverOAuth2UserInfo(attributes);
-			default -> throw new BadRequestException(ErrorCode.OAUTH2_PROVIDER_NOT_SUPPORTED);
+			default -> throw new BadRequestException(ErrorCodeNew.AUTH_400_OAUTH2_PROVIDER_NOT_SUPPORTED);
 		};
 	}
 
@@ -156,7 +156,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		} while (memberProfileRepository.existsByUsername(username) && attempts < 10);
 
 		if (attempts >= 10) {
-			throw new BadRequestException(ErrorCode.DUPLICATE_USERNAME);
+			throw new BadRequestException(ErrorCodeNew.MEMBER_409_DUPLICATE_USERNAME);
 		}
 
 		return username;
@@ -187,7 +187,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			&& attempts < 100); // Fixed to memberProfileRepository
 
 		if (attempts >= 100) {
-			throw new BadRequestException(ErrorCode.DUPLICATE_NICKNAME);
+			throw new BadRequestException(ErrorCodeNew.MEMBER_409_DUPLICATE_NICKNAME);
 		}
 
 		return nickname;

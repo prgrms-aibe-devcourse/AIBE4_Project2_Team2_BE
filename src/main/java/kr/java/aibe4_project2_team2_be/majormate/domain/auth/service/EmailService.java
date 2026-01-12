@@ -5,7 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.EmailVerification;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.EmailVerification.VerificationType;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.EmailVerificationRepository;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,21 +63,21 @@ public class EmailService {
     public void verifyCode(String email, String code, VerificationType type) {
         EmailVerification verification = emailVerificationRepository
                 .findTopByEmailAndTypeOrderByCreatedAtDesc(email, type)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.VERIFICATION_CODE_NOT_FOUND));
+                .orElseThrow(() -> new BadRequestException(ErrorCodeNew.AUTH_400_VERIFICATION_CODE_NOT_FOUND));
 
         // 만료 확인
         if (verification.isExpired()) {
-            throw new BadRequestException(ErrorCode.VERIFICATION_CODE_EXPIRED);
+            throw new BadRequestException(ErrorCodeNew.AUTH_400_VERIFICATION_CODE_EXPIRED);
         }
 
         // 이미 인증됨
         if (verification.isVerified()) {
-            throw new BadRequestException(ErrorCode.ALREADY_VERIFIED);
+            throw new BadRequestException(ErrorCodeNew.AUTH_400_ALREADY_VERIFIED);
         }
 
         // 코드 일치 확인
         if (!verification.getCode().equals(code)) {
-            throw new BadRequestException(ErrorCode.INVALID_VERIFICATION_CODE);
+            throw new BadRequestException(ErrorCodeNew.AUTH_400_INVALID_VERIFICATION_CODE);
         }
 
         // 인증 처리
@@ -122,7 +122,7 @@ public class EmailService {
             log.info("이메일 발송 성공 - To: {}", to);
         } catch (MessagingException e) {
             log.error("이메일 발송 실패 - To: {}, Error: {}", to, e.getMessage());
-            throw new BadRequestException(ErrorCode.EMAIL_SEND_FAILED);
+            throw new BadRequestException(ErrorCodeNew.AUTH_500_EMAIL_SEND_FAILED);
         }
     }
 
