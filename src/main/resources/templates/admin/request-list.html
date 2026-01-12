@@ -7,12 +7,22 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         th { background-color: #f4f4f4; }
-        .btn { padding: 5px 10px; cursor: pointer; text-decoration: none; color: black; border: 1px solid #ccc; display: inline-block; }
+        .btn { padding: 5px 10px; cursor: pointer; text-decoration: none; color: black; border: 1px solid #ccc; display: inline-block; background-color: #eee; }
+        .nav-links { margin-bottom: 20px; }
+        .nav-links a { margin-right: 10px; font-weight: bold; text-decoration: none; color: #333; }
+        .nav-links a:hover { color: blue; text-decoration: underline; }
     </style>
 </head>
 <body>
 
-<h2>전공자 권한 신청 목록 (관리자)</h2>
+<h2>전공자 권한 관리</h2>
+
+<div class="nav-links">
+    <a th:href="@{/admin/requests}">[대기 목록]</a>
+    <a th:href="@{/admin/requests/accepted}">[승인된 목록]</a>
+    <a th:href="@{/admin/requests/rejected}">[반려된 목록]</a>
+    <a th:href="@{/admin/requests/revoked}">[자격 박탈 목록]</a>
+</div>
 
 <table>
     <thead>
@@ -29,23 +39,20 @@
     <tbody>
     <tr th:each="req : ${requests}">
         <td th:text="${req.id}">1</td>
-
-        <td>
-            <a th:href="@{/admin/requests/{id}(id=${req.id})}"
-               th:text="${req.memberName}"
-               style="color: blue; text-decoration: underline; cursor: pointer;">
-                홍길동
-            </a>
-        </td>
-
+        <td th:text="${req.memberName}">홍길동</td>
         <td th:text="${req.universityName}">서울대</td>
         <td th:text="${req.majorName}">컴공</td>
-        <td th:text="${req.applicationStatus}">PENDING</td>
+
+        <td th:text="${req.applicationStatus}" style="font-weight: bold;">PENDING</td>
+
         <td th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-01-09</td>
 
         <td>
-            <a th:href="@{/admin/requests/{id}(id=${req.id})}" class="btn">심사하기</a>
+            <a th:href="@{/admin/requests/{id}(id=${req.id})}" class="btn">상세보기</a>
         </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(requests)}">
+        <td colspan="7">데이터가 없습니다.</td>
     </tr>
     </tbody>
 </table>
