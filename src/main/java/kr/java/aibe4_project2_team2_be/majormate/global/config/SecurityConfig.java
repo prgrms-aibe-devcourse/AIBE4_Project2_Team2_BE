@@ -53,7 +53,8 @@ public class SecurityConfig {
 					"/swagger-ui.html",
 					"/v3/api-docs/**",
 					"/swagger-resources/**",
-					"/api-docs/**"
+					"/api-docs/**",
+                        "/admin/**" // admin 임시 테스트 (형민)
 				).permitAll()
 				.requestMatchers("/api/auth/logout", "/api/auth/refresh").authenticated()
 				.requestMatchers("/api/auth/**").permitAll()
