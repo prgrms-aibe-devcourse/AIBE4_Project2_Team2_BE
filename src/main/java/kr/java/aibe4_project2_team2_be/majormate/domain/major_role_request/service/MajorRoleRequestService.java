@@ -118,5 +118,4 @@ public class MajorRoleRequestService {
 		}
 		return RoleRequestDetailResponse.from(request);
 	}
-
 }

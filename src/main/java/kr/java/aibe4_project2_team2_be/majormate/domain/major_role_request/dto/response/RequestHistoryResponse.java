@@ -27,7 +27,7 @@ public class RequestHistoryResponse {
 			.oldStatus(history.getFromStatus())
 			.newStatus(history.getToStatus())
 			.changedBy(changedByName)
-			.reason(history.getMessage())
+			.reason(history.getReason())
 			.changedAt(history.getChangedAt())
 			.build();
 	}

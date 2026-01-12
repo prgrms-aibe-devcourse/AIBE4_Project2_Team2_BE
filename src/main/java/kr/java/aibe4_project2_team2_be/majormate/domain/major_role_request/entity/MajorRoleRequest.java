@@ -20,6 +20,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -97,35 +99,33 @@ public class MajorRoleRequest {
 	}
 
 	// 승인
-	public void accept(MemberProfile decider) {
-		validatePendingStatus(); // 대기 상태인지 검증
-		ApplicationStatus oldStatus = this.applicationStatus;
-		this.applicationStatus = ApplicationStatus.ACCEPTED;
-		this.decider = decider;
-		this.decidedAt = LocalDateTime.now();
+    public void accept(MemberProfile decider) {
+        // 이 검증 메서드가 이제 '대기'와 '재신청'을 같이 넣어야한다.
+        validatePendingStatus();
+        ApplicationStatus oldStatus = this.applicationStatus;
+        this.applicationStatus = ApplicationStatus.ACCEPTED;
+        this.decider = decider;
+        this.decidedAt = LocalDateTime.now();
 
-		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
-		);
-	}
+        this.statusHistories.add(
+                RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, "")
+        );
+    }
 
 	// 반려
-	public void reject(MemberProfile decider, String rejectMessage) {
-		validatePendingStatus();
+    public void reject(MemberProfile decider, String reason) {
+        validatePendingStatus(); // 여기도 동일한 검증 로직 사용
 
-		if (rejectMessage == null || rejectMessage.trim().isEmpty()) {
-			throw new IllegalArgumentException("반려 시에는 반드시 반려 사유를 입력해야 합니다.");
-		}
-		ApplicationStatus oldStatus = this.applicationStatus;
-		this.applicationStatus = ApplicationStatus.REJECTED;
-		this.decider = decider;
-		this.decidedAt = LocalDateTime.now();
-		this.reason = rejectMessage; // 반려 사유 저장
+        ApplicationStatus oldStatus = this.applicationStatus;
+        this.applicationStatus = ApplicationStatus.REJECTED;
+        this.decider = decider;
+        this.reason = reason;
+        this.decidedAt = LocalDateTime.now();
 
-		this.statusHistories.add(
-			RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, rejectMessage)
-		);
-	}
+        this.statusHistories.add(
+                RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, reason)
+        );
+    }
 
 	// 재신청
 	public void resubmit(String comment, String documentUrl) {
@@ -167,11 +167,13 @@ public class MajorRoleRequest {
         );
     }
 	// 검증 로직
-	private void validatePendingStatus() {
-		if (this.applicationStatus != ApplicationStatus.PENDING
-			&& this.applicationStatus != ApplicationStatus.RESUBMITTED) {
-			throw new IllegalStateException("심사가 가능한 상태(PENDING/RESUBMITTED)가 아닙니다.");
-		}
-	}
+    private void validatePendingStatus() {
+        if (this.applicationStatus != ApplicationStatus.PENDING
+                && this.applicationStatus != ApplicationStatus.RESUBMITTED) {
+
+            // 대기도 아니고, 재신청도 아니면 에러 발생 ("역할 변경 요청이 올바르지 않습니다")
+            throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_INVALID_ROLE_TRANSITION);
+        }
+    }
 
 }

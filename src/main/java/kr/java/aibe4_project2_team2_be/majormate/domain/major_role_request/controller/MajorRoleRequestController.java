@@ -39,8 +39,7 @@ public class MajorRoleRequestController {
 		@Valid @RequestPart("request") RoleRequestCreateRequest requestDto,
 		@RequestPart("file") MultipartFile file
 	) {
-		// Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 2L; // 테스트용 하드코딩
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		Long requestId = majorRoleRequestService.createRequest(memberId, requestDto, file);
 		return ApiResponse.success(requestId);
 	}
@@ -53,8 +52,7 @@ public class MajorRoleRequestController {
 		@Valid @RequestPart("request") RoleRequestCreateRequest requestDto,
 		@RequestPart("file") MultipartFile file
 	) {
-		// Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 2L; // 테스트용 하드코딩
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		majorRoleRequestService.resubmitRequest(requestId, memberId, requestDto.getContent(), file);
 		return ApiResponse.success(null);
 	}
@@ -63,8 +61,7 @@ public class MajorRoleRequestController {
 	@GetMapping("/me")
 	public ApiResponse<List<RoleRequestResponse>> getMyRequests(
 	) {
-		// Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 2L; // 테스트용 하드코딩
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		List<RoleRequestResponse> responses = majorRoleRequestService.getMyRequests(memberId);
 		return ApiResponse.success(responses);
 	}
@@ -74,8 +71,7 @@ public class MajorRoleRequestController {
 	public ApiResponse<RoleRequestDetailResponse> MyGetRequestDetail(
 		@PathVariable Long requestId
 	) {
-		// Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 2L; // 테스트용 하드코딩
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		RoleRequestDetailResponse response = majorRoleRequestService.MyGetRequestDetail(requestId, memberId);
 		return ApiResponse.success(response);
 	}

@@ -24,8 +24,8 @@
     <a th:href="@{/admin/requests/all}"
        th:classappend="${viewType == 'ALL'} ? 'active'">[전체 목록]</a>
 
-    <a th:href="@{/admin/requests}"
-       th:classappend="${viewType == 'PENDING'} ? 'active'">[대기 목록]</a>
+    <a th:href="@{/admin/requests/pending}"
+       th:classappend="${viewType == 'PENDING,RESUBMITTED'} ? 'active'">[대기 목록]</a>
 
     <a th:href="@{/admin/requests/accepted}"
        th:classappend="${viewType == 'ACCEPTED'} ? 'active'">[승인된 목록]</a>
