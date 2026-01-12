@@ -27,11 +27,23 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
 
         log.error("OAuth2 authentication failed: {}", exception.getMessage());
 
-        // Clear any existing refresh token cookie
+        // Clear any existing cookies
         CookieUtil.deleteCookie(request, response, "refreshToken");
+        CookieUtil.deleteCookie(request, response, "accessToken");
 
+        // 에러 메시지 추출
+        String errorMessage = exception.getMessage();
+
+        // OAuth2 에러 코드 추출 (더 명확한 에러 전달)
+        if (exception instanceof org.springframework.security.oauth2.core.OAuth2AuthenticationException) {
+            org.springframework.security.oauth2.core.OAuth2AuthenticationException oauth2Exception =
+                (org.springframework.security.oauth2.core.OAuth2AuthenticationException) exception;
+            errorMessage = oauth2Exception.getError().getErrorCode();
+        }
+
+        // 프론트엔드 로그인 페이지로 리다이렉트 (에러 메시지 포함)
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
-                .queryParam("error", exception.getLocalizedMessage())
+                .queryParam("error", errorMessage)
                 .build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
