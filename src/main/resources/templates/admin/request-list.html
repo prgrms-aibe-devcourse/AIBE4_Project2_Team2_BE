@@ -9,8 +9,11 @@
         th { background-color: #f4f4f4; }
         .btn { padding: 5px 10px; cursor: pointer; text-decoration: none; color: black; border: 1px solid #ccc; display: inline-block; background-color: #eee; }
         .nav-links { margin-bottom: 20px; }
-        .nav-links a { margin-right: 10px; font-weight: bold; text-decoration: none; color: #333; }
-        .nav-links a:hover { color: blue; text-decoration: underline; }
+        .nav-links a { margin-right: 15px; font-weight: bold; text-decoration: none; color: #555; }
+        .nav-links a:hover { color: #000; text-decoration: underline; }
+
+        /* 현재 선택된 탭 강조 스타일 */
+        .nav-links a.active { color: blue; text-decoration: underline; font-size: 1.1em; }
     </style>
 </head>
 <body>
@@ -18,10 +21,20 @@
 <h2>전공자 권한 관리</h2>
 
 <div class="nav-links">
-    <a th:href="@{/admin/requests}">[대기 목록]</a>
-    <a th:href="@{/admin/requests/accepted}">[승인된 목록]</a>
-    <a th:href="@{/admin/requests/rejected}">[반려된 목록]</a>
-    <a th:href="@{/admin/requests/revoked}">[자격 박탈 목록]</a>
+    <a th:href="@{/admin/requests/all}"
+       th:classappend="${viewType == 'ALL'} ? 'active'">[전체 목록]</a>
+
+    <a th:href="@{/admin/requests}"
+       th:classappend="${viewType == 'PENDING'} ? 'active'">[대기 목록]</a>
+
+    <a th:href="@{/admin/requests/accepted}"
+       th:classappend="${viewType == 'ACCEPTED'} ? 'active'">[승인된 목록]</a>
+
+    <a th:href="@{/admin/requests/rejected}"
+       th:classappend="${viewType == 'REJECTED'} ? 'active'">[반려된 목록]</a>
+
+    <a th:href="@{/admin/requests/revoked}"
+       th:classappend="${viewType == 'REVOKED'} ? 'active'">[자격 박탈 목록]</a>
 </div>
 
 <table>
