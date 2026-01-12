@@ -29,7 +29,6 @@ public class AdminService {
         );
     }
 
-
     // 1-2. 대기 중인 요청 목록
     public List<MajorRoleRequest> getPendingRequests() {
         return majorRoleRequestRepository.findByApplicationStatusInOrderByCreatedAtDesc(
@@ -60,8 +59,16 @@ public class AdminService {
 
     // 1-6. 상세 조회
     public MajorRoleRequest getRequestDetail(Long requestId) {
-        return majorRoleRequestRepository.findById(requestId)
+        MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
+
+        // [✨핵심 수정] DB 연결이 끊기기 전에 프로필 정보를 강제로 읽어옵니다.
+        // getNickname()을 호출하는 순간, JPA가 DB에 가서 진짜 데이터를 가져옵니다.
+        if (request.getMemberProfile() != null) {
+            request.getMemberProfile().getNickname();
+        }
+
+        return request;
     }
 
     // 2-1. 승인
@@ -90,6 +97,6 @@ public class AdminService {
         MemberProfile admin = memberProfileRepository.findById(adminId)
                 .orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
         request.revoke(admin, reason);
-        request.getMemberProfile().revokeMajorRole();
+        request.getMemberProfile().revokeMajorRole(); // major => student 변경
     }
 }
