@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +23,6 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.SocialAc
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.AuthProvider;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,7 +56,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		}
 
 		if (userInfo.getEmail() == null || userInfo.getEmail().isEmpty()) {
-			throw new BadRequestException(ErrorCodeNew.AUTH_400_OAUTH2_EMAIL_NOT_FOUND);
+			OAuth2Error oauth2Error = new OAuth2Error(
+				"email_not_found",
+				"OAuth2 제공자로부터 이메일을 받을 수 없습니다.",
+				null
+			);
+			throw new OAuth2AuthenticationException(oauth2Error);
 		}
 
 		// Find or create member
@@ -73,7 +77,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			case "github" -> new GithubOAuth2UserInfo(attributes);
 			case "kakao" -> new KakaoOAuth2UserInfo(attributes);
 			case "naver" -> new NaverOAuth2UserInfo(attributes);
-			default -> throw new BadRequestException(ErrorCodeNew.AUTH_400_OAUTH2_PROVIDER_NOT_SUPPORTED);
+			default -> {
+				OAuth2Error oauth2Error = new OAuth2Error(
+					"unsupported_provider",
+					"지원하지 않는 OAuth2 제공자입니다.",
+					null
+				);
+				throw new OAuth2AuthenticationException(oauth2Error);
+			}
 		};
 	}
 
@@ -99,7 +110,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			// 로컬 계정이 이미 존재하는 경우 소셜 로그인 거부
 			if (!memberProfile.isOAuth2User()) {
 				log.warn("OAuth2 login failed - Email already registered as local account: {}", email);
-				throw new BadRequestException(ErrorCodeNew.MEMBER_409_DUPLICATE_EMAIL);
+				OAuth2Error oauth2Error = new OAuth2Error(
+					"email_already_registered",
+					"이미 가입된 이메일입니다. 로컬 계정으로 로그인해주세요.",
+					null
+				);
+				throw new OAuth2AuthenticationException(oauth2Error);
 			}
 
 			// 다른 소셜 계정으로 이미 가입된 경우, 해당 소셜 계정 추가 (멀티 소셜 연동)
@@ -162,7 +178,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		} while (memberProfileRepository.existsByUsername(username) && attempts < 10);
 
 		if (attempts >= 10) {
-			throw new BadRequestException(ErrorCodeNew.MEMBER_409_DUPLICATE_USERNAME);
+			OAuth2Error oauth2Error = new OAuth2Error(
+				"username_generation_failed",
+				"고유한 사용자명을 생성할 수 없습니다.",
+				null
+			);
+			throw new OAuth2AuthenticationException(oauth2Error);
 		}
 
 		return username;
@@ -193,7 +214,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			&& attempts < 100); // Fixed to memberProfileRepository
 
 		if (attempts >= 100) {
-			throw new BadRequestException(ErrorCodeNew.MEMBER_409_DUPLICATE_NICKNAME);
+			OAuth2Error oauth2Error = new OAuth2Error(
+				"nickname_generation_failed",
+				"고유한 닉네임을 생성할 수 없습니다.",
+				null
+			);
+			throw new OAuth2AuthenticationException(oauth2Error);
 		}
 
 		return nickname;
