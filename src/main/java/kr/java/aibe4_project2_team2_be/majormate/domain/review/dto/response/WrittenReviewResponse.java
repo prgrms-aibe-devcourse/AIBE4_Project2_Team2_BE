@@ -40,6 +40,8 @@ public record WrittenReviewResponse(
 		LocalDateTime preferredDatetime,
 		String extraDescription,
 		String majorMessage,
+		LocalDateTime createdAt,
+		LocalDateTime updatedAt,
 		InterviewFormStatus status
 	) {
 	}
@@ -91,6 +93,8 @@ public record WrittenReviewResponse(
 				form.getPreferredDatetime(),
 				form.getExtraDescription(),
 				form.getMajorMessage(),
+				form.getCreatedAt(),
+				form.getUpdatedAt(),
 				form.getStatus()
 			),
 			summary.createdAt(),

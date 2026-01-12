@@ -71,11 +71,15 @@ public class ReviewService {
 		return new PageImpl<>(content, pageable, page.getTotalElements());
 	}
 
-	public WrittenReviewResponse getWrittenReviewDetail(Long memberId, Long interviewId) {
+	public WrittenReviewResponse getWrittenReviewDetail(Long memberId, Long reviewId) {
+		Review review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.REVIEW_404));
+
+		Long interviewId = review.getInterviewId();
+
 		InterviewForm form = getInterviewFormOrThrow(interviewId);
 		validateWrittenOwnerOrThrow(memberId, form);
 
-		Review review = getReviewByInterviewIdOrThrow(interviewId);
 		InterviewMajorSnapshot majorSnapshot = getMajorSnapshotOrInternalError(interviewId);
 
 		return WrittenReviewResponse.fromDetail(review, form, majorSnapshot);
@@ -114,13 +118,16 @@ public class ReviewService {
 		return new PageImpl<>(content, pageable, page.getTotalElements());
 	}
 
-	public ReceivedReviewResponse getReceivedReviewDetail(Long memberId, Long interviewId) {
+	public ReceivedReviewResponse getReceivedReviewDetail(Long memberId, Long reviewId) {
 		memberInfoReader.validateMajorRoleOrThrow(memberId);
+
+		Review review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.REVIEW_404));
+
+		Long interviewId = review.getInterviewId();
 
 		InterviewForm form = getInterviewFormOrThrow(interviewId);
 		validateReceivedOwnerOrThrow(memberId, form);
-
-		Review review = getReviewByInterviewIdOrThrow(interviewId);
 		InterviewStudentSnapshot studentSnapshot = getStudentSnapshotOrInternalError(interviewId);
 
 		return ReceivedReviewResponse.fromDetail(review, form, studentSnapshot);
