@@ -19,6 +19,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.review.dto.response.Writ
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.service.ReviewService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.PageResponsesNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -30,32 +31,28 @@ public class ReviewController {
 
 	@GetMapping("/members/me/reviews/written")
 	public ApiResponseNew<java.util.List<WrittenReviewResponse>> getMyWrittenReviews(Pageable pageable) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 6L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		Page<WrittenReviewResponse> page = reviewService.getWrittenReviews(memberId, pageable);
 		return PageResponsesNew.of(page);
 	}
 
 	@GetMapping("/members/me/reviews/written/{reviewId}")
 	public ApiResponseNew<WrittenReviewResponse> getMyWrittenReviewDetail(@PathVariable Long reviewId) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 6L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		WrittenReviewResponse response = reviewService.getWrittenReviewDetail(memberId, reviewId);
 		return ApiResponseNew.success(response);
 	}
 
 	@GetMapping("/members/me/reviews/received")
 	public ApiResponseNew<List<ReceivedReviewResponse>> getMyReceivedReviews(Pageable pageable) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 3L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		Page<ReceivedReviewResponse> page = reviewService.getReceivedReviews(memberId, pageable);
 		return PageResponsesNew.of(page);
 	}
 
 	@GetMapping("/members/me/reviews/received/{reviewId}")
 	public ApiResponseNew<ReceivedReviewResponse> getMyReceivedReviewDetail(@PathVariable Long reviewId) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 3L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		ReceivedReviewResponse response = reviewService.getReceivedReviewDetail(memberId, reviewId);
 		return ApiResponseNew.success(response);
 	}
@@ -65,8 +62,7 @@ public class ReviewController {
 		@PathVariable Long interviewId,
 		@Valid @RequestBody ReviewRequest request
 	) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 6L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		WrittenReviewResponse response = reviewService.createReview(memberId, interviewId, request);
 		return ApiResponseNew.success(response);
 	}
@@ -76,8 +72,7 @@ public class ReviewController {
 		@PathVariable Long interviewId,
 		@Valid @RequestBody ReviewRequest request
 	) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 6L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		WrittenReviewResponse response = reviewService.updateReview(memberId, interviewId, request);
 		return ApiResponseNew.success(response);
 	}

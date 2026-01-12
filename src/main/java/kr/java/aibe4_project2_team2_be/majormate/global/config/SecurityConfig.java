@@ -1,10 +1,5 @@
 package kr.java.aibe4_project2_team2_be.majormate.global.config;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.CustomOAuth2UserService;
-import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.OAuth2AuthenticationFailureHandler;
-import kr.java.aibe4_project2_team2_be.majormate.domain.auth.oauth2.OAuth2AuthenticationSuccessHandler;
-import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -58,10 +53,7 @@ public class SecurityConfig {
 					"/swagger-ui.html",
 					"/v3/api-docs/**",
 					"/swagger-resources/**",
-					"/api-docs/**",
-					// 아래는 제거해야 함
-					"/api/**",
-                        "/admin/**"
+					"/api-docs/**"
 				).permitAll()
 				.requestMatchers("/api/auth/logout", "/api/auth/refresh").authenticated()
 				.requestMatchers("/api/auth/**").permitAll()

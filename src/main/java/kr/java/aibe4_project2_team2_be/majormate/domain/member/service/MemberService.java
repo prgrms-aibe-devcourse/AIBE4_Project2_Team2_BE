@@ -1,11 +1,14 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.member.service;
 
+import static org.springframework.util.StringUtils.*;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.request.MemberInfoUpdateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.dto.response.MemberInfoResponse;
@@ -14,6 +17,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProf
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class MemberService {
 
+	private final S3FileService s3FileService;
 	private final MemberInfoReader memberInfoReader;
 	private final MemberProfileRepository memberProfileRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -43,11 +48,43 @@ public class MemberService {
 		updateEmail(profile, request.email());
 
 		updatePasswordIfProvided(profile, request.newPassword());
-		updateProfileImageUrl(profile, request.profileImageUrl());
 		updateStatus(profile, request.status());
 
 		MemberAcademic academic = resolveAcademicForUpdate(profile, request);
 		applyAcademicUpdates(academic, request);
+
+		return MemberInfoResponse.from(profile);
+	}
+
+	@Transactional
+	public MemberInfoResponse updateProfileImage(Long memberId, MultipartFile file) {
+		if (file == null || file.isEmpty()) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_PROFILE_IMAGE_FILE_REQUIRED);
+		}
+
+		MemberProfile profile = memberInfoReader.getProfileWithAcademicOrThrow(memberId);
+
+		String oldUrl = profile.getProfileImageUrl();
+		String newUrl = s3FileService.upload(file);
+
+		// 기존 파일이 있었다면 항상 교체 정책이므로 삭제 후 신규 저장한다
+		if (hasText(oldUrl)) {
+			s3FileService.delete(oldUrl);
+		}
+
+		profile.updateProfileImageUrl(newUrl);
+		return MemberInfoResponse.from(profile);
+	}
+
+	@Transactional
+	public MemberInfoResponse deleteProfileImage(Long memberId) {
+		MemberProfile profile = memberInfoReader.getProfileWithAcademicOrThrow(memberId);
+
+		String oldUrl = profile.getProfileImageUrl();
+		if (hasText(oldUrl)) {
+			s3FileService.delete(oldUrl);
+			profile.updateProfileImageUrl(null);
+		}
 
 		return MemberInfoResponse.from(profile);
 	}
@@ -108,22 +145,6 @@ public class MemberService {
 			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_SAME_AS_OLD_PASSWORD);
 		}
 		profile.updatePassword(passwordEncoder.encode(newPassword));
-	}
-
-	private void updateProfileImageUrl(MemberProfile profile, String profileImageUrl) {
-		if (profileImageUrl == null) {
-			return;
-		}
-		if (profileImageUrl.isBlank()) {
-			if (profile.getProfileImageUrl() != null) {
-				profile.updateProfileImageUrl(null);
-			}
-			return;
-		}
-		if (Objects.equals(profileImageUrl, profile.getProfileImageUrl())) {
-			return;
-		}
-		profile.updateProfileImageUrl(profileImageUrl);
 	}
 
 	private void updateStatus(MemberProfile profile, MemberStatus status) {

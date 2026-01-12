@@ -133,14 +133,6 @@ public class MemberProfile extends BaseEntity {
 		}
 	}
 
-	public void addSocialAccount(SocialAccount socialAccount) {
-		Objects.requireNonNull(socialAccount, "socialAccount must not be null");
-		this.socialAccounts.add(socialAccount);
-		if (socialAccount.getMemberProfile() != this) {
-			socialAccount.attachMemberProfile(this);
-		}
-	}
-
 	public void updateNickname(String nickname) {
 		this.nickname = requireText(nickname, "nickname");
 	}
