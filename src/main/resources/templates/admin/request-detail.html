@@ -7,18 +7,14 @@
         .container { width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; font-family: sans-serif; }
         .row { margin-bottom: 15px; }
         .label { font-weight: bold; display: inline-block; width: 100px; }
-
-        /* 버튼 스타일 */
         .btn { padding: 8px 15px; cursor: pointer; text-decoration: none; border: 1px solid #ccc; background-color: #f9f9f9; color: black; border-radius: 4px; }
-        .btn-approve { background-color: #28a745; color: white; border: none; }
+        .btn-accept { background-color: #28a745; color: white; border: none; }
         .btn-reject { background-color: #dc3545; color: white; border: none; }
         .btn-revoke { background-color: #ffc107; color: black; border: none; }
         .btn:disabled { background-color: #e0e0e0; color: #aaa; cursor: not-allowed; }
 
-        /* 상태 뱃지 */
         .status-badge { font-weight: bold; }
 
-        /* 숨겨진 입력창 영역 */
         .hidden-area { display: none; margin-top: 15px; padding: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px; }
         .hidden-area-reject { background-color: #f8d7da; border-color: #f5c6cb; }
 
@@ -39,18 +35,22 @@
         <span class="label">대학/전공:</span>
         <span th:text="|${req.universityName} / ${req.majorName}|">서울대 / 컴공</span>
     </div>
+
     <div class="row">
         <span class="label">상태:</span>
         <span class="status-badge"
-              th:style="${req.applicationStatus == '승인' ? 'color:green' : (req.applicationStatus == '대기' ? 'color:blue' : 'color:red')}"
+              th:style="${req.applicationStatus == '승인' ? 'color:green' :
+                        (req.applicationStatus == '대기' ? 'color:blue' :
+                        (req.applicationStatus == '재신청' ? 'color:#fd7e14' : 'color:red'))}"
               th:text="${req.applicationStatus}">대기</span>
     </div>
+
     <div class="row">
         <span class="label">신청일:</span>
         <span th:text="${#temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
     </div>
 
-    <div class="row" th:if="${req.applicationStatus != '대기' and req.updatedAt != null}">
+    <div class="row" th:if="${req.applicationStatus != '대기' and req.applicationStatus != '재신청' and req.updatedAt != null}">
         <span class="label">처리일:</span>
         <span th:text="${#temporals.format(req.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
     </div>
@@ -77,10 +77,10 @@
 
     <hr/>
 
-    <div th:if="${req.applicationStatus == '대기'}">
+    <div th:if="${req.applicationStatus == '대기' or req.applicationStatus == '재신청'}">
 
         <form th:action="@{/admin/requests/{id}/accept(id=${req.id})}" method="post" style="display: inline-block;">
-            <button type="submit" id="btnApprove" class="btn btn-approve" onclick="return confirm('승인하시겠습니까?');">✅ 승인</button>
+            <button type="submit" id="btnAccept" class="btn btn-accept" onclick="return confirm('승인하시겠습니까?');">✅ 승인</button>
         </form>
 
         <button type="button" id="btnShowReject" class="btn btn-reject" onclick="openRejectForm()">❌ 반려</button>
@@ -91,7 +91,7 @@
                 <textarea name="reason" placeholder="반려 사유를 입력하세요..." required></textarea>
                 <div style="margin-top: 10px; text-align: right;">
                     <button type="button" class="btn" onclick="closeRejectForm()">취소</button>
-                    <button type="submit" class="btn btn-reject">반려 확인</button>
+                    <button type="submit" class="btn btn-reject">반려 확정</button>
                 </div>
             </form>
         </div>
@@ -119,45 +119,41 @@
         <a th:if="${req.applicationStatus == '승인'}" th:href="@{/admin/requests/accepted}" class="btn">목록으로 (승인됨)</a>
         <a th:elif="${req.applicationStatus == '반려'}" th:href="@{/admin/requests/rejected}" class="btn">목록으로 (반려됨)</a>
         <a th:elif="${req.applicationStatus == '자격 박탈'}" th:href="@{/admin/requests/revoked}" class="btn">목록으로 (박탈됨)</a>
-        <a th:if="${req.applicationStatus == '대기'}" th:href="@{/admin/requests}" class="btn">목록으로 (대기)</a>
+
+        <a th:if="${req.applicationStatus == '대기' or req.applicationStatus == '재신청'}"
+           th:href="@{/admin/requests/pending}" class="btn">목록으로 (대기/재신청)</a>
     </div>
 
 </div>
 
 <script>
-    // [2. 반려] 버튼 클릭 시
     function openRejectForm() {
         document.getElementById('rejectArea').style.display = 'block';
         document.getElementById('btnShowReject').style.display = 'none';
 
-        // 2-1. 승인 버튼 비활성화
-        const approveBtn = document.getElementById('btnApprove');
-        if(approveBtn) {
-            approveBtn.disabled = true;
-            approveBtn.innerHTML = "반려 작성 중...";
+        const acceptBtn = document.getElementById('btnAccept');
+        if(acceptBtn) {
+            acceptBtn.disabled = true;
+            acceptBtn.innerHTML = "반려 작성 중...";
         }
     }
 
-    // 반려 취소 시
     function closeRejectForm() {
         document.getElementById('rejectArea').style.display = 'none';
         document.getElementById('btnShowReject').style.display = 'inline-block';
 
-        // 승인 버튼 다시 활성화
-        const approveBtn = document.getElementById('btnApprove');
-        if(approveBtn) {
-            approveBtn.disabled = false;
-            approveBtn.innerHTML = "✅ 승인";
+        const acceptBtn = document.getElementById('btnAccept');
+        if(acceptBtn) {
+            acceptBtn.disabled = false;
+            acceptBtn.innerHTML = "✅ 승인";
         }
     }
 
-    // [3. 자격 박탈] 버튼 클릭 시
     function openRevokeForm() {
         document.getElementById('revokeArea').style.display = 'block';
         document.getElementById('btnShowRevoke').style.display = 'none';
     }
 
-    // 박탈 취소 시
     function closeRevokeForm() {
         document.getElementById('revokeArea').style.display = 'none';
         document.getElementById('btnShowRevoke').style.display = 'inline-block';

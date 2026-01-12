@@ -12,6 +12,8 @@ public enum ApplicationStatus {
 	REJECTED("반려"),
 	CANCELLED("취소"),
 	RESUBMITTED("재신청"),
-    REVOKED("자격 박탈");   // 형민
+    REVOKED("자격 박탈"),   // 형민
+    SUSPENSION_REQUESTED("활동 정지 요청");
+
 	private final String description;
 }
