@@ -3,7 +3,7 @@ package kr.java.aibe4_project2_team2_be.majormate.global.security.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +63,7 @@ public class JwtTokenProvider {
         Claims claims = parseClaims(token);
 
         if (claims.get(AUTHORITIES_KEY) == null) {
-            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
+            throw new UnauthorizedException(ErrorCodeNew.AUTH_401_INVALID_TOKEN);
         }
 
         Collection<? extends GrantedAuthority> authorities =
@@ -85,16 +85,16 @@ public class JwtTokenProvider {
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.error("잘못된 JWT 서명입니다.");
-            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
+            throw new UnauthorizedException(ErrorCodeNew.AUTH_401_INVALID_TOKEN);
         } catch (ExpiredJwtException e) {
             log.error("만료된 JWT 토큰입니다.");
-            throw new UnauthorizedException(ErrorCode.EXPIRED_TOKEN);
+            throw new UnauthorizedException(ErrorCodeNew.AUTH_401_EXPIRED_TOKEN);
         } catch (UnsupportedJwtException e) {
             log.error("지원되지 않는 JWT 토큰입니다.");
-            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
+            throw new UnauthorizedException(ErrorCodeNew.AUTH_401_INVALID_TOKEN);
         } catch (IllegalArgumentException e) {
             log.error("JWT 토큰이 잘못되었습니다.");
-            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
+            throw new UnauthorizedException(ErrorCodeNew.AUTH_401_INVALID_TOKEN);
         }
     }
 

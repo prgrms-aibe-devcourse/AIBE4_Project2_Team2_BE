@@ -66,7 +66,7 @@ public class MajorRoleRequest {
 	@JoinColumn(name = "decided_by")
 	private MemberProfile decider;
 
-	@Column(name = "reason", length = 255)
+	@Column(name = "reason", length = 512)
 	private String reason;
 
 	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -147,7 +147,24 @@ public class MajorRoleRequest {
 		);
 
 	}
+    // 자격 박탈 추가 ( 형민)
+    public void revoke(MemberProfile decider, String reason) {
+        // 승인된 상태에서만 박탈 가능
+        if (this.applicationStatus != ApplicationStatus.ACCEPTED) {
+            throw new IllegalStateException("승인된 상태의 요청만 자격을 박탈할 수 있습니다.");
+        }
 
+        ApplicationStatus oldStatus = this.applicationStatus;
+        this.applicationStatus = ApplicationStatus.REVOKED; // 상태 변경
+        this.decider = decider;
+        this.decidedAt = LocalDateTime.now();
+        this.reason = reason;
+
+        // 이력 저장
+        this.statusHistories.add(
+                RequestStatusHistory.createHistory(this, oldStatus, this.applicationStatus, decider, reason)
+        );
+    }
 	// 검증 로직
 	private void validatePendingStatus() {
 		if (this.applicationStatus != ApplicationStatus.PENDING

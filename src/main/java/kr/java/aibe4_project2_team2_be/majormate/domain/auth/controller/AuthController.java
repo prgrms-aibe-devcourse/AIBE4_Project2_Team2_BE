@@ -22,7 +22,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.EmailVerific
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.service.AuthService;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.service.EmailService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtProperties;
 import kr.java.aibe4_project2_team2_be.majormate.global.util.CookieUtil;
@@ -58,31 +58,40 @@ public class AuthController {
         int cookieMaxAge = (int) (jwtProperties.getRefreshTokenValidity() / 1000);
         CookieUtil.addCookie(response, "refreshToken", tokenResponse.getRefreshToken(), cookieMaxAge);
 
-        //cookie가 아닌 body로 토큰이 나오고있어
-        //accessToken 쿠키 발행을 위해 추가했습니다 ( 조현우 )
-        int accessCookieMaxAge = (int) (tokenResponse.getExpiresIn() / 1000);
+        // Set access token as HttpOnly cookie
+        int accessCookieMaxAge = tokenResponse.getExpiresIn().intValue();
         CookieUtil.addCookie(response, "accessToken", tokenResponse.getAccessToken(), accessCookieMaxAge);
 
-        // Return response with access token only (no refresh token in body)
-        TokenResponse responseWithoutRefreshToken = TokenResponse.builder()
-                .accessToken(tokenResponse.getAccessToken())
+        // Return response without tokens in body (tokens are in HttpOnly cookies for security)
+        TokenResponse responseWithoutTokens = TokenResponse.builder()
                 .tokenType(tokenResponse.getTokenType())
                 .expiresIn(tokenResponse.getExpiresIn())
                 .build();
 
-        return ApiResponse.success(responseWithoutRefreshToken, "로그인 성공");
+        return ApiResponse.success(responseWithoutTokens, "로그인 성공");
     }
 
     @Operation(summary = "토큰 갱신", description = "쿠키의 RefreshToken으로 AccessToken을 갱신합니다.")
     @PostMapping("/refresh")
-    public ApiResponse<TokenResponse> refresh(HttpServletRequest request) {
+    public ApiResponse<TokenResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
         // Get refresh token from cookie
         Cookie refreshTokenCookie = CookieUtil.getCookie(request, "refreshToken")
-                .orElseThrow(() -> new UnauthorizedException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
+                .orElseThrow(() -> new UnauthorizedException(ErrorCodeNew.AUTH_401_REFRESH_TOKEN_NOT_FOUND));
 
         RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest(refreshTokenCookie.getValue());
-        TokenResponse response = authService.refresh(refreshTokenRequest);
-        return ApiResponse.success(response, "토큰 갱신 완료");
+        TokenResponse tokenResponse = authService.refresh(refreshTokenRequest);
+
+        // Set new access token as HttpOnly cookie
+        int accessCookieMaxAge = tokenResponse.getExpiresIn().intValue();
+        CookieUtil.addCookie(response, "accessToken", tokenResponse.getAccessToken(), accessCookieMaxAge);
+
+        // Return response without tokens in body (tokens are in HttpOnly cookies for security)
+        TokenResponse responseWithoutTokens = TokenResponse.builder()
+                .tokenType(tokenResponse.getTokenType())
+                .expiresIn(tokenResponse.getExpiresIn())
+                .build();
+
+        return ApiResponse.success(responseWithoutTokens, "토큰 갱신 완료");
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃하고 RefreshToken을 무효화합니다.")

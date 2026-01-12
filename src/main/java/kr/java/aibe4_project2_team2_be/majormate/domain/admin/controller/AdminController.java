@@ -20,7 +20,7 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    // 목록 조회
+    // 1.목록 조회
     @GetMapping("/requests")
     public String requestList(Model model) {
         List<MajorRoleRequest> requestEntities = adminService.getPendingRequests();
@@ -36,7 +36,7 @@ public class AdminController {
         return "admin/request-list";
     }
 
-    // 상세 조회
+    // 2. 상세 조회
     @GetMapping("/requests/{request_id}")
     public String requestDetail(@PathVariable Long request_id, Model model) {
         MajorRoleRequest entity = adminService.getRequestDetail(request_id);
@@ -46,7 +46,7 @@ public class AdminController {
     }
 
 
-    // 승인 처리
+    // 3. 승인 처리
     @PostMapping("/requests/{id}/accept")
     public String accept(@PathVariable Long id) {
         // 현재 로그인한 관리자 ID (나중에는 세션에서 가져와야 함)
@@ -58,7 +58,7 @@ public class AdminController {
         return "redirect:/admin/requests";
     }
 
-    // 반려 처리
+    // 4. 반려 처리
     @PostMapping("/requests/{id}/reject")
     public String reject(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
@@ -72,7 +72,19 @@ public class AdminController {
 
         return "redirect:/admin/requests";
     }
-    
+
+    // 5. 박탈 처리
+    @PostMapping("/requests/{id}/revoke")
+    public String revoke(@PathVariable Long id, @RequestParam("reason") String reason) { // [수정 1] reason 추가
+        // 현재 로그인한 관리자 ID
+        Long adminId = 1L;
+
+        // [수정 2] 인자 3개를 모두 전달 (요청ID, 관리자ID, 사유)
+        adminService.revokeMemberMajorRole(id, adminId, reason);
+
+        return "redirect:/admin/requests";
+    }
+
     // DTO 클래스들
     @Getter
     static class MajorReqDto { // 목록 조회
@@ -103,6 +115,7 @@ public class AdminController {
         private LocalDateTime createdAt;
         private String comment;
         private String documentUrl;
+        private String reason;
 
         public MajorReqDetailDto(MajorRoleRequest entity) {
             this.id = entity.getRequestId();
@@ -113,6 +126,7 @@ public class AdminController {
             this.createdAt = entity.getCreatedAt();
             this.comment = entity.getComment();
             this.documentUrl = entity.getDocumentUrl();
+            this.reason = entity.getReason();
         }
     }
 }

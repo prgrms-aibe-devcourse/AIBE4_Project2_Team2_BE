@@ -11,7 +11,7 @@ public enum ApplicationStatus {
 	ACCEPTED("승인"),
 	REJECTED("반려"),
 	CANCELLED("취소"),
-	RESUBMITTED("재신청");
-
+	RESUBMITTED("재신청"),
+    REVOKED("자격 박탈");   // 형민
 	private final String description;
 }

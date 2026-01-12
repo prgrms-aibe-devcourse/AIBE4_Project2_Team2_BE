@@ -25,11 +25,15 @@ public class CookieUtil {
     }
 
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
+        // SameSite 설정을 위해 Set-Cookie 헤더 직접 설정
+        // HttpOnly: XSS 공격 방지 (JavaScript에서 접근 불가)
+        // SameSite=Lax: CSRF 공격 방지 (크로스 사이트 요청 제한)
+        // TODO: 프로덕션 배포 시 Secure 플래그 추가 필요 (HTTPS 필수)
+        String cookieHeader = String.format(
+            "%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax",
+            name, value, maxAge
+        );
+        response.addHeader("Set-Cookie", cookieHeader);
     }
 
     public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {

@@ -80,9 +80,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
+        // 로그아웃과 토큰 갱신은 인증이 필요하므로 필터를 거쳐야 함
+        if (path.equals("/api/auth/logout") || path.equals("/api/auth/refresh")) {
+            return false;
+        }
+
         return path.startsWith("/api/auth/")
                 || path.startsWith("/oauth2/")
-                | path.startsWith("/login/oauth2/")
+                || path.startsWith("/login/oauth2/")
                 || path.equals("/error");
     }
 }
