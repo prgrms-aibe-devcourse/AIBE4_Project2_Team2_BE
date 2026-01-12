@@ -66,7 +66,7 @@ public class MajorRoleRequest {
 	@JoinColumn(name = "decided_by")
 	private MemberProfile decider;
 
-	@Column(name = "reason", length = 255)
+	@Column(name = "reason", length = 512)
 	private String reason;
 
 	@OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -127,7 +127,7 @@ public class MajorRoleRequest {
 		);
 	}
 
-	// 재제출
+	// 재신청
 	public void resubmit(String comment, String documentUrl) {
 
 		if (this.applicationStatus != ApplicationStatus.REJECTED) {
@@ -147,7 +147,8 @@ public class MajorRoleRequest {
 		);
 
 	}
-    // 자격 박탈 추가 ( 형민)
+
+    // 자격 박탈됨 추가 ( 형민)
     public void revoke(MemberProfile decider, String reason) {
         // 승인된 상태에서만 박탈 가능
         if (this.applicationStatus != ApplicationStatus.ACCEPTED) {
