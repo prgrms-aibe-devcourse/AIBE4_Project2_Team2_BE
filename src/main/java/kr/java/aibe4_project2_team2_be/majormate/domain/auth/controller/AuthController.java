@@ -59,7 +59,7 @@ public class AuthController {
         CookieUtil.addCookie(response, "refreshToken", tokenResponse.getRefreshToken(), cookieMaxAge);
 
         // Set access token as HttpOnly cookie
-        int accessCookieMaxAge = (int) (tokenResponse.getExpiresIn());
+        int accessCookieMaxAge = tokenResponse.getExpiresIn().intValue();
         CookieUtil.addCookie(response, "accessToken", tokenResponse.getAccessToken(), accessCookieMaxAge);
 
         // Return response without tokens in body (tokens are in HttpOnly cookies for security)
@@ -82,7 +82,7 @@ public class AuthController {
         TokenResponse tokenResponse = authService.refresh(refreshTokenRequest);
 
         // Set new access token as HttpOnly cookie
-        int accessCookieMaxAge = (int) (tokenResponse.getExpiresIn());
+        int accessCookieMaxAge = tokenResponse.getExpiresIn().intValue();
         CookieUtil.addCookie(response, "accessToken", tokenResponse.getAccessToken(), accessCookieMaxAge);
 
         // Return response without tokens in body (tokens are in HttpOnly cookies for security)
