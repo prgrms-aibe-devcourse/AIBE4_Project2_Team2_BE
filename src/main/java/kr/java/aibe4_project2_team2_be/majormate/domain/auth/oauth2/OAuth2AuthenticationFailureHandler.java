@@ -29,9 +29,18 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
 
         // Clear any existing refresh token cookie
         CookieUtil.deleteCookie(request, response, "refreshToken");
+        CookieUtil.deleteCookie(request, response, "accessToken");
+
+        // 에러 메시지 추출
+        String errorMessage = exception.getLocalizedMessage();
+
+        // 이미 가입된 이메일인 경우 특별 처리
+        if (errorMessage != null && errorMessage.contains("이미 사용 중인 이메일")) {
+            errorMessage = "already_registered";
+        }
 
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
-                .queryParam("error", exception.getLocalizedMessage())
+                .queryParam("error", errorMessage)
                 .build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
