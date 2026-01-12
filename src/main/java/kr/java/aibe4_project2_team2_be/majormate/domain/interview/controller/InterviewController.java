@@ -20,6 +20,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.response.R
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.service.InterviewService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.PageResponsesNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,16 +32,14 @@ public class InterviewController {
 
 	@GetMapping("/members/me/interviews/applied")
 	public ApiResponseNew<List<AppliedInterviewFormResponse>> getMyAppliedInterviewForms(Pageable pageable) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 6L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		Page<AppliedInterviewFormResponse> page = interviewService.getAppliedInterviewForms(memberId, pageable);
 		return PageResponsesNew.of(page);
 	}
 
 	@GetMapping("/members/me/interviews/applied/completed")
 	public ApiResponseNew<List<AppliedInterviewFormResponse>> getMyAppliedCompletedInterviewForms(Pageable pageable) {
-		// Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 6L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		Page<AppliedInterviewFormResponse> page = interviewService.getAppliedCompletedInterviewForms(memberId,
 			pageable);
 		return PageResponsesNew.of(page);
@@ -49,8 +48,7 @@ public class InterviewController {
 	@GetMapping("/members/me/interviews/applied/{interviewId}")
 	public ApiResponseNew<AppliedInterviewFormResponse> getMyAppliedInterviewFormDetail(
 		@PathVariable Long interviewId) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 6L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		AppliedInterviewFormResponse response = interviewService.getAppliedInterviewFormDetail(memberId, interviewId);
 		return ApiResponseNew.success(response);
 	}
@@ -58,8 +56,7 @@ public class InterviewController {
 	@GetMapping("/members/me/interviews/received")
 	public ApiResponseNew<List<ReceivedInterviewFormResponse>> getMyReceivedInterviewForms(
 		Pageable pageable) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 3L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		Page<ReceivedInterviewFormResponse> page = interviewService.getReceivedInterviewForms(memberId, pageable);
 		return PageResponsesNew.of(page);
 	}
@@ -67,8 +64,7 @@ public class InterviewController {
 	@GetMapping("/members/me/interviews/received/{interviewId}")
 	public ApiResponseNew<ReceivedInterviewFormResponse> getMyReceivedInterviewFormDetail(
 		@PathVariable Long interviewId) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 3L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		ReceivedInterviewFormResponse response = interviewService.getReceivedInterviewFormDetail(memberId, interviewId);
 		return ApiResponseNew.success(response);
 	}
@@ -78,8 +74,7 @@ public class InterviewController {
 		@PathVariable Long majorId,
 		@Valid @RequestBody InterviewFormCreateRequest request
 	) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 6L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		AppliedInterviewFormResponse response = interviewService.createInterviewForm(memberId, majorId, request);
 		return ApiResponseNew.success(response);
 	}
@@ -89,8 +84,7 @@ public class InterviewController {
 		@PathVariable Long interviewId,
 		@Valid @RequestBody InterviewDecisionRequest request
 	) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 3L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		interviewService.accept(memberId, interviewId, request.message());
 		return ApiResponseNew.success();
 	}
@@ -100,16 +94,14 @@ public class InterviewController {
 		@PathVariable Long interviewId,
 		@Valid @RequestBody InterviewDecisionRequest request
 	) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 3L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		interviewService.reject(memberId, interviewId, request.message());
 		return ApiResponseNew.success();
 	}
 
 	@PatchMapping("/interviews/{interviewId}/complete")
 	public ApiResponseNew<Void> complete(@PathVariable Long interviewId) {
-		//Long memberId = SecurityUtil.getCurrentMemberId();
-		Long memberId = 3L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		interviewService.complete(memberId, interviewId);
 		return ApiResponseNew.success();
 	}

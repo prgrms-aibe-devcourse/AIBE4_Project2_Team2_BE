@@ -34,9 +34,6 @@ public record MemberInfoUpdateRequest(
 	)
 	String newPassword,
 
-	@Size(max = 512, message = "프로필 이미지 URL은 512자 이하여야 합니다.")
-	String profileImageUrl,
-
 	MemberStatus status,
 
 	@Size(max = 20, message = "대학교명은 20자 이하여야 합니다.")
