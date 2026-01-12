@@ -14,12 +14,15 @@ import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.request.InterviewFormCreateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
+	name = "interview_form",
 	indexes = {
 		@Index(columnList = "student_member_id,status"),
 		@Index(columnList = "major_member_id,status")
@@ -89,5 +92,28 @@ public class InterviewForm extends BaseEntity {
 			InterviewFormStatus.PENDING,
 			null
 		);
+	}
+
+	public void accept(String majorMessage) {
+		if (this.status != InterviewFormStatus.PENDING) {
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+		}
+		this.status = InterviewFormStatus.ACCEPTED;
+		this.majorMessage = majorMessage;
+	}
+
+	public void reject(String majorMessage) {
+		if (this.status != InterviewFormStatus.PENDING) {
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+		}
+		this.status = InterviewFormStatus.REJECTED;
+		this.majorMessage = majorMessage;
+	}
+
+	public void complete() {
+		if (this.status != InterviewFormStatus.ACCEPTED) {
+			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+		}
+		this.status = InterviewFormStatus.COMPLETED;
 	}
 }

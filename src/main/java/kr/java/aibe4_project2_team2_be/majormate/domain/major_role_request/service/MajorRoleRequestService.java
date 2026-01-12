@@ -17,8 +17,10 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcad
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.ForbiddenException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,20 +36,51 @@ public class MajorRoleRequestService {
 	// 1. 등록
 	@Transactional
 	public Long createRequest(Long memberId, RoleRequestCreateRequest requestDto, MultipartFile documentFile) {
-		MemberProfile memberProfile = memberProfileRepository.findById(memberId)
-			.orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
-		MemberAcademic academic = memberInfoReader.getOrCreateAcademic(memberId);
+		MemberProfile memberProfile = memberInfoReader.getProfileWithAcademicOrThrow(memberId);
+
+		validateMajorRequestEligibilityOrThrow(memberProfile);
+
+		MemberAcademic academic = memberProfile.getAcademic();
+		if (academic == null) {
+			memberInfoReader.createAcademicIfAbsent(memberProfile);
+			academic = memberProfile.getAcademic();
+		}
+
+		validateMajorRequestAcademicOrThrow(academic);
 
 		String documentUrl = s3Service.upload(documentFile);
 
 		MajorRoleRequest request = MajorRoleRequest.createRequest(
 			memberProfile,
-			academic.getUniversity(),
-			academic.getMajor(),
+			memberProfile.getAcademic().getUniversity(),
+			memberProfile.getAcademic().getMajor(),
 			requestDto.getContent(),
 			documentUrl
 		);
 		return majorRoleRequestRepository.save(request).getRequestId();
+	}
+
+	private void validateMajorRequestEligibilityOrThrow(MemberProfile profile) {
+		MemberStatus status = profile.getStatus();
+		if (status == null) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_REQUEST_400_STATUS_REQUIRED);
+		}
+		if (status != MemberStatus.ENROLLED && status != MemberStatus.GRADUATED) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_REQUEST_400_INVALID_STATUS);
+		}
+	}
+
+	private void validateMajorRequestAcademicOrThrow(MemberAcademic academic) {
+		if (academic == null) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_REQUEST_400_ACADEMIC_REQUIRED);
+		}
+		if (isBlank(academic.getUniversity()) || isBlank(academic.getMajor())) {
+			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_REQUEST_400_ACADEMIC_REQUIRED);
+		}
+	}
+
+	private boolean isBlank(String value) {
+		return value == null || value.isBlank();
 	}
 
 	// 2. 재제출
@@ -57,7 +90,7 @@ public class MajorRoleRequestService {
 			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
 
 		if (!request.getMemberProfile().getMemberId().equals(memberId)) {
-			throw new ForbiddenException();
+			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_ROLE_REQUEST_403_NOT_OWNER);
 		}
 
 		s3Service.delete(request.getDocumentUrl());
@@ -81,7 +114,7 @@ public class MajorRoleRequestService {
 		// 본인 확인 (관리자 권한 체크 로직 추가 필요)
 		if (!request.getMemberProfile().getMemberId().equals(memberId)) {
 			// TODO: 관리자인 경우 통과시키는 로직 추가
-			throw new ForbiddenException();
+			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_403);
 		}
 		return RoleRequestDetailResponse.from(request);
 	}

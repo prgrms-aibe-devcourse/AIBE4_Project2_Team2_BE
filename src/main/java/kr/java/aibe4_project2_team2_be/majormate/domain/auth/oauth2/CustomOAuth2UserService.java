@@ -67,15 +67,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		return new CustomOAuth2User(memberProfile, attributes);
 	}
 
-    private OAuth2UserInfo getOAuth2UserInfo(String registrationId, Map<String, Object> attributes) {
-        return switch (registrationId.toLowerCase()) {
-            case "google" -> new GoogleOAuth2UserInfo(attributes);
-            case "github" -> new GithubOAuth2UserInfo(attributes);
-            case "kakao" -> new KakaoOAuth2UserInfo(attributes);
-            case "naver" -> new NaverOAuth2UserInfo(attributes);
-            default -> throw new BadRequestException(ErrorCode.OAUTH2_PROVIDER_NOT_SUPPORTED);
-        };
-    }
+	private OAuth2UserInfo getOAuth2UserInfo(String registrationId, Map<String, Object> attributes) {
+		return switch (registrationId.toLowerCase()) {
+			case "google" -> new GoogleOAuth2UserInfo(attributes);
+			case "github" -> new GithubOAuth2UserInfo(attributes);
+			case "kakao" -> new KakaoOAuth2UserInfo(attributes);
+			case "naver" -> new NaverOAuth2UserInfo(attributes);
+			default -> throw new BadRequestException(ErrorCode.OAUTH2_PROVIDER_NOT_SUPPORTED);
+		};
+	}
 
 	private MemberProfile findOrCreateMember(OAuth2UserInfo userInfo, String registrationId) {
 		AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase());
@@ -127,7 +127,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		String nickname = generateUniqueNickname(name != null ? name : emailPrefix);
 
 		// Create new member without password
-		MemberProfile newMemberProfile = MemberProfile.create(
+		MemberProfile newMemberProfile = MemberProfile.createLocal(
 			name, nickname, email, username, null
 		);
 
@@ -162,45 +162,46 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		return username;
 	}
 
-    private String generateUniqueNickname(String baseName) {
-        // Remove special characters and limit length
-        String sanitized = baseName.replaceAll("[^가-힣a-zA-Z0-9]", "");
-        sanitized = sanitized.substring(0, Math.min(sanitized.length(), 15)); // Reduced to 15 to allow for suffix
+	private String generateUniqueNickname(String baseName) {
+		// Remove special characters and limit length
+		String sanitized = baseName.replaceAll("[^가-힣a-zA-Z0-9]", "");
+		sanitized = sanitized.substring(0, Math.min(sanitized.length(), 15)); // Reduced to 15 to allow for suffix
 
 		if (sanitized.isEmpty()) {
 			sanitized = "user";
 		}
 
-        // First try without suffix
-        if (!memberProfileRepository.existsByNickname(sanitized)) { // Fixed to memberProfileRepository
-            return sanitized;
-        }
+		// First try without suffix
+		if (!memberProfileRepository.existsByNickname(sanitized)) { // Fixed to memberProfileRepository
+			return sanitized;
+		}
 
-        // If duplicate, add random 4-character suffix
-        int attempts = 0;
-        String nickname;
-        do {
-            String randomSuffix = generateRandomString(4);
-            nickname = sanitized + "_" + randomSuffix;
-            attempts++;
-        } while (memberProfileRepository.existsByNickname(nickname) && attempts < 100); // Fixed to memberProfileRepository
+		// If duplicate, add random 4-character suffix
+		int attempts = 0;
+		String nickname;
+		do {
+			String randomSuffix = generateRandomString(4);
+			nickname = sanitized + "_" + randomSuffix;
+			attempts++;
+		} while (memberProfileRepository.existsByNickname(nickname)
+			&& attempts < 100); // Fixed to memberProfileRepository
 
-        if (attempts >= 100) {
-            throw new BadRequestException(ErrorCode.DUPLICATE_NICKNAME);
-        }
+		if (attempts >= 100) {
+			throw new BadRequestException(ErrorCode.DUPLICATE_NICKNAME);
+		}
 
 		return nickname;
 	}
 
-    private String generateRandomString(int length) {
-        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            int index = (int) (Math.random() * chars.length());
-            sb.append(chars.charAt(index));
-        }
-        return sb.toString();
-    }
+	private String generateRandomString(int length) {
+		String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			int index = (int)(Math.random() * chars.length());
+			sb.append(chars.charAt(index));
+		}
+		return sb.toString();
+	}
 
 	private String fetchGithubEmail(OAuth2UserRequest userRequest) {
 		try {
