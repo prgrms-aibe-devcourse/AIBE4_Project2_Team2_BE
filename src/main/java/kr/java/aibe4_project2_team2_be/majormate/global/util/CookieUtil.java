@@ -25,11 +25,12 @@ public class CookieUtil {
     }
 
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
+        // SameSite 설정을 위해 Set-Cookie 헤더 직접 설정
+        String cookieHeader = String.format(
+            "%s=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=Strict",
+            name, value, maxAge
+        );
+        response.addHeader("Set-Cookie", cookieHeader);
     }
 
     public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
