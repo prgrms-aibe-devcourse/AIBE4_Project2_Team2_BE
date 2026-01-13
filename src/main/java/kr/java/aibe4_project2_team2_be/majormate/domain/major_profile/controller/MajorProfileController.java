@@ -74,4 +74,11 @@ public class MajorProfileController {
 		MajorProfileResponse response = majorProfileService.getMajorCardDetail(profileId);
 		return ApiResponse.success(response);
 	}
+
+	@PostMapping("/{profileId}/likes")
+	public ApiResponse<Void> toggleLike(@PathVariable Long profileId) {
+		Long memberId = SecurityUtil.getCurrentMemberId();
+		majorProfileService.toggleLike(memberId, profileId);
+		return ApiResponse.success(null);
+	}
 }

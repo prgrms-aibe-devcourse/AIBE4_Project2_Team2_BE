@@ -194,6 +194,12 @@ public enum ErrorCodeNew {
 	MAJOR_403_ROLE_REQUIRED(
 		HttpStatus.FORBIDDEN, "MAJOR_403_ROLE_REQUIRED", "MAJOR 권한이 필요합니다."
 	),
+	MAJOR_404_PROFILE_REQUIRED(
+		HttpStatus.NOT_FOUND, "MAJOR_404_PROFILE_REQUIRED", "프로필을 찾을 수 없습니다."
+	),
+	MAJOR_400_PROFILE_NOT_ACTIVE(
+		HttpStatus.BAD_REQUEST, "MAJOR_400_PROFILE_NOT_ACTIVE", "비활성화 된 전공자입니다."
+	),
 
 	// File
 	FILE_400_EMPTY_FILE(
