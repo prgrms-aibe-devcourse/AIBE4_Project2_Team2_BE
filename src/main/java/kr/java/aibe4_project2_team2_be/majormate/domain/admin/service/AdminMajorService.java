@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminService {
+public class AdminMajorService {
 
     private final MajorRoleRequestRepository majorRoleRequestRepository;
     private final MemberProfileRepository memberProfileRepository;
