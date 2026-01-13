@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -71,9 +72,11 @@ public class MajorProfileController {
 
 	@GetMapping
 	public ApiResponse<Page<MajorCardResponse>> getMajorCards(
-		@PageableDefault(size = 10, sort = "majorProfileId", direction = Sort.Direction.DESC) Pageable pageable
+		@PageableDefault(size = 10, sort = "majorProfileId", direction = Sort.Direction.DESC) Pageable pageable,
+		@RequestParam(required = false) String searchType,
+		@RequestParam(required = false) String keyword
 	) {
-		return ApiResponse.success(majorProfileService.getMajorCards(pageable));
+		return ApiResponse.success(majorProfileService.getMajorCards(pageable, searchType, keyword));
 	}
 
 	@GetMapping("/{profileId}")

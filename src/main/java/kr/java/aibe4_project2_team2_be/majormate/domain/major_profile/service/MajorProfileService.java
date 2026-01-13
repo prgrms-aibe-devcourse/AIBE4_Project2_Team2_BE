@@ -96,11 +96,28 @@ public class MajorProfileService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<MajorCardResponse> getMajorCards(Pageable pageable) {
+	public Page<MajorCardResponse> getMajorCards(Pageable pageable, String searchType, String keyword) {
 		Long currentMemberId = SecurityUtil.getCurrentMemberId();
-		
+
 		// 1. Fetch Join 쿼리 호출 (N+1 발생 안 함)
-		Page<MajorProfile> profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
+		Page<MajorProfile> profiles;
+
+		// 검색 조건 처리
+		if (searchType != null && keyword != null && !keyword.isBlank()) {
+			if ("all".equalsIgnoreCase(searchType)) {
+				// 통합 검색: 닉네임, 학교, 학과
+				profiles = majorProfileRepository.findAllActiveWithAcademicByAllSearch(pageable, currentMemberId, keyword);
+			} else if ("tag".equalsIgnoreCase(searchType)) {
+				// 태그 검색
+				profiles = majorProfileRepository.findAllActiveWithAcademicByTag(pageable, currentMemberId, keyword);
+			} else {
+				// searchType이 잘못된 경우 전체 조회
+				profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
+			}
+		} else {
+			// 검색 조건 없음 - 전체 조회
+			profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
+		}
 
 		// 2. 좋아요 개수 일괄 조회
 		List<Long> ids = profiles.stream().map(MajorProfile::getMajorProfileId).toList();
