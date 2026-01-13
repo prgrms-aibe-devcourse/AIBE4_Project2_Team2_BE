@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.RequestStatusHistory;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -104,7 +104,7 @@ public class AdminController {
     public String reject(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
         if (reason == null || reason.trim().isEmpty()) {
-            return "redirect:/admin/requests/" + id; // 사유 없으면 다시 상세 페이지로
+            return "redirect:/admin/requests/" + id; //
         }
         adminService.rejectRequest(id, adminId, reason);
         // 반려 완료 후 '반려된 목록' 페이지로 이동
@@ -150,20 +150,22 @@ public class AdminController {
     @Getter
     static class MajorReqDetailDto {
         private Long id;
-        private String memberName;
+        private String memberName; // HTML에서는 req.memberName으로 접근
         private String universityName;
         private String majorName;
         private String applicationStatus;
         private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+        private LocalDateTime decidedAt;
         private String comment;
         private String documentUrl;
         private String reason;
 
+        // [추가] reason hsitory 리스트
+        private List<MajorHistoryDto> histories;
+
         public MajorReqDetailDto(MajorRoleRequest entity) {
             this.id = entity.getRequestId();
 
-            // [방어 로직] 회원 프로필이 없으면 "알 수 없음" 처리
             if (entity.getMemberProfile() != null) {
                 this.memberName = entity.getMemberProfile().getNickname();
             } else {
@@ -173,7 +175,6 @@ public class AdminController {
             this.universityName = entity.getUniversity();
             this.majorName = entity.getMajor();
 
-            // [방어 로직] 상태값이 없으면 에러 방지
             if (entity.getApplicationStatus() != null) {
                 this.applicationStatus = entity.getApplicationStatus().getDescription();
             } else {
@@ -181,10 +182,33 @@ public class AdminController {
             }
 
             this.createdAt = entity.getCreatedAt();
-            this.updatedAt = entity.getDecidedAt();
+            this.decidedAt = entity.getDecidedAt();
             this.comment = entity.getComment();
             this.documentUrl = entity.getDocumentUrl();
             this.reason = entity.getReason();
+
+            // [추가] 히스토리 데이터 변환 (최신순 정렬)
+            this.histories = entity.getStatusHistories().stream()
+                    .sorted(Comparator.comparing(RequestStatusHistory::getChangedAt).reversed())
+                    .map(MajorHistoryDto::new)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    // [추가] 히스토리용 내부 DTO
+    @Getter
+    static class MajorHistoryDto {
+        private LocalDateTime changedAt;
+        private String toStatus;
+        private String changedByNickname;
+        private String reason;
+
+        public MajorHistoryDto(RequestStatusHistory history) {
+            this.changedAt = history.getChangedAt();
+            // HTML의 th:if 조건(ACCEPTED, REJECTED)을 맞추기 위해 name() 사용
+            this.toStatus = history.getToStatus().name();
+            this.changedByNickname = (history.getChangedBy() != null) ? history.getChangedBy().getNickname() : "(알수없음)";
+            this.reason = history.getReason();
         }
     }
 }
