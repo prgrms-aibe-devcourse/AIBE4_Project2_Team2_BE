@@ -46,7 +46,7 @@ public class AdminMajorController {
         model.addAttribute("viewType", "ALL");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
-        return "admin/request-list";
+        return "admin/major/request-list";
     }
 
     // 1-2. 신청 대기 목록
@@ -60,7 +60,7 @@ public class AdminMajorController {
         model.addAttribute("viewType", "PENDING,RESUBMITTED");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
-        return "admin/request-list";
+        return "admin/major/request-list";
     }
 
     // 1-3. 승인된 목록
@@ -74,7 +74,7 @@ public class AdminMajorController {
         model.addAttribute("viewType", "ACCEPTED");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
-        return "admin/request-list";
+        return "admin/major/request-list";
     }
 
     // 1-4. 반려된 목록
@@ -88,7 +88,7 @@ public class AdminMajorController {
         model.addAttribute("viewType", "REJECTED");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
-        return "admin/request-list";
+        return "admin/major/request-list";
     }
 
     // 1-5. 자격 박탈 목록
@@ -102,7 +102,7 @@ public class AdminMajorController {
         model.addAttribute("viewType", "REVOKED");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
-        return "admin/request-list";
+        return "admin/major/request-list";
     }
 
     // 1-6. 상세 조회
@@ -110,7 +110,7 @@ public class AdminMajorController {
     public String requestDetail(@PathVariable("id") Long requestId, Model model) {
         MajorRoleRequest entity = adminMajorService.getRequestDetail(requestId);
         model.addAttribute("req", new MajorReqDetailDto(entity));
-        return "admin/request-detail";
+        return "admin/major/request-detail";
     }
 
     // 2. 승인 처리
