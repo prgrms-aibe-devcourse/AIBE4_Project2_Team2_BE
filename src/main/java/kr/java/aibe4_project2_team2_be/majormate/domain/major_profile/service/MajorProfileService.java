@@ -3,6 +3,7 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.request.MajorProfileCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.LikeToggleResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorCardResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorProfileResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.entity.MajorProfile;
@@ -146,14 +148,29 @@ public class MajorProfileService {
 		return MajorProfileResponse.of(profile, academic, likeCount, isLiked);
 	}
 
-	public void toggleLike(Long memberId, Long profileId) {
+	@Transactional
+	public LikeToggleResponse toggleLike(Long memberId, Long profileId) {
 		MajorProfile profile = majorProfileRepository.findById(profileId)
-			.orElseThrow(() -> new EntityNotFoundException("프로필을 찾을 수 없습니다."));
+			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MAJOR_404_PROFILE_REQUIRED));
 
-		if (majorProfileLikeRepository.existsByMajorProfile_MajorProfileIdAndMemberId(profileId, memberId)) {
-			majorProfileLikeRepository.deleteByMajorProfile_MajorProfileIdAndMemberId(profileId, memberId);
+		// 2. 이미 좋아요를 눌렀는지 확인 (조회)
+		Optional<MajorProfileLike> existingLike =
+			majorProfileLikeRepository.findByMajorProfile_MajorProfileIdAndMemberId(profileId, memberId);
+
+		boolean isLikedNow;
+
+		if (existingLike.isPresent()) {
+			majorProfileLikeRepository.delete(existingLike.get());
+			isLikedNow = false;
 		} else {
 			majorProfileLikeRepository.save(MajorProfileLike.createLike(profile, memberId));
+			isLikedNow = true;
+
+			// 알림 발송 로직을 여기에 넣으면 등록 시에만 알림이 갑니다.
 		}
+
+		long totalLikes = majorProfileLikeRepository.countByMajorProfile_MajorProfileId(profileId);
+
+		return LikeToggleResponse.of(isLikedNow, totalLikes);
 	}
 }

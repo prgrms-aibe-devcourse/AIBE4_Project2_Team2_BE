@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.request.MajorProfileCreateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.LikeToggleResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorCardResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorProfileResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.service.MajorProfileService;
@@ -76,9 +77,9 @@ public class MajorProfileController {
 	}
 
 	@PostMapping("/{profileId}/likes")
-	public ApiResponse<Void> toggleLike(@PathVariable Long profileId) {
+	public ApiResponse<LikeToggleResponse> toggleLike(@PathVariable Long profileId) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
-		majorProfileService.toggleLike(memberId, profileId);
-		return ApiResponse.success(null);
+		LikeToggleResponse response = majorProfileService.toggleLike(memberId, profileId);
+		return ApiResponse.success(response);
 	}
 }
