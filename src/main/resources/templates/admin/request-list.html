@@ -13,10 +13,16 @@
         .nav-links a:hover { color: #000; text-decoration: underline; }
         .nav-links a.active { color: blue; text-decoration: underline; font-size: 1.1em; }
 
-        /* 검색창 스타일 */
         .search-container { margin-bottom: 15px; text-align: right; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
         .search-container select, .search-container input { padding: 6px; border: 1px solid #ccc; border-radius: 3px; }
         .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 12px; }
+
+        .pagination { display: flex; justify-content: center; list-style: none; padding: 0; margin-top: 20px; }
+        .pagination li { margin: 0 5px; }
+        .pagination a { text-decoration: none; padding: 5px 10px; border: 1px solid #ddd; color: #333; border-radius: 3px; }
+        .pagination a.active { background-color: #007bff; color: white; border-color: #007bff; }
+        .pagination a:hover:not(.active) { background-color: #f4f4f4; }
+        .pagination .disabled { color: #ccc; pointer-events: none; border-color: #eee; }
     </style>
 </head>
 <body>
@@ -56,25 +62,42 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="req : ${requests}">
+    <tr th:each="req : ${requests.content}">
         <td th:text="${req.id}">1</td>
         <td th:text="${req.memberName}">홍길동</td>
         <td th:text="${req.universityName}">서울대</td>
         <td th:text="${req.majorName}">컴공</td>
-
         <td th:text="${req.applicationStatus}" style="font-weight: bold;">PENDING</td>
-
         <td th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-01-09</td>
-
         <td>
             <a th:href="@{/admin/requests/{id}(id=${req.id})}" class="btn">상세보기</a>
         </td>
     </tr>
-    <tr th:if="${#lists.isEmpty(requests)}">
+    <tr th:if="${requests.totalElements == 0}">
         <td colspan="7" style="padding: 20px; color: #666;">데이터가 없습니다.</td>
     </tr>
     </tbody>
 </table>
+
+<div th:if="${requests.totalPages > 0}">
+    <ul class="pagination">
+        <li th:classappend="${requests.first} ? 'disabled'">
+            <a th:href="@{''(page=${requests.number - 1}, searchType=${searchType}, keyword=${keyword})}">« 이전</a>
+        </li>
+
+        <li th:each="pageNum : ${#numbers.sequence(0, requests.totalPages - 1)}"
+            th:if="${pageNum >= requests.number - 5 and pageNum <= requests.number + 5}">
+
+            <a th:href="@{''(page=${pageNum}, searchType=${searchType}, keyword=${keyword})}"
+               th:text="${pageNum + 1}"
+               th:classappend="${pageNum == requests.number} ? 'active'">1</a>
+        </li>
+
+        <li th:classappend="${requests.last} ? 'disabled'">
+            <a th:href="@{''(page=${requests.number + 1}, searchType=${searchType}, keyword=${keyword})}">다음 »</a>
+        </li>
+    </ul>
+</div>
 
 </body>
 </html>
