@@ -29,7 +29,7 @@ public class MajorProfileController {
 	public ApiResponse<Long> createProfile(
 		@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
 	) {
-		Long memberId = 3L;
+		Long memberId = SecurityUtil.getCurrentMemberId();
 		Long profileId = majorProfileService.createProfile(memberId, majorProfileCreateRequest);
 
 		return ApiResponse.success(profileId);

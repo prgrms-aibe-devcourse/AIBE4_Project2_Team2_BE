@@ -19,6 +19,7 @@ public class MajorProfileResponse {
 	private String major;
 	private String title;
 	private String content;
+	private boolean isActive;
 	private List<String> tags;
 
 	public static MajorProfileResponse of(MajorProfile profile, MemberAcademic academic) {
@@ -30,6 +31,7 @@ public class MajorProfileResponse {
 			.major(academic.getMajor())
 			.title(profile.getTitle())
 			.content(profile.getContent())
+			.isActive(profile.isActive())
 			.tags(profile.getTags().stream()
 				.map(MajorProfileTag::getTagName)
 				.collect(Collectors.toList()))
