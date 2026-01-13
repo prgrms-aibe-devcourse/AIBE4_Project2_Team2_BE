@@ -149,8 +149,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		String nickname = generateUniqueNickname(name != null ? name : emailPrefix);
 
 		// Create new member without password
-		MemberProfile newMemberProfile = MemberProfile.createLocal(
-			name, nickname, email, username, null
+		MemberProfile newMemberProfile = MemberProfile.createOAuth2(
+			provider, displayName, nickname, email, username
 		);
 
 		MemberProfile savedMemberProfile = memberProfileRepository.save(newMemberProfile);

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
+import kr.java.aibe4_project2_team2_be.majormate.global.validation.ValidPassword;
 
 public record MemberInfoUpdateRequest(
 	@NotBlank(message = "닉네임은 필수입니다.")
@@ -20,18 +21,10 @@ public record MemberInfoUpdateRequest(
 	@Size(max = 255, message = "이메일은 255자 이하여야 합니다.")
 	String email,
 
-	@Size(min = 8, max = 20, message = "비밀번호는 8~20자여야 합니다.")
-	@Pattern(
-		regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$",
-		message = "비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다."
-	)
+	@ValidPassword
 	String currentPassword,
 
-	@Size(min = 8, max = 20, message = "비밀번호는 8~20자여야 합니다.")
-	@Pattern(
-		regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$",
-		message = "비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다."
-	)
+	@ValidPassword
 	String newPassword,
 
 	MemberStatus status,
