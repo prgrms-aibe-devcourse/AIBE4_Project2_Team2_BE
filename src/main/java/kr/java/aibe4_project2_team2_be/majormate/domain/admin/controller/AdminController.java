@@ -20,50 +20,71 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    // 1-1. 전체 목록 조회
+    // 1-1. 전체 목록
     @GetMapping("/requests/all")
-    public String allList(Model model) {
-        List<MajorRoleRequest> requestEntities = adminService.getAllRequests();
+    public String allList(Model model,
+                          @RequestParam(required = false) String searchType,
+                          @RequestParam(required = false) String keyword) {
+        List<MajorRoleRequest> requestEntities = adminService.getAllRequests(searchType, keyword);
         model.addAttribute("requests", convertToDtoList(requestEntities));
         model.addAttribute("viewType", "ALL");
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/request-list";
     }
 
-    // 1-2. 신청 대기 목록 조회
+    // 1-2. 대기 목록
     @GetMapping("/requests/pending")
-    public String requestList(Model model) {
-        List<MajorRoleRequest> requestEntities = adminService.getPendingRequests();
+    public String requestList(Model model,
+                              @RequestParam(required = false) String searchType,
+                              @RequestParam(required = false) String keyword) {
+        List<MajorRoleRequest> requestEntities = adminService.getPendingRequests(searchType, keyword);
         model.addAttribute("requests", convertToDtoList(requestEntities));
         model.addAttribute("viewType", "PENDING,RESUBMITTED");
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/request-list";
     }
 
-    // 1-3. 승인된 목록 조회
+    // 1-3. 승인된 목록
     @GetMapping("/requests/accepted")
-    public String acceptedList(Model model) {
-        List<MajorRoleRequest> requestEntities = adminService.getAcceptedRequests();
+    public String acceptedList(Model model,
+                               @RequestParam(required = false) String searchType,
+                               @RequestParam(required = false) String keyword) {
+        List<MajorRoleRequest> requestEntities = adminService.getAcceptedRequests(searchType, keyword);
         model.addAttribute("requests", convertToDtoList(requestEntities));
         model.addAttribute("viewType", "ACCEPTED");
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/request-list";
     }
 
-    // 1-4. 반려된 목록 조회
+    // 1-4. 반려된 목록
     @GetMapping("/requests/rejected")
-    public String rejectedList(Model model) {
-        List<MajorRoleRequest> requestEntities = adminService.getRejectedRequests();
+    public String rejectedList(Model model,
+                               @RequestParam(required = false) String searchType,
+                               @RequestParam(required = false) String keyword) {
+        List<MajorRoleRequest> requestEntities = adminService.getRejectedRequests(searchType, keyword);
         model.addAttribute("requests", convertToDtoList(requestEntities));
         model.addAttribute("viewType", "REJECTED");
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/request-list";
     }
 
-    // 1-5. 자격 박탈 목록 조회
+    // 1-5. 자격 박탈 목록
     @GetMapping("/requests/revoked")
-    public String revokedList(Model model) {
-        List<MajorRoleRequest> requestEntities = adminService.getRevokedRequests();
+    public String revokedList(Model model,
+                              @RequestParam(required = false) String searchType,
+                              @RequestParam(required = false) String keyword) {
+        List<MajorRoleRequest> requestEntities = adminService.getRevokedRequests(searchType, keyword);
         model.addAttribute("requests", convertToDtoList(requestEntities));
         model.addAttribute("viewType", "REVOKED");
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/request-list";
     }
+
 
     // 1-6. 신청 상세 조회 (디버깅 로그 추가됨)
     @GetMapping("/requests/{request_id}")
@@ -89,8 +110,9 @@ public class AdminController {
             throw e; // 브라우저에도 500 에러를 던짐
         }
     }
-    // =================== 처리 =================
-    // 2. 승인 처리
+
+    // =================== 처리 기능 모음 =================
+    // 1. 승인 처리
     @PostMapping("/requests/{id}/accept")
     public String accept(@PathVariable Long id) {
         Long adminId = 1L; // 추후 로그인 세션 적용 필요
@@ -99,7 +121,7 @@ public class AdminController {
         // [수정] 승인 완료 후 '승인된 목록' 페이지로 이동
         return "redirect:/admin/requests/accepted";
     }
-    // 3. 반려 처리
+    // 2. 반려 처리
     @PostMapping("/requests/{id}/reject")
     public String reject(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
@@ -111,7 +133,7 @@ public class AdminController {
         return "redirect:/admin/requests/rejected";
     }
 
-    // 4. 박탈 처리
+    // 3. 박탈 처리
     @PostMapping("/requests/{id}/revoke")
     public String revoke(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
@@ -160,7 +182,7 @@ public class AdminController {
         private String documentUrl;
         private String reason;
 
-        // [추가] reason hsitory 리스트
+        // [추가] reason history 리스트
         private List<MajorHistoryDto> histories;
 
         public MajorReqDetailDto(MajorRoleRequest entity) {
