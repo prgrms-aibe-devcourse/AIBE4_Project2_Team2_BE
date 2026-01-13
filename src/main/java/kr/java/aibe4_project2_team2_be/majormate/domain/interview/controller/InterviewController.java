@@ -37,15 +37,17 @@ public class InterviewController {
 		return PageResponsesNew.of(page);
 	}
 
-	@GetMapping("/members/me/interviews/applied/completed")
-	public ApiResponseNew<List<AppliedInterviewFormResponse>> getMyAppliedCompletedInterviewForms(Pageable pageable) {
+	@GetMapping("/members/me/interviews/completed-without-review")
+	public ApiResponseNew<List<AppliedInterviewFormResponse>> getMyCompletedInterviewsWithoutReview(
+		Pageable pageable
+	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
-		Page<AppliedInterviewFormResponse> page = interviewService.getAppliedCompletedInterviewForms(memberId,
+		Page<AppliedInterviewFormResponse> page = interviewService.getCompletedInterviewsWithoutReview(memberId,
 			pageable);
 		return PageResponsesNew.of(page);
 	}
 
-	@GetMapping("/members/me/interviews/applied/{interviewId}")
+	@GetMapping("/members/me/interviews/applied/{interviewId:\\d+}")
 	public ApiResponseNew<AppliedInterviewFormResponse> getMyAppliedInterviewFormDetail(
 		@PathVariable Long interviewId) {
 		Long memberId = SecurityUtil.getCurrentMemberId();

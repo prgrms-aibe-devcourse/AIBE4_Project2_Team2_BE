@@ -66,8 +66,9 @@ public class InterviewService {
 		return new PageImpl<>(content, pageable, page.getTotalElements());
 	}
 
-	public Page<AppliedInterviewFormResponse> getAppliedCompletedInterviewForms(Long studentId, Pageable pageable) {
-		Page<InterviewForm> page = interviewFormRepository.findByStudentMemberIdAndStatus(
+	public Page<AppliedInterviewFormResponse> getCompletedInterviewsWithoutReview(Long studentId,
+		Pageable pageable) {
+		Page<InterviewForm> page = interviewFormRepository.findCompletedWithoutReview(
 			studentId, InterviewFormStatus.COMPLETED, pageable
 		);
 
