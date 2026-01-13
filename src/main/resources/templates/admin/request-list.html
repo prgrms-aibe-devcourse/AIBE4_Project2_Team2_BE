@@ -11,9 +11,12 @@
         .nav-links { margin-bottom: 20px; }
         .nav-links a { margin-right: 15px; font-weight: bold; text-decoration: none; color: #555; }
         .nav-links a:hover { color: #000; text-decoration: underline; }
-
-        /* 현재 선택된 탭 강조 스타일 */
         .nav-links a.active { color: blue; text-decoration: underline; font-size: 1.1em; }
+
+        /* 검색창 스타일 */
+        .search-container { margin-bottom: 15px; text-align: right; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
+        .search-container select, .search-container input { padding: 6px; border: 1px solid #ccc; border-radius: 3px; }
+        .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 12px; }
     </style>
 </head>
 <body>
@@ -21,20 +24,23 @@
 <h2>전공자 권한 관리</h2>
 
 <div class="nav-links">
-    <a th:href="@{/admin/requests/all}"
-       th:classappend="${viewType == 'ALL'} ? 'active'">[전체 목록]</a>
+    <a th:href="@{/admin/requests/all}" th:classappend="${viewType == 'ALL'} ? 'active'">[전체 목록]</a>
+    <a th:href="@{/admin/requests/pending}" th:classappend="${viewType == 'PENDING,RESUBMITTED'} ? 'active'">[대기 목록]</a>
+    <a th:href="@{/admin/requests/accepted}" th:classappend="${viewType == 'ACCEPTED'} ? 'active'">[승인된 목록]</a>
+    <a th:href="@{/admin/requests/rejected}" th:classappend="${viewType == 'REJECTED'} ? 'active'">[반려된 목록]</a>
+    <a th:href="@{/admin/requests/revoked}" th:classappend="${viewType == 'REVOKED'} ? 'active'">[자격 박탈 목록]</a>
+</div>
 
-    <a th:href="@{/admin/requests/pending}"
-       th:classappend="${viewType == 'PENDING,RESUBMITTED'} ? 'active'">[대기 목록]</a>
-
-    <a th:href="@{/admin/requests/accepted}"
-       th:classappend="${viewType == 'ACCEPTED'} ? 'active'">[승인된 목록]</a>
-
-    <a th:href="@{/admin/requests/rejected}"
-       th:classappend="${viewType == 'REJECTED'} ? 'active'">[반려된 목록]</a>
-
-    <a th:href="@{/admin/requests/revoked}"
-       th:classappend="${viewType == 'REVOKED'} ? 'active'">[자격 박탈 목록]</a>
+<div class="search-container">
+    <form method="get">
+        <select name="searchType">
+            <option value="name" th:selected="${searchType == 'name'}">신청자명</option>
+            <option value="id" th:selected="${searchType == 'id'}">Request No</option>
+        </select>
+        <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어를 입력하세요">
+        <button type="submit" class="btn btn-search">🔍 검색</button>
+        <a th:if="${keyword != null and keyword != ''}" th:href="@{''}" class="btn">초기화</a>
+    </form>
 </div>
 
 <table>
@@ -65,7 +71,7 @@
         </td>
     </tr>
     <tr th:if="${#lists.isEmpty(requests)}">
-        <td colspan="7">데이터가 없습니다.</td>
+        <td colspan="7" style="padding: 20px; color: #666;">데이터가 없습니다.</td>
     </tr>
     </tbody>
 </table>
