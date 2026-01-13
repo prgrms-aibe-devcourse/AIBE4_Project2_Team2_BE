@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.AdminService;
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.AdminMajorService;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.RequestStatusHistory;
 import lombok.Getter;
@@ -26,9 +26,9 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-public class AdminController {
+public class AdminMajorController {
 
-    private final AdminService adminService;
+    private final AdminMajorService adminMajorService;
 
     // Page<Entity> -> Page<DTO> 변환 헬퍼 메서드
     private Page<MajorReqDto> convertToDtoPage(Page<MajorRoleRequest> entities) {
@@ -41,7 +41,7 @@ public class AdminController {
                           @RequestParam(required = false) String searchType,
                           @RequestParam(required = false) String keyword,
                           @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<MajorRoleRequest> requestPage = adminService.getAllRequests(searchType, keyword, pageable);
+        Page<MajorRoleRequest> requestPage = adminMajorService.getAllRequests(searchType, keyword, pageable);
         model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "ALL");
         model.addAttribute("searchType", searchType);
@@ -55,7 +55,7 @@ public class AdminController {
                               @RequestParam(required = false) String searchType,
                               @RequestParam(required = false) String keyword,
                               @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<MajorRoleRequest> requestPage = adminService.getPendingRequests(searchType, keyword, pageable);
+        Page<MajorRoleRequest> requestPage = adminMajorService.getPendingRequests(searchType, keyword, pageable);
         model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "PENDING,RESUBMITTED");
         model.addAttribute("searchType", searchType);
@@ -69,7 +69,7 @@ public class AdminController {
                                @RequestParam(required = false) String searchType,
                                @RequestParam(required = false) String keyword,
                                @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<MajorRoleRequest> requestPage = adminService.getAcceptedRequests(searchType, keyword, pageable);
+        Page<MajorRoleRequest> requestPage = adminMajorService.getAcceptedRequests(searchType, keyword, pageable);
         model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "ACCEPTED");
         model.addAttribute("searchType", searchType);
@@ -83,7 +83,7 @@ public class AdminController {
                                @RequestParam(required = false) String searchType,
                                @RequestParam(required = false) String keyword,
                                @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<MajorRoleRequest> requestPage = adminService.getRejectedRequests(searchType, keyword, pageable);
+        Page<MajorRoleRequest> requestPage = adminMajorService.getRejectedRequests(searchType, keyword, pageable);
         model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "REJECTED");
         model.addAttribute("searchType", searchType);
@@ -97,7 +97,7 @@ public class AdminController {
                               @RequestParam(required = false) String searchType,
                               @RequestParam(required = false) String keyword,
                               @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<MajorRoleRequest> requestPage = adminService.getRevokedRequests(searchType, keyword, pageable);
+        Page<MajorRoleRequest> requestPage = adminMajorService.getRevokedRequests(searchType, keyword, pageable);
         model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "REVOKED");
         model.addAttribute("searchType", searchType);
@@ -108,7 +108,7 @@ public class AdminController {
     // 1-6. 상세 조회
     @GetMapping("/requests/{id}")
     public String requestDetail(@PathVariable("id") Long requestId, Model model) {
-        MajorRoleRequest entity = adminService.getRequestDetail(requestId);
+        MajorRoleRequest entity = adminMajorService.getRequestDetail(requestId);
         model.addAttribute("req", new MajorReqDetailDto(entity));
         return "admin/request-detail";
     }
@@ -117,7 +117,7 @@ public class AdminController {
     @PostMapping("/requests/{id}/accept")
     public String accept(@PathVariable Long id) {
         Long adminId = 1L;
-        adminService.acceptRequest(id, adminId);
+        adminMajorService.acceptRequest(id, adminId);
         return "redirect:/admin/requests/accepted";
     }
 
@@ -128,7 +128,7 @@ public class AdminController {
         if (reason == null || reason.trim().isEmpty()) {
             return "redirect:/admin/requests/" + id;
         }
-        adminService.rejectRequest(id, adminId, reason);
+        adminMajorService.rejectRequest(id, adminId, reason);
         return "redirect:/admin/requests/rejected";
     }
 
@@ -136,7 +136,7 @@ public class AdminController {
     @PostMapping("/requests/{id}/revoke")
     public String revoke(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
-        adminService.revokeMemberMajorRole(id, adminId, reason);
+        adminMajorService.revokeMemberMajorRole(id, adminId, reason);
         return "redirect:/admin/requests/revoked";
     }
 

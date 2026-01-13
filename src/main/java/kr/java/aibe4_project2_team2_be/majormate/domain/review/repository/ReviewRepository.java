@@ -9,8 +9,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.entity.Review;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
+
+    // 1. 전체 조회 (페이징)
+    Page<Review> findAll(Pageable pageable); // 형민
+
+    // 2. 내용 검색 (페이징) - LIKE %keyword%
+    Page<Review> findByContentContaining(String keyword, Pageable pageable); // 형민
+
 
 	Optional<Review> findByInterviewId(Long interviewId);
 
