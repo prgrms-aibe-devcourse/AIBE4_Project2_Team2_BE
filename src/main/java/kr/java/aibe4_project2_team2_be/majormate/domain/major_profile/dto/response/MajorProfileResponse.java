@@ -19,10 +19,12 @@ public class MajorProfileResponse {
 	private String major;
 	private String title;
 	private String content;
-	private boolean isActive;
 	private List<String> tags;
+	private Long likeCount;
+	private boolean isLiked;
+	private boolean isActive;
 
-	public static MajorProfileResponse of(MajorProfile profile, MemberAcademic academic) {
+	public static MajorProfileResponse of(MajorProfile profile, MemberAcademic academic, Long likeCount, boolean isLiked) {
 		return MajorProfileResponse.builder()
 			.id(profile.getMajorProfileId())
 			.name(profile.getMemberProfile().getName())
@@ -31,10 +33,12 @@ public class MajorProfileResponse {
 			.major(academic.getMajor())
 			.title(profile.getTitle())
 			.content(profile.getContent())
-			.isActive(profile.isActive())
 			.tags(profile.getTags().stream()
 				.map(MajorProfileTag::getTagName)
 				.collect(Collectors.toList()))
+			.likeCount(likeCount)
+			.isLiked(isLiked)
+			.isActive(profile.isActive())
 			.build();
 	}
 }

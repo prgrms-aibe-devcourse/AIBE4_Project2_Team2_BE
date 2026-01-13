@@ -22,9 +22,10 @@ public class MajorCardResponse {
 	private String profileImageUrl;
 	private List<String> tags;
 	private Long likeCount;
+	private boolean isLiked;
 	private boolean isActive;
 
-	public static MajorCardResponse of(MajorProfile profile, MemberAcademic academic) {
+	public static MajorCardResponse of(MajorProfile profile, MemberAcademic academic, Long likeCount, boolean isLiked) {
 		return MajorCardResponse.builder()
 			.id(profile.getMajorProfileId())
 			.nickname(profile.getMemberProfile().getNickname())
@@ -35,7 +36,8 @@ public class MajorCardResponse {
 			.tags(profile.getTags().stream()
 				.map(MajorProfileTag::getTagName)
 				.collect(Collectors.toList()))
-			.likeCount(0L) // 추후 구현
+			.likeCount(likeCount)
+			.isLiked(isLiked)
 			.isActive(profile.isActive())
 			.build();
 	}

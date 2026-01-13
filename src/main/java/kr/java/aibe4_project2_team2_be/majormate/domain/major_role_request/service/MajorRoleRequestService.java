@@ -29,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 public class MajorRoleRequestService {
 
 	private final MajorRoleRequestRepository majorRoleRequestRepository;
-	private final MemberProfileRepository memberProfileRepository;
 	private final S3FileService s3Service;
 	private final MemberInfoReader memberInfoReader;
 
