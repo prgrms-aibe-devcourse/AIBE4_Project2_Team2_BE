@@ -50,9 +50,9 @@
         <span th:text="${#temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
     </div>
 
-    <div class="row" th:if="${req.applicationStatus != '대기' and req.applicationStatus != '재신청' and req.updatedAt != null}">
+    <div class="row" th:if="${req.applicationStatus != '대기' and req.applicationStatus != '재신청' and req.decidedAt != null}">
         <span class="label">처리일:</span>
-        <span th:text="${#temporals.format(req.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
+        <span th:text="${#temporals.format(req.decidedAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
     </div>
 
     <hr/>
@@ -69,10 +69,42 @@
         </div>
     </div>
 
-    <div class="row" th:if="${req.applicationStatus == '반려' or req.applicationStatus == '자격 박탈'}">
+    <div class="row" th:if="${req.applicationStatus == '반려' or req.applicationStatus == '자격 박탈' or (req.applicationStatus == '재신청' and req.reason != null)}">
         <hr/>
-        <span class="label" style="color: red;">사유:</span>
+        <span class="label" style="color: red;"
+              th:text="${req.applicationStatus == '재신청' ? '이전 반려 사유:' : '사유:'}">사유:</span>
+
         <div th:text="${req.reason}" style="color: #721c24; background-color: #f8d7da; padding: 10px; border: 1px solid #f5c6cb; border-radius: 4px;"></div>
+    </div>
+
+    <div class="row" th:if="${not #lists.isEmpty(req.histories)}" style="margin-top: 20px;">
+        <h4 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">📝 진행 이력 (History)</h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+            <thead>
+            <tr style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+                <th style="padding: 8px; text-align: left; color: #495057;">시각</th>
+                <th style="padding: 8px; text-align: left; color: #495057;">상태</th>
+                <th style="padding: 8px; text-align: left; color: #495057;">처리자</th>
+                <th style="padding: 8px; text-align: left; color: #495057;">메시지/사유</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="history : ${req.histories}" style="border-bottom: 1px solid #f1f1f1;">
+                <td th:text="${#temporals.format(history.changedAt, 'yyyy-MM-dd HH:mm')}" style="padding: 8px; color: #666;"></td>
+                <td style="padding: 8px;">
+                     <span th:text="${history.toStatus}"
+                           th:style="${history.toStatus == 'ACCEPTED' ? 'color:green; font-weight:bold;' :
+                                     (history.toStatus == 'REJECTED' ? 'color:red; font-weight:bold;' : 'color:#555')}">
+                     </span>
+                </td>
+                <td th:text="${history.changedByNickname != null ? history.changedByNickname : '-'}" style="padding: 8px; color: #666;"></td>
+                <td style="padding: 8px; color: #333;">
+                    <span th:if="${history.reason != null and history.reason != ''}" th:text="${history.reason}"></span>
+                    <span th:unless="${history.reason != null and history.reason != ''}" style="color: #ccc;">-</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 
     <hr/>

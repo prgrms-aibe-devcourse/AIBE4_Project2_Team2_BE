@@ -3,6 +3,7 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.admin.service;
 import java.util.Collections;
 import java.util.List;
 
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,17 +58,12 @@ public class AdminService {
         );
     }
 
-    // 1-6. 상세 조회
+    @Transactional(readOnly = true)
     public MajorRoleRequest getRequestDetail(Long requestId) {
         MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
-
-        // [✨핵심 수정] DB 연결이 끊기기 전에 프로필 정보를 강제로 읽어옵니다.
-        // getNickname()을 호출하는 순간, JPA가 DB에 가서 진짜 데이터를 가져옵니다.
-        if (request.getMemberProfile() != null) {
-            request.getMemberProfile().getNickname();
-        }
-
+        Hibernate.initialize(request.getStatusHistories());
+        Hibernate.initialize(request.getMemberProfile());
         return request;
     }
 
