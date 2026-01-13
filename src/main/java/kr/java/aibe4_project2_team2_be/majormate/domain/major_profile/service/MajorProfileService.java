@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +26,6 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcad
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
@@ -95,9 +96,11 @@ public class MajorProfileService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<MajorCardResponse> getMajorCards() {
+	public Page<MajorCardResponse> getMajorCards(Pageable pageable) {
+		Long currentMemberId = SecurityUtil.getCurrentMemberId();
+		
 		// 1. Fetch Join 쿼리 호출 (N+1 발생 안 함)
-		List<MajorProfile> profiles = majorProfileRepository.findAllActiveWithAcademic();
+		Page<MajorProfile> profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
 
 		// 2. 좋아요 개수 일괄 조회
 		List<Long> ids = profiles.stream().map(MajorProfile::getMajorProfileId).toList();
@@ -106,7 +109,6 @@ public class MajorProfileService {
 			.collect(Collectors.toMap(row -> (Long)row[0], row -> (Long)row[1]));
 
 		// 3. 현재 로그인한 사용자의 좋아요 여부 일괄 조회
-		Long currentMemberId = SecurityUtil.getCurrentMemberId();
 		Set<Long> likedProfileIds;
 		if (currentMemberId != 0L && !ids.isEmpty()) {
 			likedProfileIds = majorProfileLikeRepository.findAllByMemberIdAndMajorProfile_MajorProfileIdIn(currentMemberId, ids)
@@ -117,15 +119,13 @@ public class MajorProfileService {
 			likedProfileIds = Collections.emptySet();
 		}
 
-		return profiles.stream()
-			.map(profile -> {
-				MemberAcademic academic = profile.getMemberProfile().getAcademic();
-				Long likeCount = likeCounts.getOrDefault(profile.getMajorProfileId(), 0L);
-				boolean isLiked = likedProfileIds.contains(profile.getMajorProfileId());
+		return profiles.map(profile -> {
+			MemberAcademic academic = profile.getMemberProfile().getAcademic();
+			Long likeCount = likeCounts.getOrDefault(profile.getMajorProfileId(), 0L);
+			boolean isLiked = likedProfileIds.contains(profile.getMajorProfileId());
 
-				return MajorCardResponse.of(profile, academic, likeCount, isLiked);
-			})
-			.collect(Collectors.toList());
+			return MajorCardResponse.of(profile, academic, likeCount, isLiked);
+		});
 	}
 
 	@Transactional(readOnly = true)

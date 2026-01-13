@@ -2,6 +2,10 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.controlle
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,8 +70,10 @@ public class MajorProfileController {
 	}
 
 	@GetMapping
-	public ApiResponse<List<MajorCardResponse>> getMajorCards() {
-		return ApiResponse.success(majorProfileService.getMajorCards());
+	public ApiResponse<Page<MajorCardResponse>> getMajorCards(
+		@PageableDefault(size = 10, sort = "majorProfileId", direction = Sort.Direction.DESC) Pageable pageable
+	) {
+		return ApiResponse.success(majorProfileService.getMajorCards(pageable));
 	}
 
 	@GetMapping("/{profileId}")

@@ -3,6 +3,8 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.repositor
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +23,19 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 		"JOIN FETCH mp.academic ma " +
 		"WHERE p.isActive = true")
 	List<MajorProfile> findAllActiveWithAcademic();
+
+	@Query(value = "SELECT p FROM MajorProfile p " +
+		"JOIN FETCH p.memberProfile mp " +
+		"JOIN FETCH mp.academic ma " +
+		"LEFT JOIN MajorProfileLike l ON p.majorProfileId = l.majorProfile.majorProfileId " +
+		"LEFT JOIN MajorProfileLike myLike ON p.majorProfileId = myLike.majorProfile.majorProfileId AND myLike.memberId = :memberId " +
+		"WHERE p.isActive = true " +
+		"GROUP BY p.majorProfileId " +
+		"ORDER BY COUNT(l) DESC, " +
+		"CASE WHEN COUNT(myLike) > 0 THEN 1 ELSE 0 END DESC, " +
+		"p.createdAt DESC",
+		countQuery = "SELECT count(p) FROM MajorProfile p WHERE p.isActive = true")
+	Page<MajorProfile> findAllActiveWithAcademic(Pageable pageable, @Param("memberId") Long memberId);
 
 	@Query("SELECT l.majorProfile.majorProfileId, COUNT(l) " +
 		"FROM MajorProfileLike l " +
