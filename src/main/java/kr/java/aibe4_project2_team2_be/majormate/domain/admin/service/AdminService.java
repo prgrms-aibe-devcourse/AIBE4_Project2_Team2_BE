@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,66 +25,67 @@ public class AdminService {
     private final MajorRoleRequestRepository majorRoleRequestRepository;
     private final MemberProfileRepository memberProfileRepository;
 
-    // [list 전체 검색 로직]
-    private List<MajorRoleRequest> searchOrFilter(List<ApplicationStatus> statuses, String searchType, String keyword) {
+    // [공통 검색/필터 로직]
+    private Page<MajorRoleRequest> searchOrFilter(List<ApplicationStatus> statuses, String searchType, String keyword, Pageable pageable) {
         if (keyword != null && !keyword.isBlank()) {
             if ("id".equals(searchType)) {
                 try {
-                    Long requestId = Long.parseLong(keyword);
-
-                    return majorRoleRequestRepository.findByRequestIdAndApplicationStatusIn(requestId, statuses);
+                    Long rId = Long.parseLong(keyword);
+                    // Repository 메서드명과 일치 (findByRequestId...)
+                    return majorRoleRequestRepository.findByRequestIdAndApplicationStatusIn(rId, statuses, pageable);
                 } catch (NumberFormatException e) {
-                    return Collections.emptyList(); // 숫자가 아니면 빈 목록 반환
+                    return Page.empty();
                 }
             } else if ("name".equals(searchType)) {
-                return majorRoleRequestRepository.findByMemberProfile_NicknameContainingAndApplicationStatusInOrderByCreatedAtDesc(keyword, statuses);
+                return majorRoleRequestRepository.findByMemberProfile_NicknameContainingAndApplicationStatusIn(keyword, statuses, pageable);
             }
         }
-        // 검색어가 없으면 전체 목록 (최신순)
-        return majorRoleRequestRepository.findByApplicationStatusInOrderByCreatedAtDesc(statuses);
+        return majorRoleRequestRepository.findByApplicationStatusIn(statuses, pageable);
     }
 
     // 1-1. 전체 목록
-    public List<MajorRoleRequest> getAllRequests(String searchType, String keyword) {
+    public Page<MajorRoleRequest> getAllRequests(String searchType, String keyword, Pageable pageable) {
         return searchOrFilter(
                 List.of(ApplicationStatus.PENDING, ApplicationStatus.RESUBMITTED, ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED, ApplicationStatus.REVOKED),
-                searchType, keyword
+                searchType, keyword, pageable
         );
     }
 
     // 1-2. 대기 목록
-    public List<MajorRoleRequest> getPendingRequests(String searchType, String keyword) {
+    public Page<MajorRoleRequest> getPendingRequests(String searchType, String keyword, Pageable pageable) {
         return searchOrFilter(
                 List.of(ApplicationStatus.PENDING, ApplicationStatus.RESUBMITTED),
-                searchType, keyword
+                searchType, keyword, pageable
         );
     }
 
     // 1-3. 승인된 목록
-    public List<MajorRoleRequest> getAcceptedRequests(String searchType, String keyword) {
-        return searchOrFilter(Collections.singletonList(ApplicationStatus.ACCEPTED), searchType, keyword);
+    public Page<MajorRoleRequest> getAcceptedRequests(String searchType, String keyword, Pageable pageable) {
+        return searchOrFilter(Collections.singletonList(ApplicationStatus.ACCEPTED), searchType, keyword, pageable);
     }
 
     // 1-4. 반려된 목록
-    public List<MajorRoleRequest> getRejectedRequests(String searchType, String keyword) {
-        return searchOrFilter(Collections.singletonList(ApplicationStatus.REJECTED), searchType, keyword);
+    public Page<MajorRoleRequest> getRejectedRequests(String searchType, String keyword, Pageable pageable) {
+        return searchOrFilter(Collections.singletonList(ApplicationStatus.REJECTED), searchType, keyword, pageable);
     }
 
     // 1-5. 자격 박탈 목록
-    public List<MajorRoleRequest> getRevokedRequests(String searchType, String keyword) {
-        return searchOrFilter(Collections.singletonList(ApplicationStatus.REVOKED), searchType, keyword);
+    public Page<MajorRoleRequest> getRevokedRequests(String searchType, String keyword, Pageable pageable) {
+        return searchOrFilter(Collections.singletonList(ApplicationStatus.REVOKED), searchType, keyword, pageable);
     }
 
-    // 1-6. 상세 조회 (수정했던 부분 유지)
+    // 1-6. 상세 조회 (Lazy Loading 해결 포함)
     public MajorRoleRequest getRequestDetail(Long requestId) {
         MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
+
         Hibernate.initialize(request.getStatusHistories());
         Hibernate.initialize(request.getMemberProfile());
+
         return request;
     }
 
-    // 2-1. 승인
+    // 2. 승인
     @Transactional
     public void acceptRequest(Long requestId, Long adminId) {
         MajorRoleRequest request = getRequestDetail(requestId);
@@ -92,7 +95,7 @@ public class AdminService {
         request.getMemberProfile().grantMajorRole();
     }
 
-    // 2-2. 반려
+    // 3. 반려
     @Transactional
     public void rejectRequest(Long requestId, Long adminId, String reason) {
         MajorRoleRequest request = getRequestDetail(requestId);
@@ -101,13 +104,13 @@ public class AdminService {
         request.reject(admin, reason);
     }
 
-    // 2-3. 자격 박탈
+    // 4. 자격 박탈
     @Transactional
     public void revokeMemberMajorRole(Long requestId, Long adminId, String reason) {
         MajorRoleRequest request = getRequestDetail(requestId);
         MemberProfile admin = memberProfileRepository.findById(adminId)
                 .orElseThrow(() -> new EntityNotFoundException("관리자 정보를 찾을 수 없습니다."));
         request.revoke(admin, reason);
-        request.getMemberProfile().revokeMajorRole(); // major => student 변경
+        request.getMemberProfile().revokeMajorRole();
     }
 }

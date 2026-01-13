@@ -1,17 +1,27 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.controller;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.AdminService;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.RequestStatusHistory;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import kr.java.aibe4_project2_team2_be.majormate.domain.admin.service.AdminService;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.RequestStatusHistory;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/admin")
@@ -20,26 +30,33 @@ public class AdminController {
 
     private final AdminService adminService;
 
+    // Page<Entity> -> Page<DTO> 변환 헬퍼 메서드
+    private Page<MajorReqDto> convertToDtoPage(Page<MajorRoleRequest> entities) {
+        return entities.map(MajorReqDto::new);
+    }
+
     // 1-1. 전체 목록
     @GetMapping("/requests/all")
     public String allList(Model model,
                           @RequestParam(required = false) String searchType,
-                          @RequestParam(required = false) String keyword) {
-        List<MajorRoleRequest> requestEntities = adminService.getAllRequests(searchType, keyword);
-        model.addAttribute("requests", convertToDtoList(requestEntities));
+                          @RequestParam(required = false) String keyword,
+                          @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MajorRoleRequest> requestPage = adminService.getAllRequests(searchType, keyword, pageable);
+        model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "ALL");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
         return "admin/request-list";
     }
 
-    // 1-2. 대기 목록
+    // 1-2. 신청 대기 목록
     @GetMapping("/requests/pending")
     public String requestList(Model model,
                               @RequestParam(required = false) String searchType,
-                              @RequestParam(required = false) String keyword) {
-        List<MajorRoleRequest> requestEntities = adminService.getPendingRequests(searchType, keyword);
-        model.addAttribute("requests", convertToDtoList(requestEntities));
+                              @RequestParam(required = false) String keyword,
+                              @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MajorRoleRequest> requestPage = adminService.getPendingRequests(searchType, keyword, pageable);
+        model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "PENDING,RESUBMITTED");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
@@ -50,9 +67,10 @@ public class AdminController {
     @GetMapping("/requests/accepted")
     public String acceptedList(Model model,
                                @RequestParam(required = false) String searchType,
-                               @RequestParam(required = false) String keyword) {
-        List<MajorRoleRequest> requestEntities = adminService.getAcceptedRequests(searchType, keyword);
-        model.addAttribute("requests", convertToDtoList(requestEntities));
+                               @RequestParam(required = false) String keyword,
+                               @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MajorRoleRequest> requestPage = adminService.getAcceptedRequests(searchType, keyword, pageable);
+        model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "ACCEPTED");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
@@ -63,9 +81,10 @@ public class AdminController {
     @GetMapping("/requests/rejected")
     public String rejectedList(Model model,
                                @RequestParam(required = false) String searchType,
-                               @RequestParam(required = false) String keyword) {
-        List<MajorRoleRequest> requestEntities = adminService.getRejectedRequests(searchType, keyword);
-        model.addAttribute("requests", convertToDtoList(requestEntities));
+                               @RequestParam(required = false) String keyword,
+                               @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MajorRoleRequest> requestPage = adminService.getRejectedRequests(searchType, keyword, pageable);
+        model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "REJECTED");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
@@ -76,64 +95,44 @@ public class AdminController {
     @GetMapping("/requests/revoked")
     public String revokedList(Model model,
                               @RequestParam(required = false) String searchType,
-                              @RequestParam(required = false) String keyword) {
-        List<MajorRoleRequest> requestEntities = adminService.getRevokedRequests(searchType, keyword);
-        model.addAttribute("requests", convertToDtoList(requestEntities));
+                              @RequestParam(required = false) String keyword,
+                              @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MajorRoleRequest> requestPage = adminService.getRevokedRequests(searchType, keyword, pageable);
+        model.addAttribute("requests", convertToDtoPage(requestPage));
         model.addAttribute("viewType", "REVOKED");
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
         return "admin/request-list";
     }
 
-
-    // 1-6. 신청 상세 조회 (디버깅 로그 추가됨)
-    @GetMapping("/requests/{request_id}")
-    public String requestDetail(@PathVariable("request_id") Long requestId, Model model) {
-
-        System.out.println("==========================================");
-        System.out.println(">>> 상세 조회 요청 들어옴. ID: " + requestId);
-
-        try {
-            MajorRoleRequest entity = adminService.getRequestDetail(requestId);
-            System.out.println(">>> DB 조회 성공: " + entity.getRequestId());
-
-            MajorReqDetailDto dto = new MajorReqDetailDto(entity);
-            System.out.println(">>> DTO 변환 성공. 뷰로 이동합니다.");
-
-            model.addAttribute("req", dto);
-            return "admin/request-detail";
-
-        } catch (Exception e) {
-            // 에러가 나면 콘솔에 빨간색으로 이유를 출력해줍니다.
-            System.out.println(">>> 🚨 에러 발생! 원인은 아래와 같습니다:");
-            e.printStackTrace();
-            throw e; // 브라우저에도 500 에러를 던짐
-        }
+    // 1-6. 상세 조회
+    @GetMapping("/requests/{id}")
+    public String requestDetail(@PathVariable("id") Long requestId, Model model) {
+        MajorRoleRequest entity = adminService.getRequestDetail(requestId);
+        model.addAttribute("req", new MajorReqDetailDto(entity));
+        return "admin/request-detail";
     }
 
-    // =================== 처리 기능 모음 =================
-    // 1. 승인 처리
+    // 2. 승인 처리
     @PostMapping("/requests/{id}/accept")
     public String accept(@PathVariable Long id) {
-        Long adminId = 1L; // 추후 로그인 세션 적용 필요
+        Long adminId = 1L;
         adminService.acceptRequest(id, adminId);
-
-        // [수정] 승인 완료 후 '승인된 목록' 페이지로 이동
         return "redirect:/admin/requests/accepted";
     }
-    // 2. 반려 처리
+
+    // 3. 반려 처리
     @PostMapping("/requests/{id}/reject")
     public String reject(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
         if (reason == null || reason.trim().isEmpty()) {
-            return "redirect:/admin/requests/" + id; //
+            return "redirect:/admin/requests/" + id;
         }
         adminService.rejectRequest(id, adminId, reason);
-        // 반려 완료 후 '반려된 목록' 페이지로 이동
         return "redirect:/admin/requests/rejected";
     }
 
-    // 3. 박탈 처리
+    // 4. 박탈 처리
     @PostMapping("/requests/{id}/revoke")
     public String revoke(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
@@ -141,15 +140,7 @@ public class AdminController {
         return "redirect:/admin/requests/revoked";
     }
 
-    // Dto 변환 로직
-    private List<MajorReqDto> convertToDtoList(List<MajorRoleRequest> entities) {
-        return entities.stream()
-                .sorted(Comparator.comparing(MajorRoleRequest::getRequestId).reversed())
-                .map(MajorReqDto::new)
-                .collect(Collectors.toList());
-    }
-
-    // DTO 클래스들
+    // --- DTO ---
     @Getter
     static class MajorReqDto {
         private Long id;
@@ -161,7 +152,8 @@ public class AdminController {
 
         public MajorReqDto(MajorRoleRequest entity) {
             this.id = entity.getRequestId();
-            this.memberName = entity.getMemberProfile().getNickname();
+            // null check
+            this.memberName = (entity.getMemberProfile() != null) ? entity.getMemberProfile().getNickname() : "(탈퇴)";
             this.universityName = entity.getUniversity();
             this.majorName = entity.getMajor();
             this.applicationStatus = entity.getApplicationStatus().getDescription();
@@ -172,7 +164,7 @@ public class AdminController {
     @Getter
     static class MajorReqDetailDto {
         private Long id;
-        private String memberName; // HTML에서는 req.memberName으로 접근
+        private String memberName;
         private String universityName;
         private String majorName;
         private String applicationStatus;
@@ -181,35 +173,19 @@ public class AdminController {
         private String comment;
         private String documentUrl;
         private String reason;
-
-        // [추가] reason history 리스트
         private List<MajorHistoryDto> histories;
 
         public MajorReqDetailDto(MajorRoleRequest entity) {
             this.id = entity.getRequestId();
-
-            if (entity.getMemberProfile() != null) {
-                this.memberName = entity.getMemberProfile().getNickname();
-            } else {
-                this.memberName = "(탈퇴한 회원)";
-            }
-
+            this.memberName = (entity.getMemberProfile() != null) ? entity.getMemberProfile().getNickname() : "(탈퇴)";
             this.universityName = entity.getUniversity();
             this.majorName = entity.getMajor();
-
-            if (entity.getApplicationStatus() != null) {
-                this.applicationStatus = entity.getApplicationStatus().getDescription();
-            } else {
-                this.applicationStatus = "-";
-            }
-
+            this.applicationStatus = entity.getApplicationStatus().getDescription();
             this.createdAt = entity.getCreatedAt();
             this.decidedAt = entity.getDecidedAt();
             this.comment = entity.getComment();
             this.documentUrl = entity.getDocumentUrl();
             this.reason = entity.getReason();
-
-            // [추가] 히스토리 데이터 변환 (최신순 정렬)
             this.histories = entity.getStatusHistories().stream()
                     .sorted(Comparator.comparing(RequestStatusHistory::getChangedAt).reversed())
                     .map(MajorHistoryDto::new)
@@ -217,7 +193,6 @@ public class AdminController {
         }
     }
 
-    // [추가] 히스토리용 내부 DTO
     @Getter
     static class MajorHistoryDto {
         private LocalDateTime changedAt;
@@ -227,7 +202,6 @@ public class AdminController {
 
         public MajorHistoryDto(RequestStatusHistory history) {
             this.changedAt = history.getChangedAt();
-            // HTML의 th:if 조건(ACCEPTED, REJECTED)을 맞추기 위해 name() 사용
             this.toStatus = history.getToStatus().name();
             this.changedByNickname = (history.getChangedBy() != null) ? history.getChangedBy().getNickname() : "(알수없음)";
             this.reason = history.getReason();
