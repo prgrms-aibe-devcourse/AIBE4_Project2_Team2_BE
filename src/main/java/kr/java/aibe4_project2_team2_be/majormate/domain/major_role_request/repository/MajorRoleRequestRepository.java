@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -27,4 +28,6 @@ public interface MajorRoleRequestRepository extends JpaRepository<MajorRoleReque
     // 3. ID 검색 (페이징) - Entity 필드명 'requestId' 사용
     @EntityGraph(attributePaths = "memberProfile")
     Page<MajorRoleRequest> findByRequestIdAndApplicationStatusIn(Long requestId, List<ApplicationStatus> statuses, Pageable pageable);
+
+    List<MajorRoleRequest> findByDecidedAtBeforeAndDocumentUrlIsNotNull(LocalDateTime cutoffDate);
 }
