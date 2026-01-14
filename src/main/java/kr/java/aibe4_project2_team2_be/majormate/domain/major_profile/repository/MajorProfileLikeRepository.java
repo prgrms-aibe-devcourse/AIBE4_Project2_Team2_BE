@@ -13,8 +13,6 @@ public interface MajorProfileLikeRepository extends JpaRepository<MajorProfileLi
 
 	boolean existsByMajorProfile_MajorProfileIdAndMemberId(Long majorProfileId, Long memberId);
 
-	void deleteByMajorProfile_MajorProfileIdAndMemberId(Long majorProfileId, Long memberId);
-
 	Optional<MajorProfileLike> findByMajorProfile_MajorProfileIdAndMemberId(Long profileId, Long memberId);
 	long countByMajorProfile_MajorProfileId(Long profileId);
 

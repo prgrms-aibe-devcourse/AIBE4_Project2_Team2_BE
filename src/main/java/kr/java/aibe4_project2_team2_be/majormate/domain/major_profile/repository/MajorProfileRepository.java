@@ -18,24 +18,43 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 
 	Optional<MajorProfile> findByMemberProfile_MemberId(Long memberId);
 
-	@Query("SELECT p FROM MajorProfile p " +
-		"JOIN FETCH p.memberProfile mp " +
-		"JOIN FETCH mp.academic ma " +
-		"WHERE p.isActive = true")
-	List<MajorProfile> findAllActiveWithAcademic();
+	// @Query(value = "SELECT p FROM MajorProfile p " +
+	// 	"JOIN FETCH p.memberProfile mp " +
+	// 	"JOIN FETCH mp.academic ma " +
+	// 	"LEFT JOIN MajorProfileLike l ON p.majorProfileId = l.majorProfile.majorProfileId " +
+	// 	"LEFT JOIN MajorProfileLike myLike ON p.majorProfileId = myLike.majorProfile.majorProfileId AND myLike.memberId = :memberId " +
+	// 	"WHERE p.isActive = true " +
+	// 	"GROUP BY p.majorProfileId " +
+	// 	"ORDER BY COUNT(l) DESC, " +
+	// 	"CASE WHEN COUNT(myLike) > 0 THEN 1 ELSE 0 END DESC, " +
+	// 	"p.createdAt DESC",
+	// 	countQuery = "SELECT count(p) FROM MajorProfile p WHERE p.isActive = true")
+	// Page<MajorProfile> findAllActiveWithAcademic(Pageable pageable, @Param("memberId") Long memberId);
 
-	@Query(value = "SELECT p FROM MajorProfile p " +
+	@Query(value = "SELECT DISTINCT p FROM MajorProfile p " +
 		"JOIN FETCH p.memberProfile mp " +
 		"JOIN FETCH mp.academic ma " +
-		"LEFT JOIN MajorProfileLike l ON p.majorProfileId = l.majorProfile.majorProfileId " +
-		"LEFT JOIN MajorProfileLike myLike ON p.majorProfileId = myLike.majorProfile.majorProfileId AND myLike.memberId = :memberId " +
+		"LEFT JOIN p.tags t " +
 		"WHERE p.isActive = true " +
-		"GROUP BY p.majorProfileId " +
-		"ORDER BY COUNT(l) DESC, " +
-		"CASE WHEN COUNT(myLike) > 0 THEN 1 ELSE 0 END DESC, " +
-		"p.createdAt DESC",
-		countQuery = "SELECT count(p) FROM MajorProfile p WHERE p.isActive = true")
-	Page<MajorProfile> findAllActiveWithAcademic(Pageable pageable, @Param("memberId") Long memberId);
+		"AND (:keyword IS NULL OR :keyword = '' OR " +
+		"    (:searchType = 'tag' AND t.tagName = :keyword) OR " +
+		"    (:searchType <> 'tag' AND (ma.university LIKE %:keyword% OR ma.major LIKE %:keyword% OR mp.nickname LIKE %:keyword% OR p.title LIKE %:keyword%))" +
+		")",
+		countQuery = "SELECT count(DISTINCT p) FROM MajorProfile p " +
+			"JOIN p.memberProfile mp " +
+			"JOIN mp.academic ma " +
+			"LEFT JOIN p.tags t " +
+			"WHERE p.isActive = true " +
+			"AND (:keyword IS NULL OR :keyword = '' OR " +
+			"    (:searchType = 'tag' AND t.tagName = :keyword) OR " +
+			"    (:searchType <> 'tag' AND (ma.university LIKE %:keyword% OR ma.major LIKE %:keyword% OR mp.nickname LIKE %:keyword% OR p.title LIKE %:keyword%))" +
+			")")
+	Page<MajorProfile> searchActiveWithAcademic(
+		@Param("searchType") String searchType,
+		@Param("keyword") String keyword,
+		Pageable pageable
+	);
+
 
 	@Query("SELECT l.majorProfile.majorProfileId, COUNT(l) " +
 		"FROM MajorProfileLike l " +

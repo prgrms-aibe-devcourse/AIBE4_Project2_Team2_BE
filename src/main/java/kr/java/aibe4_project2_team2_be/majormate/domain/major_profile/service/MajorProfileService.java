@@ -96,11 +96,22 @@ public class MajorProfileService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<MajorCardResponse> getMajorCards(Pageable pageable) {
+	public Page<MajorCardResponse> getMajorCards(String searchType, String keyword, Pageable pageable) {
 		Long currentMemberId = SecurityUtil.getCurrentMemberId();
 		
 		// 1. Fetch Join 쿼리 호출 (N+1 발생 안 함)
-		Page<MajorProfile> profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
+		// Page<MajorProfile> profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
+
+		Page<MajorProfile> profiles = majorProfileRepository.searchActiveWithAcademic(
+			searchType,
+			keyword,
+			pageable
+		);
+
+		// 검색 결과가 없는 경우 빈 페이지 즉시 반환 (불필요한 쿼리 방지)
+		if (profiles.isEmpty()) {
+			return profiles.map(profile -> null); // 빈 페이지 반환
+		}
 
 		// 2. 좋아요 개수 일괄 조회
 		List<Long> ids = profiles.stream().map(MajorProfile::getMajorProfileId).toList();
