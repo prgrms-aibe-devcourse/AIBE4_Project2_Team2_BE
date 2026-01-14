@@ -38,7 +38,7 @@ public class AdminReviewController {
         model.addAttribute("reviews", reviewPage.map(AdminReviewDto::new));
         model.addAttribute("keyword", keyword);
 
-        return "admin/content/review-list";
+        return "admin/review/review-list";
     }
 
     // 2. 리뷰 삭제

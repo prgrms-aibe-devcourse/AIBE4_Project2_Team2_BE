@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="UTF-8">
 <head>
     <meta charset="UTF-8" />
     <title>요청 상세 정보</title>
@@ -26,6 +26,11 @@
 
 <div class="container">
     <h2>📄 요청 상세 정보</h2>
+
+    <div class="row">
+        <span class="label">신청 번호:</span>
+        <span th:text="${req.id}" style="font-weight: bold; color: #555;">#123</span>
+    </div>
 
     <div class="row">
         <span class="label">신청자:</span>
@@ -61,12 +66,19 @@
         <span class="label">신청 코멘트:</span>
         <div th:text="${req.comment}" style="background-color: #f8f9fa; padding: 10px; border-radius: 4px; margin-top:5px;"></div>
     </div>
+
     <div class="row">
         <span class="label">증빙 서류:</span>
-        <div>
-            <a th:if="${req.documentUrl != null}" th:href="${req.documentUrl}" target="_blank">📄 서류 보기 (클릭)</a>
-            <span th:unless="${req.documentUrl != null}" style="color:gray;">(첨부된 서류 없음)</span>
+        <div th:if="${req.documentUrl != null}">
+            <div style="margin-top: 10px; margin-bottom: 10px;">
+                <img th:src="${req.documentUrl}" alt="증빙 서류 미리보기"
+                     style="max-width: 100%; max-height: 500px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+            <a th:href="${req.documentUrl}" target="_blank" class="btn" style="font-size: 0.8em;">🔍 새 창에서 원본 보기</a>
         </div>
+        <span th:unless="${req.documentUrl != null}" style="color:gray;">
+            (첨부된 서류가 없거나 보관 기한이 만료되어 삭제되었습니다)
+        </span>
     </div>
 
     <div class="row" th:if="${req.applicationStatus == '반려' or req.applicationStatus == '자격 박탈' or (req.applicationStatus == '재신청' and req.reason != null)}">
@@ -120,7 +132,9 @@
         <div id="rejectArea" class="hidden-area hidden-area-reject">
             <h4 style="margin-top:0; color:#721c24;">반려 사유 입력</h4>
             <form th:action="@{/admin/requests/{id}/reject(id=${req.id})}" method="post">
-                <textarea name="reason" placeholder="반려 사유를 입력하세요..." required></textarea>
+                <label>
+                    <textarea name="reason" placeholder="반려 사유를 입력하세요..." required></textarea>
+                </label>
                 <div style="margin-top: 10px; text-align: right;">
                     <button type="button" class="btn" onclick="closeRejectForm()">취소</button>
                     <button type="submit" class="btn btn-reject">반려 확정</button>
@@ -138,7 +152,9 @@
             <h4 style="margin-top:0; color:#856404;">자격 박탈 사유 입력</h4>
             <p style="font-size:0.9em;">3-1. 승인일 이후 발생한 사유여야 합니다.</p>
             <form th:action="@{/admin/requests/{id}/revoke(id=${req.id})}" method="post">
-                <textarea name="reason" placeholder="박탈 사유를 입력하세요 (예: 위조 적발)" required></textarea>
+                <label>
+                    <textarea name="reason" placeholder="박탈 사유를 입력하세요 (예: 위조 적발)" required></textarea>
+                </label>
                 <div style="margin-top: 10px; text-align: right;">
                     <button type="button" class="btn" onclick="closeRevokeForm()">취소</button>
                     <button type="submit" class="btn btn-revoke" onclick="return confirm('정말 박탈하시겠습니까?');">박탈 확정</button>

@@ -111,6 +111,7 @@ public class AdminMajorController {
         MajorRoleRequest entity = adminMajorService.getRequestDetail(requestId);
         model.addAttribute("req", new MajorReqDetailDto(entity));
         return "admin/major/request-detail";
+
     }
 
     // 2. 승인 처리
