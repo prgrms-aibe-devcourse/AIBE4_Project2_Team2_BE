@@ -1,15 +1,15 @@
 package kr.java.aibe4_project2_team2_be.majormate.global.exception.custom;
 
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 
-public class UnauthorizedException extends BusinessExceptionNew {
+public class UnauthorizedException extends BusinessException {
 
-    public UnauthorizedException(ErrorCodeNew errorCode) {
-        super(errorCode);
-    }
+	public UnauthorizedException(ErrorCode errorCode) {
+		super(errorCode);
+	}
 
-    public UnauthorizedException() {
-        super(ErrorCodeNew.AUTH_401);
-    }
+	public UnauthorizedException() {
+		super(ErrorCode.AUTH_401);
+	}
 }
