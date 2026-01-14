@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.Getter;
 
 @Getter
@@ -21,7 +21,7 @@ public class ErrorResponseNew {
 		this.details = details;
 	}
 
-	public static ErrorResponseNew of(ErrorCodeNew errorCode) {
+	public static ErrorResponseNew of(ErrorCode errorCode) {
 		return new ErrorResponseNew(
 			errorCode.getCode(),
 			errorCode.getMessage(),
@@ -29,7 +29,7 @@ public class ErrorResponseNew {
 		);
 	}
 
-	public static ErrorResponseNew of(ErrorCodeNew errorCode, Object details) {
+	public static ErrorResponseNew of(ErrorCode errorCode, Object details) {
 		return new ErrorResponseNew(
 			errorCode.getCode(),
 			errorCode.getMessage(),
@@ -37,7 +37,7 @@ public class ErrorResponseNew {
 		);
 	}
 
-	public static ErrorResponseNew validation(ErrorCodeNew errorCode, List<FieldError> fieldErrors) {
+	public static ErrorResponseNew validation(ErrorCode errorCode, List<FieldError> fieldErrors) {
 		return new ErrorResponseNew(
 			errorCode.getCode(),
 			errorCode.getMessage(),

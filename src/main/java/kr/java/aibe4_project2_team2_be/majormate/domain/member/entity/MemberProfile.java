@@ -21,8 +21,8 @@ import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.AuthProv
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -95,7 +95,7 @@ public class MemberProfile extends BaseEntity {
 		String name, String nickname, String email, String username, String encodedPassword
 	) {
 		if (encodedPassword == null || encodedPassword.isBlank()) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_PASSWORD_REQUIRED);
+			throw new BusinessException(ErrorCode.MEMBER_400_PASSWORD_REQUIRED);
 		}
 		return new MemberProfile(
 			name, nickname, email, username, encodedPassword, MemberRole.STUDENT, AuthProvider.LOCAL
@@ -107,7 +107,7 @@ public class MemberProfile extends BaseEntity {
 	) {
 		Objects.requireNonNull(provider, "provider must not be null");
 		if (provider == AuthProvider.LOCAL) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_INVALID_AUTH_PROVIDER);
+			throw new BusinessException(ErrorCode.MEMBER_400_INVALID_AUTH_PROVIDER);
 		}
 		return new MemberProfile(
 			name, nickname, email, username, null, MemberRole.STUDENT, provider
@@ -153,26 +153,26 @@ public class MemberProfile extends BaseEntity {
 		this.status = status;
 	}
 
-    public void grantMajorRole() {
-        assertRoleMutable();
-        // (성공으로 처리) // 형민
-        if (this.role == MemberRole.MAJOR) {
-            return;
-        }
-        this.role = MemberRole.MAJOR;
-    }
+	public void grantMajorRole() {
+		assertRoleMutable();
+		// (성공으로 처리) // 형민
+		if (this.role == MemberRole.MAJOR) {
+			return;
+		}
+		this.role = MemberRole.MAJOR;
+	}
 
 	public void revokeMajorRole() {
 		assertRoleMutable();
 		if (this.role == MemberRole.STUDENT) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_INVALID_ROLE_TRANSITION);
+			throw new BusinessException(ErrorCode.MEMBER_400_INVALID_ROLE_TRANSITION);
 		}
 		this.role = MemberRole.STUDENT;
 	}
 
 	private void assertRoleMutable() {
 		if (this.role == MemberRole.ADMIN) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_ROLE_CHANGE_NOT_ALLOWED);
+			throw new BusinessException(ErrorCode.MEMBER_400_ROLE_CHANGE_NOT_ALLOWED);
 		}
 	}
 

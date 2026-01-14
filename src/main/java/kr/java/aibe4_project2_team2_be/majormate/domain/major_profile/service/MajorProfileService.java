@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.request.MajorProfileCreateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.LikeToggleResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorCardResponse;
@@ -24,13 +22,10 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.repository
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.repository.MajorProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
-import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 
@@ -46,7 +41,7 @@ public class MajorProfileService {
 		MemberProfile memberProfile = memberInfoReader.getProfileWithAcademicOrThrow(memberId);
 
 		if (memberProfile.getRole() != MemberRole.MAJOR) {
-			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_403);
+			throw new BusinessException(ErrorCode.COMMON_403);
 		}
 
 		MajorProfile majorProfile = MajorProfile.createProfile(
@@ -63,7 +58,7 @@ public class MajorProfileService {
 
 	public void updateProfile(Long memberId, MajorProfileCreateRequest request) {
 		MajorProfile profile = majorProfileRepository.findByMemberProfile_MemberId(memberId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MAJOR_404_PROFILE_REQUIRED));
+			.orElseThrow(() -> new BusinessException(ErrorCode.MAJOR_404_PROFILE_REQUIRED));
 
 		profile.updateProfile(
 			request.getTitle(),
@@ -82,23 +77,24 @@ public class MajorProfileService {
 		}
 
 		MemberAcademic academic = memberInfoReader.getAcademicOrNull(memberId);
-		
+
 		long likeCount = majorProfileLikeRepository.countByMajorProfile_MajorProfileId(profile.getMajorProfileId());
-		boolean isLiked = majorProfileLikeRepository.existsByMajorProfile_MajorProfileIdAndMemberId(profile.getMajorProfileId(), memberId);
+		boolean isLiked = majorProfileLikeRepository.existsByMajorProfile_MajorProfileIdAndMemberId(
+			profile.getMajorProfileId(), memberId);
 
 		return MajorProfileResponse.of(profile, academic, likeCount, isLiked);
 	}
 
 	public void toggleProfileActive(Long memberId) {
 		MajorProfile profile = majorProfileRepository.findByMemberProfile_MemberId(memberId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MAJOR_404_PROFILE_REQUIRED));
+			.orElseThrow(() -> new BusinessException(ErrorCode.MAJOR_404_PROFILE_REQUIRED));
 		profile.toggleActive();
 	}
 
 	@Transactional(readOnly = true)
 	public Page<MajorCardResponse> getMajorCards(Pageable pageable) {
 		Long currentMemberId = SecurityUtil.getCurrentMemberId();
-		
+
 		// 1. Fetch Join 쿼리 호출 (N+1 발생 안 함)
 		Page<MajorProfile> profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
 
@@ -111,7 +107,8 @@ public class MajorProfileService {
 		// 3. 현재 로그인한 사용자의 좋아요 여부 일괄 조회
 		Set<Long> likedProfileIds;
 		if (currentMemberId != 0L && !ids.isEmpty()) {
-			likedProfileIds = majorProfileLikeRepository.findAllByMemberIdAndMajorProfile_MajorProfileIdIn(currentMemberId, ids)
+			likedProfileIds = majorProfileLikeRepository.findAllByMemberIdAndMajorProfile_MajorProfileIdIn(
+					currentMemberId, ids)
 				.stream()
 				.map(like -> like.getMajorProfile().getMajorProfileId())
 				.collect(Collectors.toSet());
@@ -131,10 +128,10 @@ public class MajorProfileService {
 	@Transactional(readOnly = true)
 	public MajorProfileResponse getMajorCardDetail(Long profileId) {
 		MajorProfile profile = majorProfileRepository.findById(profileId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MAJOR_404_PROFILE_REQUIRED));
+			.orElseThrow(() -> new BusinessException(ErrorCode.MAJOR_404_PROFILE_REQUIRED));
 
 		if (!profile.isActive()) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_PROFILE_NOT_ACTIVE);
+			throw new BusinessException(ErrorCode.MAJOR_400_PROFILE_NOT_ACTIVE);
 		}
 
 		Long memberId = profile.getMemberProfile().getMemberId();
@@ -143,7 +140,9 @@ public class MajorProfileService {
 		Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
 		long likeCount = majorProfileLikeRepository.countByMajorProfile_MajorProfileId(profileId);
-		boolean isLiked = currentMemberId != 0L && majorProfileLikeRepository.existsByMajorProfile_MajorProfileIdAndMemberId(profileId, currentMemberId);
+		boolean isLiked =
+			currentMemberId != 0L && majorProfileLikeRepository.existsByMajorProfile_MajorProfileIdAndMemberId(
+				profileId, currentMemberId);
 
 		return MajorProfileResponse.of(profile, academic, likeCount, isLiked);
 	}
@@ -151,7 +150,7 @@ public class MajorProfileService {
 	@Transactional
 	public LikeToggleResponse toggleLike(Long memberId, Long profileId) {
 		MajorProfile profile = majorProfileRepository.findById(profileId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MAJOR_404_PROFILE_REQUIRED));
+			.orElseThrow(() -> new BusinessException(ErrorCode.MAJOR_404_PROFILE_REQUIRED));
 
 		// 2. 이미 좋아요를 눌렀는지 확인 (조회)
 		Optional<MajorProfileLike> existingLike =

@@ -1,15 +1,15 @@
 package kr.java.aibe4_project2_team2_be.majormate.global.exception.custom;
 
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 
-public class NotFoundException extends BusinessExceptionNew {
+public class NotFoundException extends BusinessException {
 
-    public NotFoundException(ErrorCodeNew errorCode) {
-        super(errorCode);
-    }
+	public NotFoundException(ErrorCode errorCode) {
+		super(errorCode);
+	}
 
-    public NotFoundException() {
-        super(ErrorCodeNew.COMMON_404);
-    }
+	public NotFoundException() {
+		super(ErrorCode.COMMON_404);
+	}
 }

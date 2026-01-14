@@ -15,8 +15,8 @@ import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -76,10 +76,10 @@ public class InterviewMajorSnapshot {
 		Objects.requireNonNull(academic, "academic must not be null");
 
 		if (majorProfile.getStatus() == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_STATUS_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_400_STATUS_REQUIRED);
 		}
 		if (isBlank(academic.getUniversity()) || isBlank(academic.getMajor())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_ACADEMIC_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_400_ACADEMIC_REQUIRED);
 		}
 
 		return new InterviewMajorSnapshot(
@@ -94,7 +94,7 @@ public class InterviewMajorSnapshot {
 
 	private static String requireText(String value, String fieldName) {
 		if (isBlank(value)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_400);
+			throw new BusinessException(ErrorCode.COMMON_400);
 		}
 		return value;
 	}

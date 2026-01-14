@@ -14,8 +14,8 @@ import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.request.InterviewFormCreateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -96,7 +96,7 @@ public class InterviewForm extends BaseEntity {
 
 	public void accept(String majorMessage) {
 		if (this.status != InterviewFormStatus.PENDING) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+			throw new BusinessException(ErrorCode.INTERVIEW_400_INVALID_STATE);
 		}
 		this.status = InterviewFormStatus.ACCEPTED;
 		this.majorMessage = majorMessage;
@@ -104,7 +104,7 @@ public class InterviewForm extends BaseEntity {
 
 	public void reject(String majorMessage) {
 		if (this.status != InterviewFormStatus.PENDING) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+			throw new BusinessException(ErrorCode.INTERVIEW_400_INVALID_STATE);
 		}
 		this.status = InterviewFormStatus.REJECTED;
 		this.majorMessage = majorMessage;
@@ -112,7 +112,7 @@ public class InterviewForm extends BaseEntity {
 
 	public void complete() {
 		if (this.status != InterviewFormStatus.ACCEPTED) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+			throw new BusinessException(ErrorCode.INTERVIEW_400_INVALID_STATE);
 		}
 		this.status = InterviewFormStatus.COMPLETED;
 	}

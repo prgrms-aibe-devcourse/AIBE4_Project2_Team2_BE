@@ -14,8 +14,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.awspring.cloud.s3.S3Exception;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -69,14 +69,14 @@ public class S3FileService implements FileService {
 			return url;
 
 		} catch (IOException | S3Exception e) {
-			throw new BusinessExceptionNew(ErrorCodeNew.FILE_500_UPLOAD_FAILED);
+			throw new BusinessException(ErrorCode.FILE_500_UPLOAD_FAILED);
 		}
 	}
 
 	@Override
 	public void delete(String fileUrl) {
 		if (!StringUtils.hasText(fileUrl)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.FILE_400_INVALID_FILE_URL);
+			throw new BusinessException(ErrorCode.FILE_400_INVALID_FILE_URL);
 		}
 
 		String key = "[UNRESOLVED]";
@@ -84,7 +84,7 @@ public class S3FileService implements FileService {
 		try {
 			key = extractKeyFromUrl(fileUrl);
 			if (!StringUtils.hasText(key) || key.equals(fileUrl)) {
-				throw new BusinessExceptionNew(ErrorCodeNew.FILE_400_CANNOT_EXTRACT_FILE_KEY);
+				throw new BusinessException(ErrorCode.FILE_400_CANNOT_EXTRACT_FILE_KEY);
 			}
 
 			log.info("S3 삭제 요청. url={}, key={}", fileUrl, key);
@@ -98,27 +98,27 @@ public class S3FileService implements FileService {
 
 			log.info("S3 삭제 성공. key={}", key);
 
-		} catch (BusinessExceptionNew e) {
+		} catch (BusinessException e) {
 			throw e;
 
 		} catch (S3Exception e) {
 			log.error("S3 삭제 실패. bucket={}, url={}, key={}", bucket, fileUrl, key, e);
-			throw new BusinessExceptionNew(ErrorCodeNew.FILE_500_DELETE_FAILED);
+			throw new BusinessException(ErrorCode.FILE_500_DELETE_FAILED);
 
 		} catch (Exception e) {
 			log.error("파일 삭제 중 오류. bucket={}, url={}, key={}", bucket, fileUrl, key, e);
-			throw new BusinessExceptionNew(ErrorCodeNew.FILE_500_DELETE_FAILED);
+			throw new BusinessException(ErrorCode.FILE_500_DELETE_FAILED);
 		}
 	}
 
 	private void validateFile(MultipartFile file) {
 		if (file == null || file.isEmpty() || file.getSize() == 0) {
-			throw new BusinessExceptionNew(ErrorCodeNew.FILE_400_EMPTY_FILE);
+			throw new BusinessException(ErrorCode.FILE_400_EMPTY_FILE);
 		}
 
 		String contentType = file.getContentType();
 		if (!StringUtils.hasText(contentType) || !ALLOWED_TYPES.contains(contentType)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.FILE_400_UNSUPPORTED_CONTENT_TYPE);
+			throw new BusinessException(ErrorCode.FILE_400_UNSUPPORTED_CONTENT_TYPE);
 		}
 	}
 
