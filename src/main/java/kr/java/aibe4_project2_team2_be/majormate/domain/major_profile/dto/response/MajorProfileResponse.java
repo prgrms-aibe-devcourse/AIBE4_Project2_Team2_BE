@@ -13,6 +13,7 @@ import lombok.Getter;
 @Builder
 public class MajorProfileResponse {
 	private Long id;
+	private Long memberId;
 	private String name;
 	private String nickname;
 	private String university;
@@ -27,6 +28,7 @@ public class MajorProfileResponse {
 	public static MajorProfileResponse of(MajorProfile profile, MemberAcademic academic, Long likeCount, boolean isLiked) {
 		return MajorProfileResponse.builder()
 			.id(profile.getMajorProfileId())
+			.memberId(academic.getMemberProfile().getMemberId())
 			.name(profile.getMemberProfile().getName())
 			.nickname(profile.getMemberProfile().getNickname())
 			.university(academic.getUniversity())

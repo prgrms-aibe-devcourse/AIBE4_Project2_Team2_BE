@@ -50,6 +50,13 @@ public class ReviewController {
 		return PageResponsesNew.of(page);
 	}
 
+	@GetMapping("/members/{memberId}/reviews/received")
+	public ApiResponseNew<List<ReceivedReviewResponse>> getReceivedReviews(@PathVariable Long memberId ,Pageable pageable) {
+		Page<ReceivedReviewResponse> page = reviewService.getReceivedReviews(memberId, pageable);
+		return PageResponsesNew.of(page);
+	}
+
+
 	@GetMapping("/members/me/reviews/received/{reviewId}")
 	public ApiResponseNew<ReceivedReviewResponse> getMyReceivedReviewDetail(@PathVariable Long reviewId) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
