@@ -8,12 +8,12 @@ import jakarta.validation.constraints.Size;
 
 public record ReviewRequest(
 	@NotNull(message = "평점은 필수입니다.")
-	@Min(value = 1, message = "평점은 1~5 사이여야 합니다.")
-	@Max(value = 5, message = "평점은 1~5 사이여야 합니다.")
+	@Min(value = 1, message = "평점은 1~5점 사이여야 합니다.")
+	@Max(value = 5, message = "평점은 1~5점 사이여야 합니다.")
 	Integer rating,
 
 	@NotBlank(message = "후기 내용은 필수입니다.")
-	@Size(max = 1000, message = "후기 내용은 1000자 이하여야 합니다.")
+	@Size(max = 3000, message = "후기 내용은 3000자 이하여야 합니다.")
 	String content
 ) {
 }

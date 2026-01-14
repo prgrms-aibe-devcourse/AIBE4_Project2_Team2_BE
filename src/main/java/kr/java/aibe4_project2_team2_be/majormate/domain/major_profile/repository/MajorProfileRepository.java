@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,7 +37,8 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 		"WHERE p.isActive = true " +
 		"AND (:keyword IS NULL OR :keyword = '' OR " +
 		"    (:searchType = 'tag' AND t.tagName = :keyword) OR " +
-		"    (:searchType <> 'tag' AND (ma.university LIKE %:keyword% OR ma.major LIKE %:keyword% OR mp.nickname LIKE %:keyword% OR p.title LIKE %:keyword%))" +
+		"    (:searchType <> 'tag' AND (ma.university LIKE %:keyword% OR ma.major LIKE %:keyword% OR mp.nickname LIKE %:keyword% OR p.title LIKE %:keyword%))"
+		+
 		")",
 		countQuery = "SELECT count(DISTINCT p) FROM MajorProfile p " +
 			"JOIN p.memberProfile mp " +
@@ -47,14 +47,14 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 			"WHERE p.isActive = true " +
 			"AND (:keyword IS NULL OR :keyword = '' OR " +
 			"    (:searchType = 'tag' AND t.tagName = :keyword) OR " +
-			"    (:searchType <> 'tag' AND (ma.university LIKE %:keyword% OR ma.major LIKE %:keyword% OR mp.nickname LIKE %:keyword% OR p.title LIKE %:keyword%))" +
+			"    (:searchType <> 'tag' AND (ma.university LIKE %:keyword% OR ma.major LIKE %:keyword% OR mp.nickname LIKE %:keyword% OR p.title LIKE %:keyword%))"
+			+
 			")")
 	Page<MajorProfile> searchActiveWithAcademic(
 		@Param("searchType") String searchType,
 		@Param("keyword") String keyword,
 		Pageable pageable
 	);
-
 
 	@Query("SELECT l.majorProfile.majorProfileId, COUNT(l) " +
 		"FROM MajorProfileLike l " +

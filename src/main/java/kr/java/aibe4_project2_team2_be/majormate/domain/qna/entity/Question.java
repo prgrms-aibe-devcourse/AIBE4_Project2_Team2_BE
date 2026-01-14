@@ -39,7 +39,7 @@ public class Question extends BaseEntity {
 	private String content;
 
 	@Column(nullable = false)
-	private boolean hasAnswer;
+	private boolean hasAnswer = false;
 
 	@OneToOne(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Answer answer;

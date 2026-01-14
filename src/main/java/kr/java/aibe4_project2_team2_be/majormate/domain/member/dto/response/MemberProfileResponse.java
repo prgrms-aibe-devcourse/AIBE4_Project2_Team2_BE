@@ -5,7 +5,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProf
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 
-public record MemberInfoResponse(
+public record MemberProfileResponse(
 	Long memberId,
 	String name,
 	String nickname,
@@ -18,9 +18,9 @@ public record MemberInfoResponse(
 	MemberRole role,
 	boolean isLocal
 ) {
-	public static MemberInfoResponse from(MemberProfile profile) {
+	public static MemberProfileResponse from(MemberProfile profile) {
 		MemberAcademic academic = profile.getAcademic();
-		return new MemberInfoResponse(
+		return new MemberProfileResponse(
 			profile.getMemberId(),
 			profile.getName(),
 			profile.getNickname(),

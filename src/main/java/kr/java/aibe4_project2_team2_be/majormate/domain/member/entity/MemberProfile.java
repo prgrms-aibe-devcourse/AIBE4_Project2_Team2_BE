@@ -28,8 +28,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @Table(name = "member_profile")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberProfile extends BaseEntity {
 
@@ -56,12 +56,12 @@ public class MemberProfile extends BaseEntity {
 	private String profileImageUrl;
 
 	@Enumerated(EnumType.STRING)
-	@Column(length = 20)
-	private MemberStatus status;
+	@Column(nullable = false, length = 20)
+	private MemberStatus status = MemberStatus.ETC;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
-	private MemberRole role;
+	private MemberRole role = MemberRole.STUDENT;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
@@ -74,43 +74,39 @@ public class MemberProfile extends BaseEntity {
 	private MemberAcademic academic;
 
 	private MemberProfile(
-		String name,
-		String nickname,
-		String email,
-		String username,
-		String password,
-		MemberRole role,
-		AuthProvider authProvider
+		String name, String nickname, String email, String username, String password, MemberStatus status,
+		MemberRole role, AuthProvider authProvider
 	) {
 		this.name = requireText(name, "name");
 		this.nickname = requireText(nickname, "nickname");
 		this.email = requireText(email, "email");
 		this.username = requireText(username, "username");
 		this.password = password;
+		this.status = Objects.requireNonNull(status, "status must not be null");
 		this.role = Objects.requireNonNull(role, "role must not be null");
 		this.authProvider = Objects.requireNonNull(authProvider, "authProvider must not be null");
 	}
 
 	public static MemberProfile createLocal(
-		String name, String nickname, String email, String username, String encodedPassword
+		String name, String nickname, String email, String username, String encodedPassword, MemberStatus status
 	) {
 		if (encodedPassword == null || encodedPassword.isBlank()) {
 			throw new BusinessException(ErrorCode.MEMBER_400_PASSWORD_REQUIRED);
 		}
 		return new MemberProfile(
-			name, nickname, email, username, encodedPassword, MemberRole.STUDENT, AuthProvider.LOCAL
+			name, nickname, email, username, encodedPassword, status, MemberRole.STUDENT, AuthProvider.LOCAL
 		);
 	}
 
 	public static MemberProfile createOAuth2(
-		AuthProvider provider, String name, String nickname, String email, String username
+		String name, String nickname, String email, String username, AuthProvider provider
 	) {
 		Objects.requireNonNull(provider, "provider must not be null");
 		if (provider == AuthProvider.LOCAL) {
 			throw new BusinessException(ErrorCode.MEMBER_400_INVALID_AUTH_PROVIDER);
 		}
 		return new MemberProfile(
-			name, nickname, email, username, null, MemberRole.STUDENT, provider
+			name, nickname, email, username, null, MemberStatus.ETC, MemberRole.STUDENT, provider
 		);
 	}
 
@@ -137,10 +133,6 @@ public class MemberProfile extends BaseEntity {
 		this.nickname = requireText(nickname, "nickname");
 	}
 
-	public void updateEmail(String email) {
-		this.email = requireText(email, "email");
-	}
-
 	public void updatePassword(String encodedPassword) {
 		this.password = encodedPassword;
 	}
@@ -155,9 +147,8 @@ public class MemberProfile extends BaseEntity {
 
 	public void grantMajorRole() {
 		assertRoleMutable();
-		// (성공으로 처리) // 형민
 		if (this.role == MemberRole.MAJOR) {
-			return;
+			throw new BusinessException(ErrorCode.MEMBER_400_INVALID_ROLE_TRANSITION);
 		}
 		this.role = MemberRole.MAJOR;
 	}

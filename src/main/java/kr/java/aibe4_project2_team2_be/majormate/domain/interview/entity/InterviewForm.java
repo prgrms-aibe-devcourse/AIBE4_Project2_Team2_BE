@@ -2,14 +2,17 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.interview.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.interview.dto.request.InterviewFormCreateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
@@ -24,8 +27,11 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "interview_form",
 	indexes = {
-		@Index(columnList = "student_member_id,status"),
-		@Index(columnList = "major_member_id,status")
+		@Index(name = "idx_if_student_created_at", columnList = "student_member_id, created_at"),
+		@Index(name = "idx_if_student_status_created_at", columnList = "student_member_id, status, created_at"),
+		@Index(name = "idx_if_major_created_at", columnList = "major_member_id, created_at"),
+		@Index(name = "idx_if_major_status_created_at", columnList = "major_member_id, status, created_at"),
+		@Index(name = "idx_if_student_major_status", columnList = "student_member_id, major_member_id, status")
 	}
 )
 @Getter
@@ -48,7 +54,7 @@ public class InterviewForm extends BaseEntity {
 	@Column(nullable = false, columnDefinition = "TEXT")
 	private String content;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 255)
 	private String interviewMethod;
 
 	@Column(nullable = false)
@@ -59,10 +65,16 @@ public class InterviewForm extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
-	private InterviewFormStatus status;
+	private InterviewFormStatus status = InterviewFormStatus.PENDING;
 
 	@Column(columnDefinition = "TEXT")
 	private String majorMessage;
+
+	@OneToOne(mappedBy = "interviewForm", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private InterviewStudentSnapshot studentSnapshot;
+
+	@OneToOne(mappedBy = "interviewForm", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private InterviewMajorSnapshot majorSnapshot;
 
 	private InterviewForm(
 		Long studentMemberId, Long majorMemberId,
@@ -92,6 +104,20 @@ public class InterviewForm extends BaseEntity {
 			InterviewFormStatus.PENDING,
 			null
 		);
+	}
+
+	public void attachMajorSnapshot(InterviewMajorSnapshot majorSnapshot) {
+		this.majorSnapshot = majorSnapshot;
+		if (majorSnapshot != null && majorSnapshot.getInterviewForm() != this) {
+			majorSnapshot.attachInterviewForm(this);
+		}
+	}
+
+	public void attachStudentSnapshot(InterviewStudentSnapshot studentSnapshot) {
+		this.studentSnapshot = studentSnapshot;
+		if (studentSnapshot != null && studentSnapshot.getInterviewForm() != this) {
+			studentSnapshot.attachInterviewForm(this);
+		}
 	}
 
 	public void accept(String majorMessage) {
