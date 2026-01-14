@@ -79,7 +79,11 @@ public class MajorRoleRequest {
         this.createdAt = LocalDateTime.now();
     }
 
-    // 2. 파일 만료 처리 메서드 추가 (클래스 내부에 추가)
+    // 증빙 서류 URL 업데이트 메서드 추가 (클래스 내부에 추가)
+    public void updateDocumentUrl(String newUrl) {
+        this.documentUrl = newUrl;
+    }
+    // 만료된 증빙 서류 처리 메서드 추가 (클래스 내부에 추가)
     public void expireDocumentUrl() {
         this.documentUrl = null;
     }
