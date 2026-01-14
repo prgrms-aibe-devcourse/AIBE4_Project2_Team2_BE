@@ -1,5 +1,21 @@
 package kr.java.aibe4_project2_team2_be.majormate.global.common.service;
 
+import io.awspring.cloud.s3.S3Exception;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -7,36 +23,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import io.awspring.cloud.s3.S3Exception;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetUrlRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
 @Slf4j
 @Service
 @ConditionalOnProperty(name = "file.storage.type", havingValue = "s3")
 @RequiredArgsConstructor
 public class S3FileService implements FileService {
 
-	private static final List<String> ALLOWED_TYPES = List.of(
-		"image/jpeg",
-		"image/png"
-	);
+    private static final List<String> ALLOWED_TYPES = List.of(
+            "image/jpeg",
+            "image/png",
+            "application/pdf" // 필요한 경우 PDF 등 추가
+    );
 
 	private final S3Client s3Client;
-
 	@Value("${aws.s3.bucket}")
 	private String bucket;
 

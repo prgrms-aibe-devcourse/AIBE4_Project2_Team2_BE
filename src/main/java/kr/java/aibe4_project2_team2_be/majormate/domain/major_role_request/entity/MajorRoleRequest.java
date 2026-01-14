@@ -51,7 +51,7 @@ public class MajorRoleRequest {
     @Column(name = "comment", nullable = false, length = 512)
     private String comment;
 
-    @Column(name = "document_url", nullable = false, length = 512)
+    @Column(name = "document_url", nullable = true, length = 512)
     private String documentUrl;
 
     @Enumerated(EnumType.STRING)
@@ -77,6 +77,11 @@ public class MajorRoleRequest {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    // 2. 파일 만료 처리 메서드 추가 (클래스 내부에 추가)
+    public void expireDocumentUrl() {
+        this.documentUrl = null;
     }
 
     public static MajorRoleRequest createRequest(MemberProfile memberProfile, String university, String major,
