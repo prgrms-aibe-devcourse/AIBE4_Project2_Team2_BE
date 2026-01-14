@@ -96,13 +96,16 @@ public enum ErrorCode {
 		HttpStatus.BAD_REQUEST, "MEMBER_400_CURRENT_PASSWORD_MISMATCH", "현재 비밀번호가 일치하지 않습니다."
 	),
 	MEMBER_400_INVALID_AUTH_PROVIDER(
-		HttpStatus.BAD_REQUEST, "MEMBER_400_INVALID_AUTH_PROVIDER", "소셜 가입에는 LOCAL provider를 사용할 수 없습니다."
+		HttpStatus.BAD_REQUEST, "MEMBER_400_INVALID_AUTH_PROVIDER", "소셜 회원가입에는 AuthProvider.LOCAL을 사용할 수 없습니다."
 	),
 	MEMBER_400_CURRENT_PASSWORD_NOT_ALLOWED(
-		HttpStatus.BAD_REQUEST, "MEMBER_400_CURRENT_PASSWORD_NOT_ALLOWED", "소셜 계정은 currentPassword를 전송할 수 없습니다."
+		HttpStatus.BAD_REQUEST, "MEMBER_400_CURRENT_PASSWORD_NOT_ALLOWED", "소셜 계정은 비밀번호를 전송할 수 없습니다."
 	),
 	MEMBER_400_PASSWORD_CHANGE_NOT_ALLOWED(
 		HttpStatus.BAD_REQUEST, "MEMBER_400_PASSWORD_CHANGE_NOT_ALLOWED", "소셜 계정은 비밀번호를 변경할 수 없습니다."
+	),
+	MEMBER_400_PASSWORD_BOTH_REQUIRED(
+		HttpStatus.BAD_REQUEST, "MEMBER_400_PASSWORD_BOTH_REQUIRED", "비밀번호 변경을 위해 현재 비밀번호와 새 비밀번호를 모두 입력해야 합니다."
 	),
 	MEMBER_400_SAME_AS_OLD_PASSWORD(
 		HttpStatus.BAD_REQUEST, "MEMBER_400_SAME_AS_OLD_PASSWORD", "새 비밀번호는 기존 비밀번호와 다르게 설정해야 합니다."
@@ -127,8 +130,8 @@ public enum ErrorCode {
 	),
 
 	// Member - Profile Image
-	MEMBER_400_PROFILE_IMAGE_FILE_REQUIRED(
-		HttpStatus.BAD_REQUEST, "MEMBER_400_PROFILE_IMAGE_FILE_REQUIRED", "프로필 이미지 파일은 필수입니다."
+	MEMBER_400_PROFILE_IMAGE_FILE_MISSING(
+		HttpStatus.BAD_REQUEST, "MEMBER_400_PROFILE_IMAGE_FILE_MISSING", "프로필 이미지 파일이 존재하지 않습니다."
 	),
 
 	// Interview
@@ -206,6 +209,9 @@ public enum ErrorCode {
 	),
 
 	// Major
+	MAJOR_400_INVALID_STATUS(
+		HttpStatus.BAD_REQUEST, "MAJOR_400_INVALID_STATUS", "전공자는 신분을 재학생 또는 졸업생으로만 설정할 수 있습니다."
+	),
 	MAJOR_400_ACADEMIC_REQUIRED(
 		HttpStatus.BAD_REQUEST, "MAJOR_400_ACADEMIC_REQUIRED", "전공자는 대학교와 학과 정보가 필수입니다."
 	),

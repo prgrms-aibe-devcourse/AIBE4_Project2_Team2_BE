@@ -70,7 +70,8 @@ public class AuthService {
 
 		// 5. 회원 생성
 		MemberProfile memberProfile = MemberProfile.createLocal(
-			request.getName(), request.getNickname(), request.getEmail(), request.getUsername(), encodedPassword
+			request.getName(), request.getNickname(), request.getEmail(), request.getUsername(), encodedPassword,
+			request.getStatus()
 		);
 
 		MemberProfile savedMemberProfile = memberProfileRepository.save(memberProfile);

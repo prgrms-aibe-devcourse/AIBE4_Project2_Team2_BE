@@ -150,7 +150,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
 		// Create new member without password
 		MemberProfile newMemberProfile = MemberProfile.createOAuth2(
-			provider, displayName, nickname, email, username
+			displayName, nickname, email, username, provider
 		);
 
 		MemberProfile savedMemberProfile = memberProfileRepository.save(newMemberProfile);
