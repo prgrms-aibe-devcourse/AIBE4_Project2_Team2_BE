@@ -28,8 +28,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @Table(name = "member_profile")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberProfile extends BaseEntity {
 

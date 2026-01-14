@@ -147,6 +147,9 @@ public enum ErrorCode {
 	INTERVIEW_400_INVALID_STATE(
 		HttpStatus.BAD_REQUEST, "INTERVIEW_400_INVALID_STATE", "현재 상태에서는 요청을 처리할 수 없습니다."
 	),
+	INTERVIEW_400_MESSAGE_REQUIRED(
+		HttpStatus.BAD_REQUEST, "INTERVIEW_400_MESSAGE_REQUIRED", "수락 또는 거절 메시지는 필수입니다."
+	),
 	INTERVIEW_409_ALREADY_EXISTS(
 		HttpStatus.CONFLICT, "INTERVIEW_409_ALREADY_EXISTS", "진행 중인 인터뷰 신청이 이미 존재합니다."
 	),

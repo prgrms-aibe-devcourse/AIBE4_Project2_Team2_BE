@@ -13,23 +13,25 @@ import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.Intervie
 
 public interface InterviewFormRepository extends JpaRepository<InterviewForm, Long> {
 
-	List<InterviewForm> findByInterviewIdIn(List<Long> interviewIds);
-
 	Page<InterviewForm> findByStudentMemberId(Long studentMemberId, Pageable pageable);
-
-	Page<InterviewForm> findByMajorMemberId(Long majorMemberId, Pageable pageable);
 
 	Page<InterviewForm> findByStudentMemberIdAndStatus(
 		Long studentMemberId, InterviewFormStatus status, Pageable pageable
 	);
 
+	Page<InterviewForm> findByMajorMemberId(Long majorMemberId, Pageable pageable);
+
+	Page<InterviewForm> findByMajorMemberIdAndStatus(
+		Long majorMemberId, InterviewFormStatus status, Pageable pageable
+	);
+
 	@Query("""
-		  select f
-		  from InterviewForm f
-		  left join Review r on r.interviewId = f.interviewId
-		  where f.studentMemberId = :studentId
-		    and f.status = :status
-		    and r is null
+		select f
+		from InterviewForm f
+			left join Review r on r.interviewId = f.interviewId
+		where f.studentMemberId = :studentId
+			and f.status = :status
+			and r is null
 		""")
 	Page<InterviewForm> findCompletedWithoutReview(
 		@Param("studentId") Long studentId,
