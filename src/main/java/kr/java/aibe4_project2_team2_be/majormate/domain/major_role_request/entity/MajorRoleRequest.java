@@ -178,7 +178,7 @@ public class MajorRoleRequest {
 
         if (this.applicationStatus != ApplicationStatus.PENDING
                 && this.applicationStatus != ApplicationStatus.RESUBMITTED) {
-            throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_INVALID_ROLE_TRANSITION);
+            throw new BusinessException(ErrorCode.MEMBER_400_INVALID_ROLE_TRANSITION);
         }
     }
 
