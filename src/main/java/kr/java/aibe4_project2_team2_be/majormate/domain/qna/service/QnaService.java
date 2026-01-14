@@ -11,10 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
-import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.request.AnswerCreateRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.request.AnswerUpdateRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.request.QuestionCreateRequest;
-import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.request.QuestionUpdateRequest;
+import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.request.QnaRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.IdResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.MyAnswerItemResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.QuestionMyItemResponse;
@@ -37,26 +34,6 @@ public class QnaService {
 	private final AnswerRepository answerRepository;
 
 	private final MemberInfoReader memberInfoReader;
-
-	@Transactional
-	public IdResponse createQuestion(Long studentMemberId, Long majorId, QuestionCreateRequest request) {
-		validateCreateQuestionRequestOrThrow(studentMemberId, majorId, request);
-
-		MemberProfile studentProfile = memberInfoReader.getProfileOrThrow(studentMemberId);
-		MemberProfile majorProfile = memberInfoReader.getProfileOrThrow(majorId);
-
-		validateQuestionRuleOrThrow(studentProfile, majorProfile);
-
-		Question saved = questionRepository.save(
-			Question.create(
-				memberInfoReader.getProfileOrThrow(studentMemberId),
-				memberInfoReader.getProfileOrThrow(majorId),
-				request.content()
-			)
-		);
-
-		return new IdResponse(saved.getQuestionId());
-	}
 
 	public Page<QuestionMyItemResponse> getMyQuestions(Long studentMemberId, Pageable pageable) {
 		Page<Question> page = questionRepository.findByStudent_MemberId(studentMemberId, pageable);
@@ -86,8 +63,101 @@ public class QnaService {
 		return new PageImpl<>(content, pageable, page.getTotalElements());
 	}
 
+	public Page<QuestionReceivedItemResponse> getReceivedQuestions(Long majorMemberId, Pageable pageable) {
+		memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
+
+		Page<Question> page = questionRepository.findByMajor_MemberId(majorMemberId, pageable);
+
+		List<Question> questions = page.getContent();
+		if (questions.isEmpty()) {
+			return Page.empty(pageable);
+		}
+
+		List<QuestionReceivedItemResponse> content = questions.stream()
+			.map(q -> new QuestionReceivedItemResponse(
+				q.getQuestionId(),
+				q.getStudent().getMemberId(),
+				q.getContent(),
+				q.isHasAnswer(),
+				q.getCreatedAt()
+			))
+			.toList();
+
+		return new PageImpl<>(content, pageable, page.getTotalElements());
+	}
+
+	public Page<MyAnswerItemResponse> getMyAnswers(Long majorMemberId, Pageable pageable) {
+		memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
+
+		Page<Answer> page = answerRepository.findByQuestion_Major_MemberId(majorMemberId, pageable);
+
+		List<Answer> answers = page.getContent();
+		if (answers.isEmpty()) {
+			return Page.empty(pageable);
+		}
+
+		List<MyAnswerItemResponse> content = answers.stream()
+			.map(a -> new MyAnswerItemResponse(
+				a.getAnswerId(),
+				a.getQuestion().getQuestionId(),
+				a.getQuestion().getStudent().getMemberId(),
+				a.getQuestion().getContent(),
+				a.getContent(),
+				a.getCreatedAt(),
+				a.getUpdatedAt()
+			))
+			.toList();
+
+		return new PageImpl<>(content, pageable, page.getTotalElements());
+	}
+
 	@Transactional
-	public void updateMyQuestion(Long studentMemberId, Long questionId, QuestionUpdateRequest request) {
+	public IdResponse createQuestion(Long studentMemberId, Long majorId, QnaRequest request) {
+		validateCreateQuestionRequestOrThrow(studentMemberId, majorId, request);
+
+		MemberProfile studentProfile = memberInfoReader.getProfileOrThrow(studentMemberId);
+		MemberProfile majorProfile = memberInfoReader.getProfileOrThrow(majorId);
+
+		validateQuestionRuleOrThrow(studentProfile, majorProfile);
+
+		Question saved = questionRepository.save(
+			Question.create(
+				memberInfoReader.getProfileOrThrow(studentMemberId),
+				memberInfoReader.getProfileOrThrow(majorId),
+				request.content()
+			)
+		);
+
+		return new IdResponse(saved.getQuestionId());
+	}
+
+	@Transactional
+	public IdResponse createAnswer(Long majorMemberId, Long questionId, QnaRequest request) {
+		if (majorMemberId == null || questionId == null || request == null) {
+			throw new BusinessException(ErrorCode.COMMON_400);
+		}
+
+		memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
+
+		Question question = questionRepository.findById(questionId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.QNA_404_QUESTION));
+
+		validateQuestionTargetMajorOrThrow(question, majorMemberId);
+		validateQuestionNotAnsweredOrThrow(question);
+
+		boolean exists = answerRepository.existsByQuestion_QuestionId(questionId);
+		if (exists) {
+			throw new BusinessException(ErrorCode.QNA_409_ANSWER_ALREADY_EXISTS);
+		}
+
+		Answer saved = answerRepository.save(Answer.create(question, request.content()));
+		question.attachAnswer(saved);
+
+		return new IdResponse(saved.getAnswerId());
+	}
+
+	@Transactional
+	public void updateMyQuestion(Long studentMemberId, Long questionId, QnaRequest request) {
 		if (studentMemberId == null || questionId == null || request == null) {
 			throw new BusinessException(ErrorCode.COMMON_400);
 		}
@@ -116,56 +186,8 @@ public class QnaService {
 		questionRepository.delete(question);
 	}
 
-	public Page<QuestionReceivedItemResponse> getReceivedQuestions(Long majorMemberId, Pageable pageable) {
-		memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
-
-		Page<Question> page = questionRepository.findByMajor_MemberId(majorMemberId, pageable);
-
-		List<Question> questions = page.getContent();
-		if (questions.isEmpty()) {
-			return Page.empty(pageable);
-		}
-
-		List<QuestionReceivedItemResponse> content = questions.stream()
-			.map(q -> new QuestionReceivedItemResponse(
-				q.getQuestionId(),
-				q.getStudent().getMemberId(),
-				q.getContent(),
-				q.isHasAnswer(),
-				q.getCreatedAt()
-			))
-			.toList();
-
-		return new PageImpl<>(content, pageable, page.getTotalElements());
-	}
-
 	@Transactional
-	public IdResponse createAnswer(Long majorMemberId, Long questionId, AnswerCreateRequest request) {
-		if (majorMemberId == null || questionId == null || request == null) {
-			throw new BusinessException(ErrorCode.COMMON_400);
-		}
-
-		memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
-
-		Question question = questionRepository.findById(questionId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.QNA_404_QUESTION));
-
-		validateQuestionTargetMajorOrThrow(question, majorMemberId);
-		validateQuestionNotAnsweredOrThrow(question);
-
-		boolean exists = answerRepository.existsByQuestion_QuestionId(questionId);
-		if (exists) {
-			throw new BusinessException(ErrorCode.QNA_409_ANSWER_ALREADY_EXISTS);
-		}
-
-		Answer saved = answerRepository.save(Answer.create(question, request.content()));
-		question.attachAnswer(saved);
-
-		return new IdResponse(saved.getAnswerId());
-	}
-
-	@Transactional
-	public void updateMyAnswer(Long majorMemberId, Long answerId, AnswerUpdateRequest request) {
+	public void updateMyAnswer(Long majorMemberId, Long answerId, QnaRequest request) {
 		if (majorMemberId == null || answerId == null || request == null) {
 			throw new BusinessException(ErrorCode.COMMON_400);
 		}
@@ -180,33 +202,8 @@ public class QnaService {
 		answer.updateContent(request.content());
 	}
 
-	public Page<MyAnswerItemResponse> getMyAnswers(Long majorMemberId, Pageable pageable) {
-		memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
-
-		Page<Answer> page = answerRepository.findByQuestion_Major_MemberId(majorMemberId, pageable);
-
-		List<Answer> answers = page.getContent();
-		if (answers.isEmpty()) {
-			return Page.empty(pageable);
-		}
-
-		List<MyAnswerItemResponse> content = answers.stream()
-			.map(a -> new MyAnswerItemResponse(
-				a.getAnswerId(),
-				a.getQuestion().getQuestionId(),
-				a.getQuestion().getStudent().getMemberId(),
-				a.getQuestion().getContent(),
-				a.getContent(),
-				a.getCreatedAt(),
-				a.getUpdatedAt()
-			))
-			.toList();
-
-		return new PageImpl<>(content, pageable, page.getTotalElements());
-	}
-
 	private void validateCreateQuestionRequestOrThrow(Long studentMemberId, Long majorId,
-		QuestionCreateRequest request) {
+		QnaRequest request) {
 		if (studentMemberId == null || majorId == null || request == null) {
 			throw new BusinessException(ErrorCode.COMMON_400);
 		}
