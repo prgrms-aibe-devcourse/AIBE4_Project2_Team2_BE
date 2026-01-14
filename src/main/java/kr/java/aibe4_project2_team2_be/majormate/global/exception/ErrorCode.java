@@ -168,6 +168,26 @@ public enum ErrorCode {
 		HttpStatus.CONFLICT, "REVIEW_409_ALREADY_EXISTS", "이미 해당 인터뷰에 대한 후기가 존재합니다."
 	),
 
+	// QnA
+	QNA_404_QUESTION(
+		HttpStatus.NOT_FOUND, "QNA_404_QUESTION", "질문을 찾을 수 없습니다."
+	),
+	QNA_404_ANSWER(
+		HttpStatus.NOT_FOUND, "QNA_404_ANSWER", "답변을 찾을 수 없습니다."
+	),
+	QNA_400_ALREADY_ANSWERED(
+		HttpStatus.BAD_REQUEST, "QNA_400_ALREADY_ANSWERED", "답변이 달린 질문은 수정하거나 삭제할 수 없습니다."
+	),
+	QNA_409_ANSWER_ALREADY_EXISTS(
+		HttpStatus.CONFLICT, "QNA_409_ANSWER_ALREADY_EXISTS", "이미 답변이 존재합니다."
+	),
+	QNA_400_TARGET_NOT_MAJOR(
+		HttpStatus.BAD_REQUEST, "QNA_400_TARGET_NOT_MAJOR", "질문 대상이 전공자가 아닙니다."
+	),
+	QNA_400_SELF_QUESTION_NOT_ALLOWED(
+		HttpStatus.BAD_REQUEST, "QNA_400_SELF_QUESTION_NOT_ALLOWED", "자기 자신에게 질문할 수 없습니다."
+	),
+
 	// Major role request
 	MAJOR_REQUEST_400_STATUS_REQUIRED(
 		HttpStatus.BAD_REQUEST, "MAJOR_REQUEST_400_STATUS_REQUIRED", "전공자 신청을 위해 신분 정보가 필요합니다."
