@@ -25,8 +25,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.review.dto.response.Writ
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.entity.Review;
 import kr.java.aibe4_project2_team2_be.majormate.domain.review.repository.ReviewRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -73,7 +73,7 @@ public class ReviewService {
 
 	public WrittenReviewResponse getWrittenReviewDetail(Long memberId, Long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.REVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_404));
 
 		Long interviewId = review.getInterviewId();
 
@@ -122,7 +122,7 @@ public class ReviewService {
 		memberInfoReader.validateMajorRoleOrThrow(memberId);
 
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.REVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_404));
 
 		Long interviewId = review.getInterviewId();
 
@@ -164,46 +164,46 @@ public class ReviewService {
 
 	private InterviewForm getInterviewFormOrThrow(Long interviewId) {
 		return interviewFormRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.INTERVIEW_404));
 	}
 
 	private Review getReviewByInterviewIdOrThrow(Long interviewId) {
 		return reviewRepository.findByInterviewId(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.REVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_404));
 	}
 
 	private void validateWrittenOwnerOrThrow(Long memberId, InterviewForm form) {
 		if (!Objects.equals(form.getStudentMemberId(), memberId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.REVIEW_403_NOT_OWNER);
+			throw new BusinessException(ErrorCode.REVIEW_403_NOT_OWNER);
 		}
 	}
 
 	private void validateReceivedOwnerOrThrow(Long memberId, InterviewForm form) {
 		if (!Objects.equals(form.getMajorMemberId(), memberId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.REVIEW_403_NOT_RECEIVER);
+			throw new BusinessException(ErrorCode.REVIEW_403_NOT_RECEIVER);
 		}
 	}
 
 	private void validateInterviewCompletedOrThrow(InterviewForm form) {
 		if (form.getStatus() != InterviewFormStatus.COMPLETED) {
-			throw new BusinessExceptionNew(ErrorCodeNew.REVIEW_400_INTERVIEW_NOT_COMPLETED);
+			throw new BusinessException(ErrorCode.REVIEW_400_INTERVIEW_NOT_COMPLETED);
 		}
 	}
 
 	private void validateReviewNotExistsOrThrow(Long interviewId) {
 		if (reviewRepository.existsByInterviewId(interviewId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.REVIEW_409_ALREADY_EXISTS);
+			throw new BusinessException(ErrorCode.REVIEW_409_ALREADY_EXISTS);
 		}
 	}
 
 	private InterviewMajorSnapshot getMajorSnapshotOrInternalError(Long interviewId) {
 		return interviewMajorSnapshotRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.COMMON_500_SNAPSHOT_MISSING));
+			.orElseThrow(() -> new BusinessException(ErrorCode.COMMON_500_SNAPSHOT_MISSING));
 	}
 
 	private InterviewStudentSnapshot getStudentSnapshotOrInternalError(Long interviewId) {
 		return interviewStudentSnapshotRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.COMMON_500_SNAPSHOT_MISSING));
+			.orElseThrow(() -> new BusinessException(ErrorCode.COMMON_500_SNAPSHOT_MISSING));
 	}
 
 	private List<Long> extractInterviewIds(List<Review> reviews) {
@@ -225,7 +225,7 @@ public class ReviewService {
 	private <S> S getOrInternalSnapshotMissing(Map<Long, S> map, Long key) {
 		S value = map.get(key);
 		if (value == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_500_SNAPSHOT_MISSING);
+			throw new BusinessException(ErrorCode.COMMON_500_SNAPSHOT_MISSING);
 		}
 		return value;
 	}

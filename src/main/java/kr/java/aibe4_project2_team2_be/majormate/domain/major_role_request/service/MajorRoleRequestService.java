@@ -18,8 +18,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProf
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -61,19 +61,19 @@ public class MajorRoleRequestService {
 	private void validateMajorRequestEligibilityOrThrow(MemberProfile profile) {
 		MemberStatus status = profile.getStatus();
 		if (status == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_REQUEST_400_STATUS_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_REQUEST_400_STATUS_REQUIRED);
 		}
 		if (status != MemberStatus.ENROLLED && status != MemberStatus.GRADUATED) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_REQUEST_400_INVALID_STATUS);
+			throw new BusinessException(ErrorCode.MAJOR_REQUEST_400_INVALID_STATUS);
 		}
 	}
 
 	private void validateMajorRequestAcademicOrThrow(MemberAcademic academic) {
 		if (academic == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_REQUEST_400_ACADEMIC_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_REQUEST_400_ACADEMIC_REQUIRED);
 		}
 		if (isBlank(academic.getUniversity()) || isBlank(academic.getMajor())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_REQUEST_400_ACADEMIC_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_REQUEST_400_ACADEMIC_REQUIRED);
 		}
 	}
 
@@ -88,7 +88,7 @@ public class MajorRoleRequestService {
 			.orElseThrow(() -> new EntityNotFoundException("신청한 내용을 찾을 수 없습니다"));
 
 		if (!request.getMemberProfile().getMemberId().equals(memberId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_ROLE_REQUEST_403_NOT_OWNER);
+			throw new BusinessException(ErrorCode.MAJOR_ROLE_REQUEST_403_NOT_OWNER);
 		}
 
 		s3Service.delete(request.getDocumentUrl());
@@ -112,7 +112,7 @@ public class MajorRoleRequestService {
 		// 본인 확인 (관리자 권한 체크 로직 추가 필요)
 		if (!request.getMemberProfile().getMemberId().equals(memberId)) {
 			// TODO: 관리자인 경우 통과시키는 로직 추가
-			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_403);
+			throw new BusinessException(ErrorCode.COMMON_403);
 		}
 		return RoleRequestDetailResponse.from(request);
 	}

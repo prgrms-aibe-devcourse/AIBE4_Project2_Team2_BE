@@ -26,8 +26,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProf
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.service.MemberInfoReader;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.InterviewFormStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -130,14 +130,14 @@ public class InterviewService {
 
 	public AppliedInterviewFormResponse getAppliedInterviewFormDetail(Long requesterId, Long interviewId) {
 		InterviewForm form = interviewFormRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.INTERVIEW_404));
 
 		if (!Objects.equals(form.getStudentMemberId(), requesterId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+			throw new BusinessException(ErrorCode.AUTH_403);
 		}
 
 		InterviewMajorSnapshot snapshot = interviewMajorSnapshotRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_500_SNAPSHOT_MISSING));
+			.orElseThrow(() -> new BusinessException(ErrorCode.INTERVIEW_500_SNAPSHOT_MISSING));
 
 		return AppliedInterviewFormResponse.fromDetail(snapshot, form);
 	}
@@ -146,14 +146,14 @@ public class InterviewService {
 		memberInfoReader.validateMajorRoleOrThrow(majorId);
 
 		InterviewForm form = interviewFormRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.INTERVIEW_404));
 
 		if (!Objects.equals(form.getMajorMemberId(), majorId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+			throw new BusinessException(ErrorCode.AUTH_403);
 		}
 
 		InterviewStudentSnapshot snapshot = interviewStudentSnapshotRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_500_SNAPSHOT_MISSING));
+			.orElseThrow(() -> new BusinessException(ErrorCode.INTERVIEW_500_SNAPSHOT_MISSING));
 
 		return ReceivedInterviewFormResponse.fromDetail(snapshot, form);
 	}
@@ -194,13 +194,13 @@ public class InterviewService {
 		memberInfoReader.validateMajorRoleOrThrow(majorId);
 
 		InterviewForm form = interviewFormRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.INTERVIEW_404));
 
 		if (!Objects.equals(form.getMajorMemberId(), majorId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+			throw new BusinessException(ErrorCode.AUTH_403);
 		}
 		if (form.getStatus() != InterviewFormStatus.PENDING) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+			throw new BusinessException(ErrorCode.INTERVIEW_400_INVALID_STATE);
 		}
 
 		form.accept(message);
@@ -211,13 +211,13 @@ public class InterviewService {
 		memberInfoReader.validateMajorRoleOrThrow(majorId);
 
 		InterviewForm form = interviewFormRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.INTERVIEW_404));
 
 		if (!Objects.equals(form.getMajorMemberId(), majorId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+			throw new BusinessException(ErrorCode.AUTH_403);
 		}
 		if (form.getStatus() != InterviewFormStatus.PENDING) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+			throw new BusinessException(ErrorCode.INTERVIEW_400_INVALID_STATE);
 		}
 
 		form.reject(message);
@@ -228,13 +228,13 @@ public class InterviewService {
 		memberInfoReader.validateMajorRoleOrThrow(majorId);
 
 		InterviewForm form = interviewFormRepository.findById(interviewId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.INTERVIEW_404));
 
 		if (!Objects.equals(form.getMajorMemberId(), majorId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+			throw new BusinessException(ErrorCode.AUTH_403);
 		}
 		if (form.getStatus() != InterviewFormStatus.ACCEPTED) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_INVALID_STATE);
+			throw new BusinessException(ErrorCode.INTERVIEW_400_INVALID_STATE);
 		}
 
 		form.complete();
@@ -242,20 +242,20 @@ public class InterviewService {
 
 	private void validateCreateRequestOrThrow(Long requesterId, Long targetMajorId) {
 		if (requesterId == null || targetMajorId == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_400);
+			throw new BusinessException(ErrorCode.COMMON_400);
 		}
 		if (Objects.equals(requesterId, targetMajorId)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_SELF_REQUEST_NOT_ALLOWED);
+			throw new BusinessException(ErrorCode.INTERVIEW_400_SELF_REQUEST_NOT_ALLOWED);
 		}
 	}
 
 	private void validateInterviewApplyRuleOrThrow(MemberProfile requester, MemberProfile targetMajor) {
 		if (targetMajor.getRole() != MemberRole.MAJOR) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_400_TARGET_NOT_MAJOR);
+			throw new BusinessException(ErrorCode.INTERVIEW_400_TARGET_NOT_MAJOR);
 		}
 
 		if (requester.getRole() == MemberRole.ADMIN) {
-			throw new BusinessExceptionNew(ErrorCodeNew.AUTH_403);
+			throw new BusinessException(ErrorCode.AUTH_403);
 		}
 	}
 
@@ -267,16 +267,16 @@ public class InterviewService {
 		);
 
 		if (hasActiveRequest) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_409_ALREADY_EXISTS);
+			throw new BusinessException(ErrorCode.INTERVIEW_409_ALREADY_EXISTS);
 		}
 	}
 
 	private void validateMajorSnapshotRequiredOrThrow(MemberProfile major, MemberAcademic academic) {
 		if (major.getStatus() == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_STATUS_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_400_STATUS_REQUIRED);
 		}
 		if (academic == null || isBlank(academic.getUniversity()) || isBlank(academic.getMajor())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_ACADEMIC_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_400_ACADEMIC_REQUIRED);
 		}
 	}
 
@@ -299,7 +299,7 @@ public class InterviewService {
 	private <S> S getOrSnapshotMissing(Map<Long, S> map, Long key) {
 		S value = map.get(key);
 		if (value == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.INTERVIEW_500_SNAPSHOT_MISSING);
+			throw new BusinessException(ErrorCode.INTERVIEW_500_SNAPSHOT_MISSING);
 		}
 		return value;
 	}

@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		MemberProfile memberProfile = memberProfileRepository.findById(Long.parseLong(username))
-			.orElseThrow(() -> new NotFoundException(ErrorCodeNew.MEMBER_404));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_404));
 
 		return new CustomUserDetails(
 			memberProfile.getMemberId(),

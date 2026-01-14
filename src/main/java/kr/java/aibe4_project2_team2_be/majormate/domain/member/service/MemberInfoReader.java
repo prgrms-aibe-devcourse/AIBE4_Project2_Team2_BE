@@ -10,8 +10,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProf
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberAcademicRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -26,7 +26,7 @@ public class MemberInfoReader {
 
 	public MemberProfile getProfileOrThrow(Long memberId) {
 		return memberProfileRepository.findById(memberId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MEMBER_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_404));
 	}
 
 	/**
@@ -36,7 +36,7 @@ public class MemberInfoReader {
 	 */
 	public MemberProfile getProfileWithAcademicOrThrow(Long memberId) {
 		return memberProfileRepository.findWithAcademicByMemberId(memberId)
-			.orElseThrow(() -> new BusinessExceptionNew(ErrorCodeNew.MEMBER_404));
+			.orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_404));
 	}
 
 	// ===== Academic 조회/생성 =====
@@ -91,10 +91,10 @@ public class MemberInfoReader {
 	 * 없으면 생성하는 방식이 아니라, 정책 위반으로 처리한다.
 	 * 예: 스냅샷에 학적/학교/학과를 반드시 남겨야 하는 업무 흐름 등
 	 */
-	public MemberAcademic getAcademicOrThrow(MemberProfile profile, ErrorCodeNew errorCodeIfMissing) {
+	public MemberAcademic getAcademicOrThrow(MemberProfile profile, ErrorCode errorCodeIfMissing) {
 		Objects.requireNonNull(profile, "profile must not be null");
 		if (profile.getAcademic() == null) {
-			throw new BusinessExceptionNew(errorCodeIfMissing);
+			throw new BusinessException(errorCodeIfMissing);
 		}
 		return profile.getAcademic();
 	}
@@ -109,7 +109,7 @@ public class MemberInfoReader {
 	public void validateMajorRoleOrThrow(MemberProfile profile) {
 		Objects.requireNonNull(profile, "profile must not be null");
 		if (profile.getRole() != MemberRole.MAJOR) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_403_ROLE_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_403_ROLE_REQUIRED);
 		}
 	}
 
@@ -127,12 +127,12 @@ public class MemberInfoReader {
 		}
 
 		if (major.getStatus() == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_STATUS_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_400_STATUS_REQUIRED);
 		}
 
 		MemberAcademic academic = major.getAcademic();
 		if (academic == null || isBlank(academic.getUniversity()) || isBlank(academic.getMajor())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_ACADEMIC_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_400_ACADEMIC_REQUIRED);
 		}
 	}
 

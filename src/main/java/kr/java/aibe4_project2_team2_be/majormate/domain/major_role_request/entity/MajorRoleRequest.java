@@ -20,8 +20,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

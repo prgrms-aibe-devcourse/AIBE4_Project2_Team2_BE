@@ -18,8 +18,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.Member
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.service.S3FileService;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -45,7 +45,6 @@ public class MemberService {
 		validatePasswordChangePolicyOrThrow(profile, request.newPassword());
 
 		updateNickname(profile, request.nickname());
-		updateEmail(profile, request.email());
 
 		updatePasswordIfProvided(profile, request.newPassword());
 		updateStatus(profile, request.status());
@@ -59,7 +58,7 @@ public class MemberService {
 	@Transactional
 	public MemberInfoResponse updateProfileImage(Long memberId, MultipartFile file) {
 		if (file == null || file.isEmpty()) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_PROFILE_IMAGE_FILE_REQUIRED);
+			throw new BusinessException(ErrorCode.MEMBER_400_PROFILE_IMAGE_FILE_REQUIRED);
 		}
 
 		MemberProfile profile = memberInfoReader.getProfileWithAcademicOrThrow(memberId);
@@ -92,19 +91,19 @@ public class MemberService {
 	private void validateCurrentPasswordByPolicyOrThrow(MemberProfile profile, String currentPassword) {
 		if (!profile.isLocalUser()) {
 			if (currentPassword != null && !currentPassword.isBlank()) {
-				throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_CURRENT_PASSWORD_NOT_ALLOWED);
+				throw new BusinessException(ErrorCode.MEMBER_400_CURRENT_PASSWORD_NOT_ALLOWED);
 			}
 			return;
 		}
 
 		if (isBlank(currentPassword)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_CURRENT_PASSWORD_REQUIRED);
+			throw new BusinessException(ErrorCode.MEMBER_400_CURRENT_PASSWORD_REQUIRED);
 		}
 		if (!profile.hasPassword()) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_PASSWORD_REQUIRED);
+			throw new BusinessException(ErrorCode.MEMBER_400_PASSWORD_REQUIRED);
 		}
 		if (!passwordEncoder.matches(currentPassword, profile.getPassword())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_CURRENT_PASSWORD_MISMATCH);
+			throw new BusinessException(ErrorCode.MEMBER_400_CURRENT_PASSWORD_MISMATCH);
 		}
 	}
 
@@ -113,7 +112,7 @@ public class MemberService {
 			return;
 		}
 		if (!profile.isLocalUser()) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_PASSWORD_CHANGE_NOT_ALLOWED);
+			throw new BusinessException(ErrorCode.MEMBER_400_PASSWORD_CHANGE_NOT_ALLOWED);
 		}
 	}
 
@@ -122,19 +121,9 @@ public class MemberService {
 			return;
 		}
 		if (memberProfileRepository.existsByNickname(nickname)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_NICKNAME);
+			throw new BusinessException(ErrorCode.MEMBER_409_DUPLICATE_NICKNAME);
 		}
 		profile.updateNickname(nickname);
-	}
-
-	private void updateEmail(MemberProfile profile, String email) {
-		if (Objects.equals(email, profile.getEmail())) {
-			return;
-		}
-		if (memberProfileRepository.existsByEmail(email)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_EMAIL);
-		}
-		profile.updateEmail(email);
 	}
 
 	private void updatePasswordIfProvided(MemberProfile profile, String newPassword) {
@@ -142,7 +131,7 @@ public class MemberService {
 			return;
 		}
 		if (profile.hasPassword() && passwordEncoder.matches(newPassword, profile.getPassword())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_SAME_AS_OLD_PASSWORD);
+			throw new BusinessException(ErrorCode.MEMBER_400_SAME_AS_OLD_PASSWORD);
 		}
 		profile.updatePassword(passwordEncoder.encode(newPassword));
 	}
@@ -179,7 +168,7 @@ public class MemberService {
 			);
 
 			if (isBlank(finalUniversity) || isBlank(finalMajor)) {
-				throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_ACADEMIC_REQUIRED);
+				throw new BusinessException(ErrorCode.MAJOR_400_ACADEMIC_REQUIRED);
 			}
 		}
 
