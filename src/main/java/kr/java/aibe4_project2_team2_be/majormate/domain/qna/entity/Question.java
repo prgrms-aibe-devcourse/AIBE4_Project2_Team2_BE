@@ -13,6 +13,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,28 +46,54 @@ public class Question extends BaseEntity {
 	@OneToOne(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Answer answer;
 
-	private Question(MemberProfile student, MemberProfile major, String content) {
+	private Question(MemberProfile student, MemberProfile major, String content, boolean hasAnswer) {
 		this.student = student;
 		this.major = major;
 		this.content = content;
-		this.hasAnswer = false;
+		this.hasAnswer = hasAnswer;
 	}
 
 	public static Question create(MemberProfile student, MemberProfile major, String content) {
-		return new Question(student, major, content);
+		return new Question(student, major, content, false);
+	}
+
+	public boolean isAnswered() {
+		return hasAnswer;
+	}
+
+	public boolean isEditable() {
+		return !hasAnswer;
+	}
+
+	public boolean isDeletable() {
+		return !hasAnswer;
 	}
 
 	public void updateContent(String content) {
+		if (hasAnswer) {
+			throw new BusinessException(ErrorCode.QNA_400_ALREADY_ANSWERED);
+		}
 		this.content = content;
 	}
 
-	public void markAsAnswered() {
-		this.hasAnswer = true;
+	public void validateDeletableOrThrow() {
+		if (hasAnswer) {
+			throw new BusinessException(ErrorCode.QNA_400_ALREADY_ANSWERED);
+		}
 	}
 
 	public void attachAnswer(Answer answer) {
+		if (answer == null) {
+			throw new BusinessException(ErrorCode.QNA_400_ANSWER_REQUIRED);
+		}
+		if (this.answer != null || this.hasAnswer) {
+			throw new BusinessException(ErrorCode.QNA_409_ANSWER_ALREADY_EXISTS);
+		}
 		this.answer = answer;
 		this.hasAnswer = true;
+
+		if (answer.getQuestion() != this) {
+			answer.attachQuestion(this);
+		}
 	}
 }
-
