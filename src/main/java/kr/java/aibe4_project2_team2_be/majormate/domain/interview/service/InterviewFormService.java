@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.event.NotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +44,7 @@ public class InterviewFormService {
 	private final InterviewMajorSnapshotRepository interviewMajorSnapshotRepository;
 
 	private final MemberInfoReader memberInfoReader;
+    private final ApplicationEventPublisher eventPublisher; // 알림기능 추가를 위한 이벤트 퍼블리셔 주입
 
 	@Transactional(readOnly = true)
 	public Page<InterviewFormResponse> getMyInterviewForms(
@@ -126,6 +129,14 @@ public class InterviewFormService {
 		// InterviewForm만 save해도 cascade로 snapshot 저장된다. (현재 매핑 기준)
 		interviewFormRepository.save(saved);
 
+        eventPublisher.publishEvent(new NotificationEvent(
+                targetMajorId,          // 받는 사람 : 멘토
+                requesterId,            // 보낸 사람 : 학생(신청자)
+                "INTERVIEW_REQUEST",    // 타입
+                "새로운 인터뷰 요청이 도착했습니다.", // 알림 내용
+                "/interviews/received/" + saved.getInterviewId() // 클릭 시 이동할 URL
+        ));
+
 		return InterviewFormResponse.appliedDetail(majorSnapshot, saved);
 	}
 
@@ -148,6 +159,14 @@ public class InterviewFormService {
 				throw new BusinessException(ErrorCode.INTERVIEW_400_MESSAGE_REQUIRED);
 			}
 			form.accept(message);
+
+            eventPublisher.publishEvent(new NotificationEvent(
+                    form.getStudentMemberId(), // 받는 사람: 학생
+                    memberId,                  // 보낸 사람: 멘토
+                    "INTERVIEW_ACCEPTED",      // 타입
+                    "인터뷰 요청이 수락되었습니다!", // 알림 내용
+                    "/interviews/applied/" + interviewId // 클릭 시 이동할 URL
+            ));
 			return;
 		}
 
@@ -156,11 +175,27 @@ public class InterviewFormService {
 				throw new BusinessException(ErrorCode.INTERVIEW_400_MESSAGE_REQUIRED);
 			}
 			form.reject(message);
+
+            eventPublisher.publishEvent(new NotificationEvent(
+                    form.getStudentMemberId(), // 받는 사람: 학생
+                    memberId,                  // 보낸 사람: 멘토
+                    "INTERVIEW_REJECTED",      // 타입
+                    "인터뷰 요청이 거절되었습니다.", // 알림 내용
+                    "/interviews/applied/" + interviewId // 클릭 시 이동할 URL
+            ));
 			return;
 		}
 
 		if (target == InterviewFormStatus.COMPLETED) {
 			form.complete();
+
+            eventPublisher.publishEvent(new NotificationEvent(
+                    form.getStudentMemberId(), // 받는 사람: 학생
+                    memberId,                  // 보낸 사람: 멘토
+                    "INTERVIEW_COMPLETED",     // 타입
+                    "인터뷰가 완료되었습니다. 리뷰를 작성해주세요!", // 알림 내용
+                    "/reviews/create/" + interviewId // 클릭 시 이동할 URL
+            ));
 			return;
 		}
 

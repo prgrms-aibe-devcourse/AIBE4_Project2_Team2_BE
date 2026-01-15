@@ -1,15 +1,13 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.notification.service;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.event.NotificationEvent;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.response.NotificationResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.entity.Notification;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -45,7 +43,7 @@ public class NotificationService {
         return emitter;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW) //새로운 트랜젝션 시작
     public void send(Long receiverId, Long senderId, String type, String content, String url) {
 
         Notification notification = notificationRepository.save(Notification.builder()
@@ -79,18 +77,6 @@ public class NotificationService {
                 emitters.remove(receiverId);
             }
         }
-    }
-
-    @TransactionalEventListener
-    public void handleNotificationEvent(NotificationEvent event) {
-        this.send(
-                event.receiverId(),
-                event.senderId(),
-                event.type(),
-                event.content(),
-                event.url()
-        );
-        log.info("이벤트 수신 및 알림 발송 완료: {}", event.content());
     }
 
     @Transactional
