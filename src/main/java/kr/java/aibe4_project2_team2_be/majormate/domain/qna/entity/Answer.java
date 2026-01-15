@@ -10,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,16 +33,27 @@ public class Answer extends BaseEntity {
 	@Column(nullable = false, columnDefinition = "TEXT")
 	private String content;
 
-	private Answer(Question question, String content) {
-		this.question = question;
+	private Answer(String content) {
 		this.content = content;
 	}
 
 	public static Answer create(Question question, String content) {
-		return new Answer(question, content);
+		if (question == null) {
+			throw new BusinessException(ErrorCode.QNA_400_QUESTION_REQUIRED);
+		}
+		if (content == null || content.isBlank()) {
+			throw new BusinessException(ErrorCode.QNA_400_CONTENT_REQUIRED);
+		}
+		Answer answer = new Answer(content);
+		question.attachAnswer(answer);
+		return answer;
 	}
 
 	public void updateContent(String content) {
 		this.content = content;
+	}
+
+	void attachQuestion(Question question) {
+		this.question = question;
 	}
 }

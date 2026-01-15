@@ -181,6 +181,15 @@ public enum ErrorCode {
 	QNA_404_ANSWER(
 		HttpStatus.NOT_FOUND, "QNA_404_ANSWER", "답변을 찾을 수 없습니다."
 	),
+	QNA_400_QUESTION_REQUIRED(
+		HttpStatus.BAD_REQUEST, "QNA_400_QUESTION_REQUIRED", "질문은 필수입니다."
+	),
+	QNA_400_ANSWER_REQUIRED(
+		HttpStatus.BAD_REQUEST, "QNA_400_ANSWER_REQUIRED", "답변은 필수입니다."
+	),
+	QNA_400_CONTENT_REQUIRED(
+		HttpStatus.BAD_REQUEST, "QNA_400_CONTENT_REQUIRED", "내용은 필수입니다."
+	),
 	QNA_400_ALREADY_ANSWERED(
 		HttpStatus.BAD_REQUEST, "QNA_400_ALREADY_ANSWERED", "답변이 달린 질문은 수정하거나 삭제할 수 없습니다."
 	),
@@ -192,6 +201,9 @@ public enum ErrorCode {
 	),
 	QNA_400_SELF_QUESTION_NOT_ALLOWED(
 		HttpStatus.BAD_REQUEST, "QNA_400_SELF_QUESTION_NOT_ALLOWED", "자기 자신에게 질문할 수 없습니다."
+	),
+	QNA_500_ANSWER_MISSING(
+		HttpStatus.INTERNAL_SERVER_ERROR, "QNA_500_ANSWER_MISSING", "답변 상태가 올바르지 않습니다."
 	),
 
 	// Major role request
