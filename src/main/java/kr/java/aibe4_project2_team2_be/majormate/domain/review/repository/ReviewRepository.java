@@ -16,7 +16,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
 	Page<Review> findAll(Pageable pageable);
 
-	Page<Review> findByContentContaining(String keyword, Pageable pageable);
+	Page<Review> findByContentContaining(String content, Pageable pageable);
 
 	Optional<Review> findByInterviewId(Long interviewId);
 
@@ -37,4 +37,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 	Page<Review> findReceivedByMajor(@Param("majorId") Long majorId, Pageable pageable);
 
 	boolean existsByInterviewId(Long interviewId);
+
+    Page<Review> findAllByContentContaining(String keyword, Pageable pageable);
 }
