@@ -1,9 +1,11 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.auth.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +24,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SendVer
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.SignupRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.request.VerifyCodeRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.CheckProviderResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.DuplicateCheckResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.FindUsernameResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.SignupResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.TokenResponse;
@@ -147,5 +150,35 @@ public class AuthController {
 	public ApiResponse<CheckProviderResponse> checkProvider(@Valid @RequestBody CheckProviderRequest request) {
 		CheckProviderResponse response = authService.checkProvider(request);
 		return ApiResponse.success(response, "계정 타입 확인이 완료되었습니다.");
+	}
+
+	@Operation(summary = "아이디 중복 체크", description = "회원가입 시 아이디 중복 여부를 확인합니다.")
+	@GetMapping("/check-username")
+	public ApiResponse<DuplicateCheckResponse> checkUsername(@RequestParam String username) {
+		boolean available = authService.isUsernameAvailable(username);
+		DuplicateCheckResponse response = DuplicateCheckResponse.builder()
+			.available(available)
+			.build();
+		return ApiResponse.success(response);
+	}
+
+	@Operation(summary = "이메일 중복 체크", description = "회원가입 시 이메일 중복 여부를 확인합니다.")
+	@GetMapping("/check-email")
+	public ApiResponse<DuplicateCheckResponse> checkEmail(@RequestParam String email) {
+		boolean available = authService.isEmailAvailable(email);
+		DuplicateCheckResponse response = DuplicateCheckResponse.builder()
+			.available(available)
+			.build();
+		return ApiResponse.success(response);
+	}
+
+	@Operation(summary = "닉네임 중복 체크", description = "회원가입 시 닉네임 중복 여부를 확인합니다.")
+	@GetMapping("/check-nickname")
+	public ApiResponse<DuplicateCheckResponse> checkNickname(@RequestParam String nickname) {
+		boolean available = authService.isNicknameAvailable(nickname);
+		DuplicateCheckResponse response = DuplicateCheckResponse.builder()
+			.available(available)
+			.build();
+		return ApiResponse.success(response);
 	}
 }

@@ -246,6 +246,30 @@ public class AuthService {
 		log.info("로그아웃 완료 - ID: {}", memberId);
 	}
 
+	/**
+	 * 아이디 중복 체크
+	 */
+	@Transactional(readOnly = true)
+	public boolean isUsernameAvailable(String username) {
+		return !memberProfileRepository.existsByUsername(username);
+	}
+
+	/**
+	 * 이메일 중복 체크
+	 */
+	@Transactional(readOnly = true)
+	public boolean isEmailAvailable(String email) {
+		return !memberProfileRepository.existsByEmail(email);
+	}
+
+	/**
+	 * 닉네임 중복 체크
+	 */
+	@Transactional(readOnly = true)
+	public boolean isNicknameAvailable(String nickname) {
+		return !memberProfileRepository.existsByNickname(nickname);
+	}
+
 	private void saveOrUpdateRefreshToken(Long memberId, String token) {
 		LocalDateTime expiresAt = LocalDateTime.now()
 			.plusSeconds(jwtProperties.getRefreshTokenValidity() / 1000);
