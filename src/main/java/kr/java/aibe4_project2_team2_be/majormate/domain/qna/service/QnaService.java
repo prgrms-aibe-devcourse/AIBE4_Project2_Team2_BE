@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class QnaServiceNew {
+public class QnaService {
 
 	private final QuestionRepository questionRepository;
 	private final AnswerRepository answerRepository;

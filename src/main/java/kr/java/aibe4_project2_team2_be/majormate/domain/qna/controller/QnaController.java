@@ -19,7 +19,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.request.QnaReque
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.IdResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.PublicQnaResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.QnaResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.qna.service.QnaServiceNew;
+import kr.java.aibe4_project2_team2_be.majormate.domain.qna.service.QnaService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.PageSort;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.PageResponsesNew;
@@ -29,9 +29,9 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class QnaControllerNew {
+public class QnaController {
 
-	private final QnaServiceNew qnaService;
+	private final QnaService qnaService;
 
 	// 학생: 내가 작성한 질문 목록(답변 있으면 함께)
 	@GetMapping("/members/me/questions")
