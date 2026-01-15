@@ -1,11 +1,11 @@
 package kr.java.aibe4_project2_team2_be.majormate.global.exception.custom;
 
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 
-public class BadRequestException extends BusinessExceptionNew {
+public class BadRequestException extends BusinessException {
 
-	public BadRequestException(ErrorCodeNew errorCode) {
+	public BadRequestException(ErrorCode errorCode) {
 		super(errorCode);
 	}
 }

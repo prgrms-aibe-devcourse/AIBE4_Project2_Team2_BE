@@ -14,8 +14,6 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
 
 	Optional<MemberProfile> findByUsername(String username);
 
-	Optional<MemberProfile> findByUsernameAndEmail(String username, String email);
-
 	@Query("select mp from MemberProfile mp left join fetch mp.academic where mp.memberId = :memberId")
 	Optional<MemberProfile> findWithAcademicByMemberId(@Param("memberId") Long memberId);
 

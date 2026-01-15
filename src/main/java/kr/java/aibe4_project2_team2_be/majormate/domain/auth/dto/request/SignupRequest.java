@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -42,4 +43,6 @@ public class SignupRequest {
 		message = "닉네임은 한글, 영문, 숫자, 밑줄, 하이픈만 사용 가능합니다."
 	)
 	private String nickname;
+
+	private MemberStatus status;
 }

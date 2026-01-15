@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,7 +56,8 @@ public class InitialDataLoader implements CommandLineRunner {
 		// 테스트 학생 계정
 		if (!memberProfileRepository.existsByEmail("student@test.com")) {
 			MemberProfile student = MemberProfile.createLocal(
-				"테스트학생", "학생1", "student@test.com", "student", passwordEncoder.encode("test1234!")
+				"테스트학생", "학생1", "student@test.com", "student", passwordEncoder.encode("test1234!"),
+				MemberStatus.GRADUATED
 			);
 			memberProfileRepository.save(student);
 			log.info("✅ 테스트 학생 계정 생성: student@test.com");

@@ -20,8 +20,8 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.entity.RefreshToken
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.repository.RefreshTokenRepository;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.repository.MemberProfileRepository;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.BadRequestException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.NotFoundException;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
@@ -47,22 +47,22 @@ public class AuthService {
 	public SignupResponse signup(SignupRequest request) {
 		// 1. 이메일 인증 여부 확인
 		if (!emailService.isVerified(request.getEmail(), VerificationType.SIGNUP)) {
-			throw new BadRequestException(ErrorCodeNew.AUTH_400_EMAIL_NOT_VERIFIED);
+			throw new BadRequestException(ErrorCode.AUTH_400_EMAIL_NOT_VERIFIED);
 		}
 
 		// 2. 아이디 중복 검증
 		if (memberProfileRepository.existsByUsername(request.getUsername())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_USERNAME);
+			throw new BusinessException(ErrorCode.MEMBER_409_DUPLICATE_USERNAME);
 		}
 
 		// 3. 이메일 중복 검증
 		if (memberProfileRepository.existsByEmail(request.getEmail())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_EMAIL);
+			throw new BusinessException(ErrorCode.MEMBER_409_DUPLICATE_EMAIL);
 		}
 
 		// 4. 닉네임 중복 검증
 		if (memberProfileRepository.existsByNickname(request.getNickname())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_409_DUPLICATE_NICKNAME);
+			throw new BusinessException(ErrorCode.MEMBER_409_DUPLICATE_NICKNAME);
 		}
 
 		// 5. 비밀번호 암호화
@@ -70,7 +70,8 @@ public class AuthService {
 
 		// 5. 회원 생성
 		MemberProfile memberProfile = MemberProfile.createLocal(
-			request.getName(), request.getNickname(), request.getEmail(), request.getUsername(), encodedPassword
+			request.getName(), request.getNickname(), request.getEmail(), request.getUsername(), encodedPassword,
+			request.getStatus()
 		);
 
 		MemberProfile savedMemberProfile = memberProfileRepository.save(memberProfile);
@@ -89,12 +90,12 @@ public class AuthService {
 	public FindUsernameResponse findUsername(String email) {
 		// 1. 이메일 인증 여부 확인
 		if (!emailService.isVerified(email, VerificationType.FIND_USERNAME)) {
-			throw new BadRequestException(ErrorCodeNew.AUTH_400_EMAIL_NOT_VERIFIED);
+			throw new BadRequestException(ErrorCode.AUTH_400_EMAIL_NOT_VERIFIED);
 		}
 
 		// 2. 이메일로 회원 조회
 		MemberProfile memberProfile = memberProfileRepository.findByEmail(email)
-			.orElseThrow(() -> new NotFoundException(ErrorCodeNew.MEMBER_404));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_404));
 
 		// 3. 소셜/일반 유저 분기 처리
 		if (memberProfile.isOAuth2User()) {
@@ -122,16 +123,16 @@ public class AuthService {
 	public void resetPassword(ResetPasswordRequest request) {
 		// 1. 이메일 인증 여부 확인
 		if (!emailService.isVerified(request.getEmail(), VerificationType.RESET_PASSWORD)) {
-			throw new BadRequestException(ErrorCodeNew.AUTH_400_EMAIL_NOT_VERIFIED);
+			throw new BadRequestException(ErrorCode.AUTH_400_EMAIL_NOT_VERIFIED);
 		}
 
 		// 2. 이메일로 회원 조회
 		MemberProfile memberProfile = memberProfileRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new NotFoundException(ErrorCodeNew.MEMBER_404));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_404));
 
 		// 3. OAuth2 사용자는 비밀번호 재설정 불가
 		if (memberProfile.isOAuth2User()) {
-			throw new BadRequestException(ErrorCodeNew.AUTH_400_SOCIAL_LOGIN_REQUIRED);
+			throw new BadRequestException(ErrorCode.AUTH_400_SOCIAL_LOGIN_REQUIRED);
 		}
 
 		// 4. 비밀번호 암호화 및 업데이트
@@ -148,7 +149,7 @@ public class AuthService {
 	public CheckProviderResponse checkProvider(CheckProviderRequest request) {
 		// 1. 이메일로 회원 조회
 		MemberProfile memberProfile = memberProfileRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new NotFoundException(ErrorCodeNew.MEMBER_404));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_404));
 
 		// 2. 소셜/일반 유저 분기 처리
 		if (memberProfile.isOAuth2User()) {
@@ -173,17 +174,17 @@ public class AuthService {
 	public TokenResponse login(LoginRequest request) {
 		// 1. 사용자 조회
 		MemberProfile memberProfile = memberProfileRepository.findByUsername(request.getUsername())
-			.orElseThrow(() -> new NotFoundException(ErrorCodeNew.MEMBER_404));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_404));
 
 		// 2. OAuth2 사용자 체크
 		if (memberProfile.isOAuth2User()) {
-			throw new BadRequestException(ErrorCodeNew.AUTH_400_SOCIAL_LOGIN_REQUIRED);
+			throw new BadRequestException(ErrorCode.AUTH_400_SOCIAL_LOGIN_REQUIRED);
 		}
 
 		// 3. 비밀번호 검증
 		if (memberProfile.getPassword() == null ||
 			!passwordEncoder.matches(request.getPassword(), memberProfile.getPassword())) {
-			throw new UnauthorizedException(ErrorCodeNew.AUTH_401_INVALID_PASSWORD);
+			throw new UnauthorizedException(ErrorCode.AUTH_401_INVALID_PASSWORD);
 		}
 
 		// 4. 토큰 생성
@@ -206,22 +207,22 @@ public class AuthService {
 	public TokenResponse refresh(RefreshTokenRequest request) {
 		// 1. RefreshToken 조회
 		RefreshToken refreshToken = refreshTokenRepository.findByToken(request.getRefreshToken())
-			.orElseThrow(() -> new UnauthorizedException(ErrorCodeNew.AUTH_401_REFRESH_TOKEN_NOT_FOUND));
+			.orElseThrow(() -> new UnauthorizedException(ErrorCode.AUTH_401_REFRESH_TOKEN_NOT_FOUND));
 
 		// 2. 만료 검증
 		if (refreshToken.isExpired()) {
 			refreshTokenRepository.delete(refreshToken);
-			throw new UnauthorizedException(ErrorCodeNew.AUTH_401_EXPIRED_TOKEN);
+			throw new UnauthorizedException(ErrorCode.AUTH_401_EXPIRED_TOKEN);
 		}
 
 		// 3. 토큰 검증
 		if (!jwtTokenProvider.validateToken(request.getRefreshToken())) {
-			throw new UnauthorizedException(ErrorCodeNew.AUTH_401_INVALID_TOKEN);
+			throw new UnauthorizedException(ErrorCode.AUTH_401_INVALID_TOKEN);
 		}
 
 		// 4. 회원 조회
 		MemberProfile memberProfile = memberProfileRepository.findById(refreshToken.getMemberId())
-			.orElseThrow(() -> new NotFoundException(ErrorCodeNew.MEMBER_404));
+			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_404));
 
 		// 5. 새 AccessToken 생성
 		String newAccessToken = jwtTokenProvider.createAccessToken(memberProfile.getMemberId(),

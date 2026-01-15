@@ -30,10 +30,10 @@ public class MemberAcademic extends BaseEntity {
 	@JoinColumn(name = "member_id", nullable = false, unique = true)
 	private MemberProfile memberProfile;
 
-	@Column(length = 100)
+	@Column(length = 20)
 	private String university;
 
-	@Column(length = 100)
+	@Column(length = 20)
 	private String major;
 
 	private MemberAcademic(MemberProfile memberProfile) {
@@ -41,7 +41,6 @@ public class MemberAcademic extends BaseEntity {
 	}
 
 	public static MemberAcademic create(MemberProfile profile) {
-		Objects.requireNonNull(profile, "profile must not be null");
 		return new MemberAcademic(profile);
 	}
 

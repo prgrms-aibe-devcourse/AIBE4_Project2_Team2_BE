@@ -1,114 +1,165 @@
 package kr.java.aibe4_project2_team2_be.majormate.global.exception;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
-import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ErrorResponse;
+import jakarta.validation.ConstraintViolationException;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ErrorResponseNew;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-//@RestControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(BusinessException.class)
-	protected ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
-		log.error("BusinessException: {}", e.getMessage(), e);
+	public ResponseEntity<ApiResponseNew<Void>> handleBusinessException(BusinessException e) {
 		ErrorCode errorCode = e.getErrorCode();
-		ErrorResponse errorResponse = ErrorResponse.of(errorCode);
+		log.warn("BusinessExceptionNew: code={}, message={}", errorCode.getCode(), e.getMessage(), e);
+
 		return ResponseEntity
 			.status(errorCode.getHttpStatus())
-			.body(ApiResponse.error(errorResponse));
+			.body(ApiResponseNew.error(ErrorResponseNew.of(errorCode)));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	protected ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(
+	public ResponseEntity<ApiResponseNew<Void>> handleMethodArgumentNotValidException(
 		MethodArgumentNotValidException e) {
-		log.error("MethodArgumentNotValidException: {}", e.getMessage(), e);
-		List<ErrorResponse.FieldError> fieldErrors = e.getBindingResult()
+		log.warn("MethodArgumentNotValidException: {}", e.getMessage(), e);
+
+		List<ErrorResponseNew.FieldError> details = e.getBindingResult()
 			.getFieldErrors()
 			.stream()
-			.map(error -> ErrorResponse.FieldError.of(
-				error.getField(),
-				error.getRejectedValue() == null ? "" : error.getRejectedValue().toString(),
-				error.getDefaultMessage()
-			))
-			.collect(Collectors.toList());
+			.map(err -> ErrorResponseNew.FieldError.of(err.getField(),
+				Optional.ofNullable(err.getDefaultMessage()).orElse("요청 값이 올바르지 않습니다.")))
+			.toList();
 
-		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, fieldErrors);
-		return ResponseEntity
-			.status(HttpStatus.BAD_REQUEST)
-			.body(ApiResponse.error(errorResponse));
+		return badRequestWithDetails(details);
 	}
 
 	@ExceptionHandler(BindException.class)
-	protected ResponseEntity<ApiResponse<Void>> handleBindException(BindException e) {
-		log.error("BindException: {}", e.getMessage(), e);
-		List<ErrorResponse.FieldError> fieldErrors = e.getBindingResult()
+	public ResponseEntity<ApiResponseNew<Void>> handleBindException(BindException e) {
+		log.warn("BindException: {}", e.getMessage(), e);
+
+		List<ErrorResponseNew.FieldError> details = e.getBindingResult()
 			.getFieldErrors()
 			.stream()
-			.map(error -> ErrorResponse.FieldError.of(
-				error.getField(),
-				error.getRejectedValue() == null ? "" : error.getRejectedValue().toString(),
-				error.getDefaultMessage()
-			))
-			.collect(Collectors.toList());
+			.map(err -> ErrorResponseNew.FieldError.of(err.getField(),
+				Optional.ofNullable(err.getDefaultMessage()).orElse("요청 값이 올바르지 않습니다.")))
+			.toList();
 
-		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, fieldErrors);
-		return ResponseEntity
-			.status(HttpStatus.BAD_REQUEST)
-			.body(ApiResponse.error(errorResponse));
+		return badRequestWithDetails(details);
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<ApiResponseNew<Void>> handleConstraintViolationException(ConstraintViolationException e) {
+		log.warn("ConstraintViolationException: {}", e.getMessage(), e);
+
+		List<ErrorResponseNew.FieldError> details = e.getConstraintViolations()
+			.stream()
+			.map(v -> ErrorResponseNew.FieldError.of(
+				v.getPropertyPath() == null ? "parameter" : v.getPropertyPath().toString(),
+				Optional.ofNullable(v.getMessage()).orElse("요청 값이 올바르지 않습니다.")
+			))
+			.toList();
+
+		return badRequestWithDetails(details);
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
-	protected ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(
+	public ResponseEntity<ApiResponseNew<Void>> handleMethodArgumentTypeMismatchException(
 		MethodArgumentTypeMismatchException e) {
-		log.error("MethodArgumentTypeMismatchException: {}", e.getMessage(), e);
-		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE);
-		return ResponseEntity
-			.status(HttpStatus.BAD_REQUEST)
-			.body(ApiResponse.error(errorResponse));
+		log.warn("MethodArgumentTypeMismatchException: {}", e.getMessage(), e);
+		return badRequest();
+	}
+
+	@ExceptionHandler(MissingServletRequestParameterException.class)
+	public ResponseEntity<ApiResponseNew<Void>> handleMissingServletRequestParameterException(
+		MissingServletRequestParameterException e) {
+		log.warn("MissingServletRequestParameterException: {}", e.getMessage(), e);
+		return badRequest();
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	protected ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(
-		HttpMessageNotReadableException e
-	) {
-		log.error("HttpMessageNotReadableException: {}", e.getMessage(), e);
+	public ResponseEntity<ApiResponseNew<Void>> handleHttpMessageNotReadableException(
+		HttpMessageNotReadableException e) {
+		log.warn("HttpMessageNotReadableException: {}", e.getMessage(), e);
+
 		Throwable cause = e.getCause();
 		if (cause instanceof InvalidFormatException ife) {
-			Class<?> targetType = ife.getTargetType();
-			if (MemberStatus.class.equals(targetType)) {
-				ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_MEMBER_STATUS);
-				return ResponseEntity
-					.status(ErrorCode.INVALID_MEMBER_STATUS.getHttpStatus())
-					.body(ApiResponse.error(errorResponse));
+			if (isEnumTargetType(ife)) {
+				return badRequest();
 			}
 		}
 
-		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE);
+		return badRequest();
+	}
+
+	@ExceptionHandler(AuthenticationException.class)
+	public ResponseEntity<ApiResponseNew<Void>> handleAuthenticationException(AuthenticationException e) {
+		log.warn("AuthenticationException: {}", e.getMessage(), e);
 		return ResponseEntity
-			.status(HttpStatus.BAD_REQUEST)
-			.body(ApiResponse.error(errorResponse));
+			.status(ErrorCode.AUTH_401.getHttpStatus())
+			.body(ApiResponseNew.error(ErrorResponseNew.of(ErrorCode.AUTH_401)));
+	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<ApiResponseNew<Void>> handleAccessDeniedException(AccessDeniedException e) {
+		log.warn("AccessDeniedException: {}", e.getMessage(), e);
+		return ResponseEntity
+			.status(ErrorCode.AUTH_403.getHttpStatus())
+			.body(ApiResponseNew.error(ErrorResponseNew.of(ErrorCode.AUTH_403)));
 	}
 
 	@ExceptionHandler(Exception.class)
-	protected ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-		log.error("Exception: {}", e.getMessage(), e);
-		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
+	public ResponseEntity<ApiResponseNew<Void>> handleException(Exception e) {
+		log.error("Unhandled Exception: {}", e.getMessage(), e);
 		return ResponseEntity
-			.status(HttpStatus.INTERNAL_SERVER_ERROR)
-			.body(ApiResponse.error(errorResponse));
+			.status(ErrorCode.COMMON_500.getHttpStatus())
+			.body(ApiResponseNew.error(ErrorResponseNew.of(ErrorCode.COMMON_500)));
+	}
+
+	private ResponseEntity<ApiResponseNew<Void>> badRequest() {
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(ApiResponseNew.error(ErrorResponseNew.of(ErrorCode.COMMON_400)));
+	}
+
+	private ResponseEntity<ApiResponseNew<Void>> badRequestWithDetails(Object details) {
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(ApiResponseNew.error(ErrorResponseNew.of(ErrorCode.COMMON_400, details)));
+	}
+
+	private boolean isEnumTargetType(InvalidFormatException ife) {
+		Class<?> targetType = ife.getTargetType();
+		if (targetType != null && targetType.isEnum()) {
+			return true;
+		}
+
+		for (JsonMappingException.Reference ref : ife.getPath()) {
+			if (ref != null && ref.getFrom() != null) {
+				Class<?> fromType = ref.getFrom().getClass();
+				if (fromType.isEnum()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

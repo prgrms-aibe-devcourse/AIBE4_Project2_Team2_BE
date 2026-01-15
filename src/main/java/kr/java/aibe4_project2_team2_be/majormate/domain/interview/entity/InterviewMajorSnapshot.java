@@ -14,18 +14,20 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberRole;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @Table(name = "interview_major_snapshot")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class InterviewMajorSnapshot {
+public class InterviewMajorSnapshot extends BaseEntity {
 
 	@Id
 	@Column(name = "interview_id", nullable = false)
@@ -54,11 +56,7 @@ public class InterviewMajorSnapshot {
 
 	private InterviewMajorSnapshot(
 		InterviewForm interviewForm,
-		String profileImageUrl,
-		String nickname,
-		MemberStatus status,
-		String university,
-		String major
+		String profileImageUrl, String nickname, MemberStatus status, String university, String major
 	) {
 		this.interviewForm = Objects.requireNonNull(interviewForm, "interviewForm must not be null");
 		this.profileImageUrl = profileImageUrl;
@@ -75,11 +73,14 @@ public class InterviewMajorSnapshot {
 		Objects.requireNonNull(majorProfile, "majorProfile must not be null");
 		Objects.requireNonNull(academic, "academic must not be null");
 
+		if (majorProfile.getRole() != MemberRole.MAJOR) {
+			throw new BusinessException(ErrorCode.MAJOR_403_ROLE_REQUIRED);
+		}
 		if (majorProfile.getStatus() == null) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_STATUS_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_400_STATUS_REQUIRED);
 		}
 		if (isBlank(academic.getUniversity()) || isBlank(academic.getMajor())) {
-			throw new BusinessExceptionNew(ErrorCodeNew.MAJOR_400_ACADEMIC_REQUIRED);
+			throw new BusinessException(ErrorCode.MAJOR_400_ACADEMIC_REQUIRED);
 		}
 
 		return new InterviewMajorSnapshot(
@@ -92,9 +93,13 @@ public class InterviewMajorSnapshot {
 		);
 	}
 
+	void attachInterviewForm(InterviewForm form) {
+		this.interviewForm = form;
+	}
+
 	private static String requireText(String value, String fieldName) {
-		if (isBlank(value)) {
-			throw new BusinessExceptionNew(ErrorCodeNew.COMMON_400);
+		if (value == null || value.isBlank()) {
+			throw new IllegalArgumentException(fieldName + " must not be blank");
 		}
 		return value;
 	}

@@ -20,8 +20,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.ApplicationStatus;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessExceptionNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCodeNew;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.BusinessException;
+import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -51,7 +51,7 @@ public class MajorRoleRequest {
     @Column(name = "comment", nullable = false, length = 512)
     private String comment;
 
-    @Column(name = "document_url", nullable = false, length = 512)
+    @Column(name = "document_url", nullable = true, length = 512)
     private String documentUrl;
 
     @Enumerated(EnumType.STRING)
@@ -77,6 +77,15 @@ public class MajorRoleRequest {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    // 증빙 서류 URL 업데이트 메서드 추가 (클래스 내부에 추가)
+    public void updateDocumentUrl(String newUrl) {
+        this.documentUrl = newUrl;
+    }
+    // 만료된 증빙 서류 처리 메서드 추가 (클래스 내부에 추가)
+    public void expireDocumentUrl() {
+        this.documentUrl = null;
     }
 
     public static MajorRoleRequest createRequest(MemberProfile memberProfile, String university, String major,
@@ -173,7 +182,7 @@ public class MajorRoleRequest {
 
         if (this.applicationStatus != ApplicationStatus.PENDING
                 && this.applicationStatus != ApplicationStatus.RESUBMITTED) {
-            throw new BusinessExceptionNew(ErrorCodeNew.MEMBER_400_INVALID_ROLE_TRANSITION);
+            throw new BusinessException(ErrorCode.MEMBER_400_INVALID_ROLE_TRANSITION);
         }
     }
 

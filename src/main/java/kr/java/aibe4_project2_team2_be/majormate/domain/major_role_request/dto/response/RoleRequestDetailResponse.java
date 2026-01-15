@@ -40,6 +40,10 @@ public class RoleRequestDetailResponse {
                     .findFirst()
                     .orElse(null);
         }
+		String filteredDocumentUrl = null;
+		if (majorRoleRequest.getApplicationStatus() == ApplicationStatus.PENDING ) {
+			filteredDocumentUrl = majorRoleRequest.getDocumentUrl();
+		}
 
         // 2. 응답 생성 (여기에 정렬 추가)
         return RoleRequestDetailResponse.builder()
@@ -50,7 +54,7 @@ public class RoleRequestDetailResponse {
                 .universityName(majorRoleRequest.getUniversity())
                 .majorName(majorRoleRequest.getMajor())
                 .content(majorRoleRequest.getComment())
-                .documentUrl(majorRoleRequest.getDocumentUrl())
+                .documentUrl(filteredDocumentUrl)
                 .applicationStatus(majorRoleRequest.getApplicationStatus())
                 .reason(visibleReason)
                 .createdAt(majorRoleRequest.getCreatedAt())

@@ -15,15 +15,16 @@ import jakarta.persistence.Table;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberAcademic;
 import kr.java.aibe4_project2_team2_be.majormate.domain.member.entity.MemberProfile;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.MemberStatus;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @Table(name = "interview_student_snapshot")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class InterviewStudentSnapshot {
+public class InterviewStudentSnapshot extends BaseEntity {
 
 	@Id
 	@Column(name = "interview_id", nullable = false)
@@ -41,7 +42,7 @@ public class InterviewStudentSnapshot {
 	private String nickname;
 
 	@Enumerated(EnumType.STRING)
-	@Column(length = 20)
+	@Column(nullable = false, length = 20)
 	private MemberStatus status;
 
 	@Column(length = 20)
@@ -52,35 +53,36 @@ public class InterviewStudentSnapshot {
 
 	private InterviewStudentSnapshot(
 		InterviewForm interviewForm,
-		String profileImageUrl,
-		String nickname,
-		MemberStatus status,
-		String university,
-		String major
+		String profileImageUrl, String nickname, MemberStatus status, String university, String major
 	) {
 		this.interviewForm = Objects.requireNonNull(interviewForm, "interviewForm must not be null");
 		this.profileImageUrl = profileImageUrl;
 		this.nickname = requireText(nickname, "nickname");
-		this.status = status;
+		this.status = Objects.requireNonNull(status, "status must not be null");
 		this.university = university;
 		this.major = major;
 	}
 
-	public static InterviewStudentSnapshot create(InterviewForm form, MemberProfile student, MemberAcademic academic) {
+	public static InterviewStudentSnapshot create(InterviewForm form, MemberProfile studentProfile,
+		MemberAcademic academic) {
 		Objects.requireNonNull(form, "form must not be null");
-		Objects.requireNonNull(student, "student must not be null");
+		Objects.requireNonNull(studentProfile, "student must not be null");
 
 		String university = academic != null ? academic.getUniversity() : null;
 		String major = academic != null ? academic.getMajor() : null;
 
 		return new InterviewStudentSnapshot(
 			form,
-			student.getProfileImageUrl(),
-			student.getNickname(),
-			student.getStatus(),
+			studentProfile.getProfileImageUrl(),
+			studentProfile.getNickname(),
+			studentProfile.getStatus(),
 			university,
 			major
 		);
+	}
+
+	void attachInterviewForm(InterviewForm form) {
+		this.interviewForm = form;
 	}
 
 	private static String requireText(String value, String fieldName) {

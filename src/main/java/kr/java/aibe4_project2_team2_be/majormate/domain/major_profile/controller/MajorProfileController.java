@@ -72,11 +72,11 @@ public class MajorProfileController {
 
 	@GetMapping
 	public ApiResponse<Page<MajorCardResponse>> getMajorCards(
-		@PageableDefault(size = 10, sort = "majorProfileId", direction = Sort.Direction.DESC) Pageable pageable,
 		@RequestParam(required = false) String searchType,
-		@RequestParam(required = false) String keyword
+		@RequestParam(required = false) String keyword,
+		@PageableDefault(size = 8, sort = "majorProfileId", direction = Sort.Direction.DESC) Pageable pageable
 	) {
-		return ApiResponse.success(majorProfileService.getMajorCards(pageable, searchType, keyword));
+		return ApiResponse.success(majorProfileService.getMajorCards(searchType, keyword ,pageable));
 	}
 
 	@GetMapping("/{profileId}")
