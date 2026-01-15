@@ -76,7 +76,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			case "google" -> new GoogleOAuth2UserInfo(attributes);
 			case "github" -> new GithubOAuth2UserInfo(attributes);
 			case "kakao" -> new KakaoOAuth2UserInfo(attributes);
-			case "naver" -> new NaverOAuth2UserInfo(attributes);
 			default -> {
 				OAuth2Error oauth2Error = new OAuth2Error(
 					"unsupported_provider",

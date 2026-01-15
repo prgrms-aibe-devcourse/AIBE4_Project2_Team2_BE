@@ -10,8 +10,7 @@ public enum AuthProvider {
     LOCAL("로컬"),
     GOOGLE("구글"),
     GITHUB("깃허브"),
-    KAKAO("카카오"),
-    NAVER("네이버");
+    KAKAO("카카오");
 
     private final String description;
 }
