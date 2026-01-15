@@ -19,28 +19,33 @@ public class AdminQnaController {
 
     private final AdminQnaService adminQnaService;
 
-    // 1. 목록 조회 (qna의 메인페이지)
+    // 목록 페이지
     @GetMapping
-    public String questionList(Model model,
-                               @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<AdminQuestionDto> questions = adminQnaService.findAllQuestions(pageable);
+    public String list(
+            Model model,
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<AdminQuestionDto> questions = adminQnaService.findAll(pageable);
         model.addAttribute("questions", questions);
         return "admin/qna/question-list";
     }
 
-    // 2. 상세 조회
+    // 상세 페이지
     @GetMapping("/{id}")
-    public String questionDetail(@PathVariable Long id, Model model) {
-        AdminQuestionDetailDto question = adminQnaService.findQuestionDetail(id);
+    public String detail(@PathVariable Long id, Model model) {
+        AdminQuestionDetailDto question = adminQnaService.findById(id);
         model.addAttribute("question", question);
         return "admin/qna/question-detail";
     }
 
-    // ===========================
-    // 3. 삭제 처리
-    @PostMapping("/{id}/delete")
-    public String deleteQuestion(@PathVariable Long id) {
-        adminQnaService.deleteQuestion(id);
-        return "redirect:/admin/qna";
+    // 답변 등록 처리
+    @PostMapping("/{id}/answer")
+    public String createAnswer(
+            @PathVariable Long id,
+            @RequestParam("content") String content
+    ) {
+        // 관리자가 강제로 답변을 다는 기능
+        adminQnaService.createAnswer(id, content);
+        return "redirect:/admin/qna/" + id;
     }
 }

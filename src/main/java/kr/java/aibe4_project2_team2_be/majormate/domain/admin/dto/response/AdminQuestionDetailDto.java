@@ -1,35 +1,41 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.qna.entity.Answer;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.entity.Question;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
+@Builder
 public class AdminQuestionDetailDto {
-
+    // 질문 정보
     private Long questionId;
-    private String studentName;
-    private String majorName;
     private String content;
-    private boolean hasAnswer;
-    private String answerContent;
+    private String studentName; // 질문자
+    private String majorName;   // 질문 대상
     private LocalDateTime createdAt;
-    private LocalDateTime answeredAt;
+    private boolean hasAnswer;
 
-    public AdminQuestionDetailDto(Question question, String studentName, String majorName) {
-        this.questionId = question.getQuestionId();
-        this.studentName = studentName;
-        this.majorName = majorName;
-        this.content = question.getContent();
-        this.hasAnswer = question.isHasAnswer();
-        this.createdAt = question.getCreatedAt();
+    // 답변 정보 (null 가능)
+    private Long answerId;
+    private String answerContent;
+    private LocalDateTime answerCreatedAt;
 
-        if (question.getAnswer() != null) {
-            this.answerContent = question.getAnswer().getContent();
-            this.answeredAt = question.getAnswer().getCreatedAt();
-        }
+    public static AdminQuestionDetailDto from(Question question) {
+        Answer answer = question.getAnswer();
+
+        return AdminQuestionDetailDto.builder()
+                .questionId(question.getQuestionId())
+                .content(question.getContent())
+                .studentName(question.getStudent().getNickname())
+                .majorName(question.getMajor().getNickname())
+                .createdAt(question.getCreatedAt())
+                .hasAnswer(question.isHasAnswer())
+                .answerId(answer != null ? answer.getAnswerId() : null)
+                .answerContent(answer != null ? answer.getContent() : null)
+                .answerCreatedAt(answer != null ? answer.getCreatedAt() : null)
+                .build();
     }
 }
