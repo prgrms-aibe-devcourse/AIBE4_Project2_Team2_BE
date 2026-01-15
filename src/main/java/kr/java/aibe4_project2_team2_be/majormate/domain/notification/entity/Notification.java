@@ -51,4 +51,8 @@ public class Notification {
         this.relatedUrl = relatedUrl;
         this.isRead = false;
     }
+
+    public void read() {
+        this.isRead = true;
+    }
 }

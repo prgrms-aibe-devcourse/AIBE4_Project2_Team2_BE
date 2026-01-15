@@ -2,7 +2,9 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.notification.controller
 
 import jakarta.servlet.http.HttpServletResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.event.NotificationEvent;
+import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.response.NotificationResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.service.NotificationService;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j; // 로그용
 import org.springframework.context.ApplicationEventPublisher;
@@ -14,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -55,16 +59,59 @@ public class NotificationController {
 
         return notificationService.subscribe(memberId);
     }
+    @GetMapping("/unread")
+    public ApiResponse<List<NotificationResponse>> getUnreadNotifications(@AuthenticationPrincipal Object principal) {
+        Long memberId = getMemberId(principal);
+
+        List<NotificationResponse> responses = notificationService.getUnreadNotifications(memberId);
+        return ApiResponse.success(responses);
+    }
+
+    // 3. 알림 읽음 처리
+    @PatchMapping("/{id}/read")
+    public ResponseEntity<?> readNotification(@PathVariable Long id) {
+        notificationService.readNotification(id);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    // 테스트용 전송 API
     @PostMapping("/send-test")
-    public String sendTest(@RequestParam Long receiverId, @RequestParam String content) {
-        eventPublisher.publishEvent(new NotificationEvent(
-                receiverId,
-                null,
-                "TEST_EVENT",
-                content,
-                "/test-url"
-        ));
-        return "이벤트 발행 성공!";
+    public void sendTest(@RequestParam Long receiverId,
+                         @RequestParam String content,
+                         @RequestParam String url) { // url 추가
+        notificationService.send(receiverId, 999L, "TEST", content, url);
+    }
+
+    private Long getMemberId(Object principal) {
+        if (principal == null) {
+            log.error(">>>> [인증 에러] Principal 객체가 NULL입니다.");
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
+        }
+
+        log.info(">>>> [디버그] Principal Type: {}", principal.getClass().getName());
+
+        try {
+            // Case 1: UserDetails 타입 (일반적인 Spring Security)
+            if (principal instanceof UserDetails) {
+                return Long.parseLong(((UserDetails) principal).getUsername());
+            }
+            // Case 2: Long 타입 (Custom Filter에서 ID를 직접 넣은 경우)
+            else if (principal instanceof Long) {
+                return (Long) principal;
+            }
+            // Case 3: String 타입 (Custom Filter에서 String ID를 넣은 경우)
+            else if (principal instanceof String) {
+                return Long.parseLong((String) principal);
+            }
+            // Case 4: 그 외 (커스텀 UserDetails 등) - toString으로 시도
+            else {
+                log.warn(">>>> [주의] 예상치 못한 Principal 타입: {}", principal.getClass());
+                return Long.parseLong(principal.toString());
+            }
+        } catch (NumberFormatException e) {
+            log.error(">>>> [변환 에러] ID를 Long으로 변환할 수 없습니다. 값: {}", principal);
+            throw new IllegalArgumentException("유효하지 않은 사용자 ID입니다.");
+        }
     }
 
 }

@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    // 특정 회원의 알림을 최신순으로 가져오기
-    List<Notification> findAllByReceiverIdOrderByCreatedAtDesc(Long receiverId);
+    // 안 읽은 알림만 최신순으로 가져오기
+    List<Notification> findAllByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(Long receiverId);
 }
