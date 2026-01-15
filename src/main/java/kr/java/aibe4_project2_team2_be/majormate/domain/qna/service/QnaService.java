@@ -66,24 +66,18 @@ public class QnaService {
 	public Page<QuestionReceivedItemResponse> getReceivedQuestions(Long majorMemberId, Pageable pageable) {
 		memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
 
-		Page<Question> page = questionRepository.findByMajor_MemberId(majorMemberId, pageable);
+		Page<Question> questionPage = questionRepository.findByMajor_MemberId(majorMemberId, pageable);
 
-		List<Question> questions = page.getContent();
-		if (questions.isEmpty()) {
-			return Page.empty(pageable);
-		}
-
-		List<QuestionReceivedItemResponse> content = questions.stream()
-			.map(q -> new QuestionReceivedItemResponse(
-				q.getQuestionId(),
-				q.getStudent().getMemberId(),
-				q.getContent(),
-				q.isHasAnswer(),
-				q.getCreatedAt()
-			))
-			.toList();
-
-		return new PageImpl<>(content, pageable, page.getTotalElements());
+		return questionPage.map(q -> new QuestionReceivedItemResponse(
+			q.getQuestionId(),
+			q.getStudent().getMemberId(),
+			q.getStudent().getNickname(),
+			q.getContent(),
+			q.isHasAnswer(),
+			q.getAnswer() != null ? q.getAnswer().getContent() : null,      // 답변 내용
+			q.getAnswer() != null ? q.getAnswer().getCreatedAt() : null,    // 답변 생성일
+			q.getCreatedAt()
+		));
 	}
 
 	public Page<MyAnswerItemResponse> getMyAnswers(Long majorMemberId, Pageable pageable) {

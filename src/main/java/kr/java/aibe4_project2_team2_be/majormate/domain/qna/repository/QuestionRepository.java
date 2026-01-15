@@ -18,7 +18,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
 	// 전공자: 내가 받은 질문 목록
 	// studentMemberId를 응답에 포함하므로 student를 같이 로딩(선택)
-	@EntityGraph(attributePaths = {"student"})
+	@EntityGraph(attributePaths = {"student", "answer"})
 	Page<Question> findByMajor_MemberId(Long majorMemberId, Pageable pageable);
 
 	// 학생: 본인 질문 단건 권한 체크용

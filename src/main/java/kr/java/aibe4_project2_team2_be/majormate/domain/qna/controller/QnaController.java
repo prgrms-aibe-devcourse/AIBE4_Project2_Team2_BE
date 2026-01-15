@@ -46,6 +46,12 @@ public class QnaController {
 		return PageResponsesNew.of(page);
 	}
 
+	@GetMapping("/members/{memberId}/questions/received")
+	public ApiResponseNew<java.util.List<QuestionReceivedItemResponse>> getQuestionsAndAnswer(@PathVariable Long memberId ,Pageable pageable) {
+		Page<QuestionReceivedItemResponse> page = qnaService.getReceivedQuestions(memberId, pageable);
+		return PageResponsesNew.of(page);
+	}
+
 	@GetMapping("/members/me/answers")
 	public ApiResponseNew<java.util.List<MyAnswerItemResponse>> getMyAnswers(Pageable pageable) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
