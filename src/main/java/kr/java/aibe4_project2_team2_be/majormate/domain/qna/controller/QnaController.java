@@ -11,15 +11,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.request.QnaRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.IdResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.MyAnswerItemResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.QuestionMyItemResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.QuestionReceivedItemResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.PublicQnaResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.qna.dto.response.QnaResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.qna.service.QnaService;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.constant.PageSort;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.PageResponsesNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.util.SecurityUtil;
@@ -32,24 +33,36 @@ public class QnaController {
 
 	private final QnaService qnaService;
 
+	// 학생: 내가 작성한 질문 목록(답변 있으면 함께)
 	@GetMapping("/members/me/questions")
-	public ApiResponseNew<List<QuestionMyItemResponse>> getMyQuestions(Pageable pageable) {
+	public ApiResponseNew<List<QnaResponse>> getMyQuestions(
+		@RequestParam(name = "sort", required = false, defaultValue = "CREATED_AT_DESC") PageSort sort,
+		Pageable pageable
+	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
-		Page<QuestionMyItemResponse> page = qnaService.getMyQuestions(memberId, pageable);
+		Page<QnaResponse> page = qnaService.getMyQuestions(memberId, sort, pageable);
 		return PageResponsesNew.of(page);
 	}
 
-	@GetMapping("/members/me/received-questions")
-	public ApiResponseNew<List<QuestionReceivedItemResponse>> getReceivedQuestions(Pageable pageable) {
-		Long memberId = SecurityUtil.getCurrentMemberId();
-		Page<QuestionReceivedItemResponse> page = qnaService.getReceivedQuestions(memberId, pageable);
-		return PageResponsesNew.of(page);
-	}
-
+	// 전공자: 내가 작성한 답변 목록(질문과 함께)
 	@GetMapping("/members/me/answers")
-	public ApiResponseNew<java.util.List<MyAnswerItemResponse>> getMyAnswers(Pageable pageable) {
+	public ApiResponseNew<List<QnaResponse>> getMyAnswers(
+		@RequestParam(name = "sort", required = false, defaultValue = "CREATED_AT_DESC") PageSort sort,
+		Pageable pageable
+	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
-		Page<MyAnswerItemResponse> page = qnaService.getMyAnswers(memberId, pageable);
+		Page<QnaResponse> page = qnaService.getMyAnswers(memberId, sort, pageable);
+		return PageResponsesNew.of(page);
+	}
+
+	// 공개 프로필: 특정 전공자에게 작성된 질문/답변 목록
+	@GetMapping("/majors/{majorId}/qna")
+	public ApiResponseNew<List<PublicQnaResponse>> getMajorPublicQnA(
+		@PathVariable Long majorId,
+		@RequestParam(name = "sort", required = false, defaultValue = "CREATED_AT_DESC") PageSort sort,
+		Pageable pageable
+	) {
+		Page<PublicQnaResponse> page = qnaService.getMajorPublicQnA(majorId, sort, pageable);
 		return PageResponsesNew.of(page);
 	}
 

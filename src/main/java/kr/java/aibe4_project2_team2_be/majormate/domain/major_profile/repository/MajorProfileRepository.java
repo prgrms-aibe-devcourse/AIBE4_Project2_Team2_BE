@@ -61,4 +61,54 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 		"WHERE l.majorProfile.majorProfileId IN :ids " +
 		"GROUP BY l.majorProfile.majorProfileId")
 	List<Object[]> countLikesByProfileIds(@Param("ids") List<Long> ids);
+
+	// 통합 검색 (닉네임, 학교, 학과)
+	@Query(value = "SELECT p FROM MajorProfile p " +
+		"JOIN FETCH p.memberProfile mp " +
+		"JOIN FETCH mp.academic ma " +
+		"LEFT JOIN MajorProfileLike l ON p.majorProfileId = l.majorProfile.majorProfileId " +
+		"LEFT JOIN MajorProfileLike myLike ON p.majorProfileId = myLike.majorProfile.majorProfileId AND myLike.memberId = :memberId " +
+		"WHERE p.isActive = true " +
+		"AND (LOWER(mp.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+		"OR LOWER(ma.university) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+		"OR LOWER(ma.major) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+		"GROUP BY p.majorProfileId " +
+		"ORDER BY COUNT(l) DESC, " +
+		"CASE WHEN COUNT(myLike) > 0 THEN 1 ELSE 0 END DESC, " +
+		"p.createdAt DESC",
+		countQuery = "SELECT count(DISTINCT p) FROM MajorProfile p " +
+			"JOIN p.memberProfile mp " +
+			"JOIN mp.academic ma " +
+			"WHERE p.isActive = true " +
+			"AND (LOWER(mp.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+			"OR LOWER(ma.university) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+			"OR LOWER(ma.major) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+	Page<MajorProfile> findAllActiveWithAcademicByAllSearch(
+		Pageable pageable,
+		@Param("memberId") Long memberId,
+		@Param("keyword") String keyword
+	);
+
+	// 태그 검색
+	@Query(value = "SELECT p FROM MajorProfile p " +
+		"JOIN FETCH p.memberProfile mp " +
+		"JOIN FETCH mp.academic ma " +
+		"JOIN p.tags t " +
+		"LEFT JOIN MajorProfileLike l ON p.majorProfileId = l.majorProfile.majorProfileId " +
+		"LEFT JOIN MajorProfileLike myLike ON p.majorProfileId = myLike.majorProfile.majorProfileId AND myLike.memberId = :memberId " +
+		"WHERE p.isActive = true " +
+		"AND LOWER(t.tagName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+		"GROUP BY p.majorProfileId " +
+		"ORDER BY COUNT(l) DESC, " +
+		"CASE WHEN COUNT(myLike) > 0 THEN 1 ELSE 0 END DESC, " +
+		"p.createdAt DESC",
+		countQuery = "SELECT count(DISTINCT p) FROM MajorProfile p " +
+			"JOIN p.tags t " +
+			"WHERE p.isActive = true " +
+			"AND LOWER(t.tagName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+	Page<MajorProfile> findAllActiveWithAcademicByTag(
+		Pageable pageable,
+		@Param("memberId") Long memberId,
+		@Param("keyword") String keyword
+	);
 }

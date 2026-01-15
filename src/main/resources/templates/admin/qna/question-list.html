@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>문의 관리</title>
+    <style>
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #f4f4f4; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.9em; }
+        .status-done { background-color: #e6f7ff; color: #1890ff; }
+        .status-wait { background-color: #fff7e6; color: #fa8c16; }
+        .pagination { margin-top: 20px; text-align: center; }
+        .left-align { text-align: left; }
+        .btn { padding: 5px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; border: none; font-size: 0.9em; }
+        .btn-view { background-color: #007bff; color: white; }
+        .btn-delete { background-color: #dc3545; color: white; }
+    </style>
+    <script>
+        function confirmDelete() {
+            return confirm("정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <h2>문의 관리</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>내용 (미리보기)</th>
+            <th>질문자(학생)</th>
+            <th>대상(전공자)</th>
+            <th>작성일</th>
+            <th>상태</th>
+            <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="question : ${questions.content}">
+            <td th:text="${question.questionId}">1</td>
+            <td class="left-align">
+                <a th:href="@{/admin/qna/{id}(id=${question.questionId})}"
+                   th:text="${question.contentPreview}">문의 내용...</a>
+            </td>
+            <td th:text="${question.studentName}">학생1</td>
+            <td th:text="${question.majorName}">전공자1</td>
+            <td th:text="${#temporals.format(question.createdAt, 'yyyy-MM-dd HH:mm')}">2026-01-01</td>
+            <td>
+                <span th:if="${question.hasAnswer}" class="status-badge status-done">답변완료</span>
+                <span th:unless="${question.hasAnswer}" class="status-badge status-wait">답변대기</span>
+            </td>
+            <td>
+                <a th:href="@{/admin/qna/{id}(id=${question.questionId})}" class="btn btn-view">상세</a>
+            </td>
+        </tr>
+        <tr th:if="${questions.totalElements == 0}">
+            <td colspan="7">등록된 문의가 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" th:if="${questions.totalPages > 0}">
+        <span th:each="pageNumber : ${#numbers.sequence(0, questions.totalPages - 1)}">
+            <a th:href="@{/admin/qna(page=${pageNumber})}"
+               th:text="${pageNumber + 1}"
+               th:style="${pageNumber == questions.number} ? 'font-weight:bold; color:blue;' : ''">1</a>
+        </span>
+    </div>
+</div>
+</body>
+</html>

@@ -1,81 +1,66 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <title>리뷰 관리</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background-color: #f4f4f4; }
-        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
-        .search-container { text-align: right; margin-bottom: 10px; }
-        .pagination { display: flex; justify-content: center; list-style: none; margin-top: 20px; padding: 0; }
-        .pagination li { margin: 0 5px; }
-        .pagination a { padding: 5px 10px; border: 1px solid #ddd; text-decoration: none; color: black; }
-        .pagination a.active { background-color: #007bff; color: white; border-color: #007bff; }
-    </style>
+    <meta charset="UTF-8">
+    <title>관리자 - 후기 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 
-<h2>💬 리뷰 관리</h2>
+<div class="container mt-5">
+    <h2>후기 관리</h2>
+    <hr>
 
-<div class="search-container">
-    <form method="get">
-        <input type="text" name="keyword" th:value="${keyword}" placeholder="내용 검색..." style="padding: 5px;">
-        <button type="submit" style="padding: 6px;">🔍 검색</button>
-        <a th:if="${keyword != null and keyword != ''}" th:href="@{/admin/reviews}" style="margin-left:5px; text-decoration:none;">🔄 초기화</a>
-    </form>
-</div>
+    <table class="table table-hover table-bordered text-center">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>학생 이름</th>
+            <th>전공 이름</th>
+            <th>평점</th>
+            <th>내용 (요약)</th>
+            <th>작성일</th>
+            <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${reviews.empty}">
+            <td colspan="7">등록된 후기가 없습니다.</td>
+        </tr>
 
-<table>
-    <thead>
-    <tr>
-        <th style="width: 50px;">ID</th>
-        <th style="width: 80px;">인터뷰ID</th>
-        <th style="width: 60px;">별점</th>
-        <th>내용</th>
-        <th style="width: 150px;">작성일</th>
-        <th style="width: 80px;">관리</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="review : ${reviews.content}">
-        <td th:text="${review.id}">1</td>
-        <td>
-            <span th:text="${review.interviewId}" style="color: #666; font-size: 0.9em;">#101</span>
-        </td>
-        <td th:text="${review.rating}">5</td>
-        <td th:text="${review.content}" style="text-align: left;">리뷰 내용입니다.</td>
-        <td th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}">2026-01-13</td>
-        <td>
-            <form th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post"
-                  onsubmit="return confirm('정말 이 리뷰를 삭제하시겠습니까?');">
-                <button type="submit" class="btn-delete">삭제</button>
-            </form>
-        </td>
-    </tr>
-    <tr th:if="${reviews.totalElements == 0}">
-        <td colspan="6">등록된 리뷰가 없습니다.</td>
-    </tr>
-    </tbody>
-</table>
+        <tr th:each="review : ${reviews}">
+            <td th:text="${review.reviewId}">1</td>
+            <td th:text="${review.studentName}">형민</td>
+            <td th:text="${review.majorName}">AI학과</td>
+            <td>
+                <span th:text="${review.rating}">5</span> / 5
+            </td>
+            <td class="text-start">
+                <span th:if="${#strings.length(review.content) > 20}"
+                      th:text="${#strings.substring(review.content, 0, 20) + '...'}"></span>
+                <span th:unless="${#strings.length(review.content) > 20}"
+                      th:text="${review.content}"></span>
+            </td>
+            <td th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01</td>
+            <td>
+                <a th:href="@{/admin/reviews/{id}(id=${review.reviewId})}"
+                   class="btn btn-sm btn-primary">상세</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
-<div th:if="${reviews.totalPages > 0}">
-    <ul class="pagination">
-        <li th:if="${!reviews.first}">
-            <a th:href="@{/admin/reviews(page=${reviews.number - 1}, keyword=${keyword})}">« 이전</a>
-        </li>
-        <li th:each="pageNum : ${#numbers.sequence(0, reviews.totalPages - 1)}"
-            th:if="${pageNum >= reviews.number - 5 and pageNum <= reviews.number + 5}">
-            <a th:href="@{/admin/reviews(page=${pageNum}, keyword=${keyword})}"
-               th:text="${pageNum + 1}"
-               th:classappend="${pageNum == reviews.number} ? 'active'">1</a>
-        </li>
-        <li th:if="${!reviews.last}">
-            <a th:href="@{/admin/reviews(page=${reviews.number + 1}, keyword=${keyword})}">다음 »</a>
-        </li>
-    </ul>
+    <div th:if="${reviews.totalPages > 0}" class="d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, reviews.totalPages)}"
+                    th:classappend="${pageNumber == reviews.number + 1} ? 'active'">
+                    <a class="page-link" th:href="@{/admin/reviews(page=${pageNumber - 1})}"
+                       th:text="${pageNumber}">1</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </div>
 
 </body>

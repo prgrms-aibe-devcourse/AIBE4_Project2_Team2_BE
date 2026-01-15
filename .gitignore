@@ -47,3 +47,6 @@ out/
 
 #마이그레이션
 *.py
+
+### Claude temporary files ###
+tmpclaude-*

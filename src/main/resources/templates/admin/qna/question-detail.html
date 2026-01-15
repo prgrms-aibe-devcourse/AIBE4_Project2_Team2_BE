@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>문의 상세 정보</title>
+    <style>
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        .section h3 { margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .info-row { display: flex; margin-bottom: 10px; }
+        .label { width: 120px; font-weight: bold; color: #555; }
+        .content-box { background-color: #f9f9f9; padding: 15px; border-radius: 4px; min-height: 100px; white-space: pre-wrap; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; color: white; display: inline-block; }
+        .btn-list { background-color: #6c757d; }
+        .btn-delete { background-color: #dc3545; }
+        .action-bar { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .no-answer { color: #888; font-style: italic; padding: 20px; text-align: center; background-color: #f9f9f9; border-radius: 4px; }
+    </style>
+    <script>
+        function confirmDelete() {
+            return confirm("정말 이 문의를 삭제하시겠습니까? (관련 답변도 함께 삭제됩니다)");
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <h2>문의 상세 정보</h2>
+
+    <div class="section">
+        <h3>질문 내용</h3>
+        <div class="info-row">
+            <span class="label">질문자 (학생)</span>
+            <span th:text="${question.studentName}">학생1</span>
+        </div>
+        <div class="info-row">
+            <span class="label">대상 (전공자)</span>
+            <span th:text="${question.majorName}">전공자1</span>
+        </div>
+        <div class="info-row">
+            <span class="label">작성일</span>
+            <span th:text="${#temporals.format(question.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-15</span>
+        </div>
+        <div class="content-box" th:text="${question.content}">
+            질문 내용이 여기에 들어갑니다.
+        </div>
+    </div>
+
+    <div class="section" th:if="${question.hasAnswer}">
+        <h3>답변 내용</h3>
+        <div class="info-row">
+            <span class="label">답변일</span>
+            <span th:text="${#temporals.format(question.answerCreatedAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-16</span>
+        </div>
+        <div class="content-box" th:text="${question.answerContent}" style="background-color: #e6f7ff;">
+            답변 내용입니다.
+        </div>
+    </div>
+
+    <div class="section" th:unless="${question.hasAnswer}">
+        <h3>답변 내용</h3>
+        <div class="no-answer">
+            아직 답변이 등록되지 않았습니다.
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <a href="/admin/qna" class="btn btn-list">목록으로</a>
+
+        <form th:action="@{/admin/qna/{id}/delete(id=${question.questionId})}" method="post" onsubmit="return confirmDelete()">
+            <button type="submit" class="btn btn-delete">문의 삭제</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

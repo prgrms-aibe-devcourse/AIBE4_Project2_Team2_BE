@@ -147,9 +147,9 @@ public class MemberProfile extends BaseEntity {
 
 	public void grantMajorRole() {
 		assertRoleMutable();
-		if (this.role == MemberRole.MAJOR) {
+        if (this.role == MemberRole.MAJOR) {
 			throw new BusinessException(ErrorCode.MEMBER_400_INVALID_ROLE_TRANSITION);
-		}
+        }
 		this.role = MemberRole.MAJOR;
 	}
 
