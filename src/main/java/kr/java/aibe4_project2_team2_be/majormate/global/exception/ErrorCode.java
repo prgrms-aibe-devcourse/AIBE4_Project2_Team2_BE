@@ -60,6 +60,9 @@ public enum ErrorCode {
 	AUTH_400_SOCIAL_LOGIN_REQUIRED(
 		HttpStatus.BAD_REQUEST, "AUTH_400_SOCIAL_LOGIN_REQUIRED", "소셜 로그인이 필요합니다."
 	),
+	AUTH_400_USERNAME_EMAIL_MISMATCH(
+		HttpStatus.BAD_REQUEST, "AUTH_400_USERNAME_EMAIL_MISMATCH", "아이디와 이메일이 일치하지 않습니다."
+	),
 	AUTH_400_OAUTH2_EMAIL_NOT_FOUND(
 		HttpStatus.BAD_REQUEST, "AUTH_400_OAUTH2_EMAIL_NOT_FOUND", "OAuth2 제공자로부터 이메일을 받을 수 없습니다."
 	),
