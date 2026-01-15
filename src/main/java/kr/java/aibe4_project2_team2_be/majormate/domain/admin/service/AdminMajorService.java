@@ -32,7 +32,7 @@ public class AdminMajorService {
     private final MemberProfileRepository memberProfileRepository;
     private final S3FileService s3FileService;
 
-    // [공통 검색/필터 로직] - 내부적으로는 Entity를 쓰지만
+    // [공통 검색/필터 로직]
     private Page<MajorRoleRequest> searchOrFilter(List<ApplicationStatus> statuses, String searchType, String keyword, Pageable pageable) {
         if (keyword != null && !keyword.isBlank()) {
             if ("id".equals(searchType)) {
@@ -49,7 +49,6 @@ public class AdminMajorService {
         return majorRoleRequestRepository.findByApplicationStatusIn(statuses, pageable);
     }
 
-    // ★ 수정됨: 반환 타입이 Page<MajorReqDto>로 변경
     // 1-1. 전체 목록
     public Page<AdminMajorReqDto> getAllRequests(String searchType, String keyword, Pageable pageable) {
         return searchOrFilter(
@@ -89,13 +88,13 @@ public class AdminMajorService {
         MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
 
-        // 트랜잭션 안에서 DTO를 만들면 Lazy Loading 문제 없이 데이터가 다 담김
+
         return new AdminMajorReqDetailDto(request);
     }
 
     @Transactional
     public void acceptRequest(Long requestId, Long adminId) {
-        // 기존 코드 사용 (단, getRequestDetail이 DTO를 반환하므로 Entity를 다시 조회해야 함)
+
         MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
 
