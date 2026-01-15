@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>관리자 - 문의 관리</title>
+    <title>문의 관리</title>
     <style>
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -13,7 +13,15 @@
         .status-wait { background-color: #fff7e6; color: #fa8c16; }
         .pagination { margin-top: 20px; text-align: center; }
         .left-align { text-align: left; }
+        .btn { padding: 5px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; border: none; font-size: 0.9em; }
+        .btn-view { background-color: #007bff; color: white; }
+        .btn-delete { background-color: #dc3545; color: white; }
     </style>
+    <script>
+        function confirmDelete() {
+            return confirm("정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
+        }
+    </script>
 </head>
 <body>
 <div class="container">
@@ -46,7 +54,7 @@
                 <span th:unless="${question.hasAnswer}" class="status-badge status-wait">답변대기</span>
             </td>
             <td>
-                <a th:href="@{/admin/qna/{id}(id=${question.questionId})}" class="btn">상세보기</a>
+                <a th:href="@{/admin/qna/{id}(id=${question.questionId})}" class="btn btn-view">상세</a>
             </td>
         </tr>
         <tr th:if="${questions.totalElements == 0}">
