@@ -126,20 +126,25 @@ public class AuthService {
 			throw new BadRequestException(ErrorCode.AUTH_400_EMAIL_NOT_VERIFIED);
 		}
 
-		// 2. 이메일로 회원 조회
-		MemberProfile memberProfile = memberProfileRepository.findByEmail(request.getEmail())
+		// 2. 아이디로 회원 조회
+		MemberProfile memberProfile = memberProfileRepository.findByUsername(request.getUsername())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_404));
 
-		// 3. OAuth2 사용자는 비밀번호 재설정 불가
+		// 3. 아이디와 이메일이 일치하는지 확인
+		if (!memberProfile.getEmail().equals(request.getEmail())) {
+			throw new BadRequestException(ErrorCode.AUTH_400_USERNAME_EMAIL_MISMATCH);
+		}
+
+		// 4. OAuth2 사용자는 비밀번호 재설정 불가
 		if (memberProfile.isOAuth2User()) {
 			throw new BadRequestException(ErrorCode.AUTH_400_SOCIAL_LOGIN_REQUIRED);
 		}
 
-		// 4. 비밀번호 암호화 및 업데이트
+		// 5. 비밀번호 암호화 및 업데이트
 		String encodedPassword = passwordEncoder.encode(request.getNewPassword());
 		memberProfile.updatePassword(encodedPassword);
 
-		log.info("비밀번호 재설정 완료 - Email: {}", request.getEmail());
+		log.info("비밀번호 재설정 완료 - Username: {}, Email: {}", request.getUsername(), request.getEmail());
 	}
 
 	/**
