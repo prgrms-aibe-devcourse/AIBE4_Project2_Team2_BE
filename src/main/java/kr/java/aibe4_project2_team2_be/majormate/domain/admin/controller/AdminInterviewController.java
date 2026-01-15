@@ -21,7 +21,7 @@ public class AdminInterviewController {
 
     // 1. 인터뷰 목록 페이지
     @GetMapping
-    public String interviewList(Model model,
+    public String InterviewList(Model model,
                                 @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AdminInterviewDto> interviews = adminInterviewService.findAllInterviews(pageable);
         model.addAttribute("interviews", interviews);
@@ -30,7 +30,7 @@ public class AdminInterviewController {
 
     // 2. 인터뷰 상세 페이지
     @GetMapping("/{interviewId}")
-    public String interviewDetail(@PathVariable Long interviewId, Model model) {
+    public String InterviewDetail(@PathVariable Long interviewId, Model model) {
         AdminInterviewDetailDto interview = adminInterviewService.findInterviewDetail(interviewId);
         model.addAttribute("interview", interview);
         return "admin/interview/interview-detail";
@@ -38,7 +38,7 @@ public class AdminInterviewController {
 
     // 3. 인터뷰 삭제 처리
     @PostMapping("/{interviewId}/delete")
-    public String deleteInterview(@PathVariable Long interviewId) {
+    public String DeleteInterview(@PathVariable Long interviewId) {
         adminInterviewService.deleteInterview(interviewId);
         return "redirect:/admin/interviews";
     }

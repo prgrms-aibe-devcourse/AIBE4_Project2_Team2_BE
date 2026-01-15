@@ -21,7 +21,7 @@ public class AdminReviewController {
 
     // 1. 목록 화면
     @GetMapping
-    public String reviewList(Model model,
+    public String ReviewList(Model model,
                              @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AdminReviewDto> reviews = adminReviewService.findAllReviews(pageable);
         model.addAttribute("reviews", reviews);
@@ -30,7 +30,7 @@ public class AdminReviewController {
 
     // 2. 상세 화면
     @GetMapping("/{reviewId}") // URL을 깔끔하게 /detail 뺐습니다.
-    public String reviewDetail(@PathVariable Long reviewId, Model model) {
+    public String ReviewDetail(@PathVariable Long reviewId, Model model) {
         AdminReviewDetailDto review = adminReviewService.findReviewDetail(reviewId);
         model.addAttribute("review", review);
         return "admin/review/review-detail"; // HTML 파일 경로
@@ -38,7 +38,7 @@ public class AdminReviewController {
 
     // 3. 삭제 처리 (HTML 없음, 리다이렉트)
     @PostMapping("/{reviewId}/delete")
-    public String deleteReview(@PathVariable Long reviewId) {
+    public String DeleteReview(@PathVariable Long reviewId) {
         adminReviewService.deleteReview(reviewId);
         return "redirect:/admin/reviews"; // 목록으로 강제 이동
     }

@@ -21,7 +21,7 @@ public class AdminMajorController {
 
     // 1-1. 전체 목록
     @GetMapping("/requests/all")
-    public String allList(Model model,
+    public String MajorAllList(Model model,
                           @RequestParam(required = false) String searchType,
                           @RequestParam(required = false) String keyword,
                           @PageableDefault(sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -36,7 +36,7 @@ public class AdminMajorController {
 
     // 1-2. 신청 대기 목록
     @GetMapping("/requests/pending")
-    public String requestList(Model model,
+    public String MajorRequestList(Model model,
                               @RequestParam(required = false) String searchType,
                               @RequestParam(required = false) String keyword,
                               @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -50,7 +50,7 @@ public class AdminMajorController {
 
     // 1-3. 승인된 목록
     @GetMapping("/requests/accepted")
-    public String acceptedList(Model model,
+    public String MajorAcceptedList(Model model,
                                @RequestParam(required = false) String searchType,
                                @RequestParam(required = false) String keyword,
                                @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -64,7 +64,7 @@ public class AdminMajorController {
 
     // 1-4. 반려된 목록
     @GetMapping("/requests/rejected")
-    public String rejectedList(Model model,
+    public String MajorRejectedList(Model model,
                                @RequestParam(required = false) String searchType,
                                @RequestParam(required = false) String keyword,
                                @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -78,7 +78,7 @@ public class AdminMajorController {
 
     // 1-5. 자격 박탈 목록
     @GetMapping("/requests/revoked")
-    public String revokedList(Model model,
+    public String MajorRevokedList(Model model,
                               @RequestParam(required = false) String searchType,
                               @RequestParam(required = false) String keyword,
                               @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -92,7 +92,7 @@ public class AdminMajorController {
 
     // 1-6. 상세 조회
     @GetMapping("/requests/{id}")
-    public String requestDetail(@PathVariable("id") Long requestId, Model model) {
+    public String MajorRequestDetail(@PathVariable("id") Long requestId, Model model) {
         // Service가 이미 DetailDto를 줍니다.
         AdminMajorReqDetailDto detailDto = adminMajorService.getRequestDetail(requestId);
         model.addAttribute("req", detailDto);
@@ -101,7 +101,7 @@ public class AdminMajorController {
 
     // 2. 승인 처리
     @PostMapping("/requests/{id}/accept")
-    public String accept(@PathVariable Long id) {
+    public String MajorAccept(@PathVariable Long id) {
         Long adminId = 1L; // 추후 @AuthenticationPrincipal로 변경 필요
         adminMajorService.acceptRequest(id, adminId);
         return "redirect:/admin/requests/accepted";
@@ -109,7 +109,7 @@ public class AdminMajorController {
 
     // 3. 반려 처리
     @PostMapping("/requests/{id}/reject")
-    public String reject(@PathVariable Long id, @RequestParam("reason") String reason) {
+    public String MajorReject(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
         if (reason == null || reason.trim().isEmpty()) {
             return "redirect:/admin/requests/" + id;
@@ -120,7 +120,7 @@ public class AdminMajorController {
 
     // 4. 박탈 처리
     @PostMapping("/requests/{id}/revoke")
-    public String revoke(@PathVariable Long id, @RequestParam("reason") String reason) {
+    public String MajorRevoke(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
         adminMajorService.revokeMemberMajorRole(id, adminId, reason);
         return "redirect:/admin/requests/revoked";
