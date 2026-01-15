@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>문의 상세 정보</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5 mb-5" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>문의 상세</h2>
+        <span class="badge fs-6"
+              th:classappend="${!question.hasAnswer} ? 'text-bg-warning' : 'text-bg-success'"
+              th:text="${!question.hasAnswer ? '답변대기' : '답변완료'}">WAITING</span>
+    </div>
+    <hr>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <strong>질문 내용</strong>
+            <span class="float-end text-muted small">
+                작성자: <span th:text="${question.studentName}"></span>
+                → 대상: <span th:text="${question.majorName}"></span> |
+                <span th:text="${#temporals.format(question.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+            </span>
+        </div>
+        <div class="card-body">
+            <p class="card-text" th:text="${question.content}" style="white-space: pre-wrap;">질문 내용...</p>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-info" th:if="${question.hasAnswer}">
+        <div class="card-header text-bg-info text-white">
+            <strong>전공자 답변</strong>
+        </div>
+        <div class="card-body">
+            <p class="card-text" th:text="${question.answerContent}" style="white-space: pre-wrap;">답변 내용</p>
+            <hr>
+            <small class="text-muted">답변 일시: <span th:text="${#temporals.format(question.answeredAt, 'yyyy-MM-dd HH:mm')}"></span></small>
+        </div>
+    </div>
+
+    <div class="alert alert-secondary" th:unless="${question.hasAnswer}">
+        ℹ️ 아직 전공자가 답변을 등록하지 않았습니다.
+    </div>
+
+    <div class="d-flex justify-content-between mt-4">
+        <a href="/admin/qna" class="btn btn-secondary">목록으로</a>
+
+        <form th:action="@{/admin/qna/{id}/delete(id=${question.questionId})}" method="post"
+              onsubmit="return confirm('정말 이 문의를 삭제하시겠습니까?');">
+            <button type="submit" class="btn btn-danger">삭제하기</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

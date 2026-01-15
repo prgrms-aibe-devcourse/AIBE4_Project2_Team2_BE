@@ -24,9 +24,7 @@ public class AdminMajorController {
     public String allList(Model model,
                           @RequestParam(required = false) String searchType,
                           @RequestParam(required = false) String keyword,
-                          @PageableDefault(size = 10, sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
-
-        // Service가 이미 DTO로 변환해서 줍니다.
+                          @PageableDefault(sort = "requestId", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AdminMajorReqDto> requestPage = adminMajorService.getAllRequests(searchType, keyword, pageable);
 
         model.addAttribute("requests", requestPage);

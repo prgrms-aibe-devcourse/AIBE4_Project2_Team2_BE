@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 - 1:1 문의 관리 목록</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>1:1 문의 관리 목록</h2>
+    <hr>
+
+    <table class="table table-hover table-bordered text-center align-middle">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>내용 (요약)</th>
+            <th>작성자 (학생)</th>
+            <th>대상자 (전공자)</th>
+            <th>상태</th>
+            <th>작성일</th>
+            <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${questions.isEmpty()}">
+            <td colspan="7">등록된 문의가 없습니다.</td>
+        </tr>
+
+        <tr th:each="q : ${questions}">
+            <td th:text="${q.questionId}">1</td>
+            <td class="text-start">
+                <a th:href="@{/admin/qna/{id}(id=${q.questionId})}"
+                   th:text="${q.contentSummary}" class="text-decoration-none text-dark fw-bold">
+                    내용 요약...
+                </a>
+            </td>
+            <td th:text="${q.studentName}">김학생</td>
+            <td th:text="${q.majorName}">이전공</td>
+            <td>
+                <span class="badge"
+                      th:classappend="${!q.hasAnswer} ? 'text-bg-warning' : 'text-bg-success'"
+                      th:text="${!q.hasAnswer ? '답변대기' : '답변완료'}">WAITING</span>
+            </td>
+            <td th:text="${#temporals.format(q.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01</td>
+            <td>
+                <a th:href="@{/admin/qna/{id}(id=${q.questionId})}"
+                   class="btn btn-sm btn-outline-primary">보기</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${questions.totalPages > 0}" class="d-flex justify-content-center mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, questions.totalPages)}"
+                    th:classappend="${pageNumber == questions.number + 1} ? 'active'">
+                    <a class="page-link" th:href="@{/admin/qna(page=${pageNumber - 1})}"
+                       th:text="${pageNumber}">1</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+</body>
+</html>

@@ -22,7 +22,7 @@ public class AdminReviewController {
     // 1. 목록 화면
     @GetMapping
     public String reviewList(Model model,
-                             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+                             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AdminReviewDto> reviews = adminReviewService.findAllReviews(pageable);
         model.addAttribute("reviews", reviews);
         return "admin/review/review-list"; // HTML 파일 경로

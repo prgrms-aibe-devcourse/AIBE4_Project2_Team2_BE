@@ -38,5 +38,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
 	boolean existsByInterviewId(Long interviewId);
 
-    Page<Review> findAllByContentContaining(String keyword, Pageable pageable);
+
 }

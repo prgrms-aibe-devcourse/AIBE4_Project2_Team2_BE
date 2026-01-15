@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>인터뷰 상세 정보</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5 mb-5" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>인터뷰 상세 정보</h2>
+        <span class="badge fs-6"
+              th:classappend="${interview.status == 'PENDING'} ? 'text-bg-warning' :
+                             (${interview.status == 'ACCEPTED'} ? 'text-bg-primary' :
+                             (${interview.status == 'COMPLETED'} ? 'text-bg-success' : 'text-bg-secondary'))"
+              th:text="${interview.status}">PENDING</span>
+    </div>
+    <hr>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <strong>기본 정보</strong>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label text-muted small">신청자 (학생)</label>
+                    <p class="fw-bold" th:text="${interview.studentName}">김학생</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small">대상자 (전공자)</label>
+                    <p class="fw-bold" th:text="${interview.majorName}">이전공</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label text-muted small">인터뷰 방식</label>
+                    <p th:text="${interview.method}">ZOOM</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small">희망 일시</label>
+                    <p th:text="${#temporals.format(interview.preferredDatetime, 'yyyy-MM-dd HH:mm')}">2024-01-01 14:00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <strong>신청 내용</strong>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label text-muted small">제목</label>
+                <p class="fs-5" th:text="${interview.title}">제목</p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label text-muted small">질문 내용</label>
+                <div class="p-3 bg-light rounded" th:text="${interview.content}">질문 내용...</div>
+            </div>
+            <div th:if="${interview.extraDescription != null}">
+                <label class="form-label text-muted small">추가 요청사항</label>
+                <div class="p-3 bg-light rounded" th:text="${interview.extraDescription}">없음</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-info" th:if="${interview.majorMessage != null}">
+        <div class="card-header text-bg-info text-white">
+            <strong>전공자 메시지</strong>
+        </div>
+        <div class="card-body">
+            <p class="mb-0" th:text="${interview.majorMessage}">전공자가 남긴 메시지입니다.</p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="/admin/interviews" class="btn btn-secondary">목록으로</a>
+
+        <form th:action="@{/admin/interviews/{id}/delete(id=${interview.interviewId})}" method="post"
+              onsubmit="return confirm('⚠️ 주의: 이 인터뷰 정보를 삭제하면 복구할 수 없습니다.\n정말 삭제하시겠습니까?');">
+            <button type="submit" class="btn btn-danger">강제 삭제</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
