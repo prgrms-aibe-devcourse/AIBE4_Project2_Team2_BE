@@ -65,7 +65,7 @@ public class InterviewFormService {
 		// APPLIED
 		// reviewed=false는 "COMPLETED인데 리뷰 없음" 필터로만 사용하도록 제약
 		if (reviewed != null) {
-			if (Boolean.FALSE.equals(reviewed)) {
+			if (!reviewed) {
 				if (status != InterviewFormStatus.COMPLETED) {
 					throw new BusinessException(ErrorCode.COMMON_400);
 				}
