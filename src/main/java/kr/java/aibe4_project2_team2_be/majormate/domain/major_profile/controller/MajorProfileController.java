@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.request.MajorProfileCreateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.LikeToggleResponse;
@@ -28,9 +30,11 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/major-profiles")
 @RequiredArgsConstructor
+@Tag(name = "Major Profile", description = "전공자 프로필 API")
 public class MajorProfileController {
 	private final MajorProfileService majorProfileService;
 
+	@Operation(summary = "전공자 프로필 생성", description = "전공자 프로필을 생성합니다.")
 	@PostMapping
 	public ApiResponseNew<Long> createProfile(
 		@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
@@ -41,6 +45,7 @@ public class MajorProfileController {
 		return ApiResponseNew.success(profileId);
 	}
 
+	@Operation(summary = "전공자 프로필 수정", description = "전공자 프로필을 수정합니다.")
 	@PatchMapping
 	public ApiResponseNew<Void> updateProfile(@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
 	) {
@@ -50,6 +55,7 @@ public class MajorProfileController {
 		return ApiResponseNew.success(null);
 	}
 
+	@Operation(summary = "내 전공자 프로필 조회", description = "자신의 전공자 프로필을 조회합니다.")
 	@GetMapping("/me")
 	public ApiResponseNew<MajorProfileResponse> getMyProfile() {
 		Long memberId = SecurityUtil.getCurrentMemberId();
@@ -62,6 +68,7 @@ public class MajorProfileController {
 		return ApiResponseNew.success(response);
 	}
 
+	@Operation(summary = "전공자 프로필 활성/비활성화", description = "전공자 프로필의 활성 상태를 토글합니다.")
 	@PatchMapping("/status")
 	public ApiResponseNew<Void> toggleProfileActive() {
 		Long memberId = SecurityUtil.getCurrentMemberId();
@@ -70,6 +77,7 @@ public class MajorProfileController {
 		return ApiResponseNew.success(null);
 	}
 
+	@Operation(summary = "전공자 프로필 목록 조회", description = "전공자 프로필 목록을 조회합니다. (검색 및 페이징 지원)")
 	@GetMapping
 	public ApiResponseNew<Page<MajorCardResponse>> getMajorCards(
 		@RequestParam(required = false) String searchType,
@@ -79,12 +87,14 @@ public class MajorProfileController {
 		return ApiResponseNew.success(majorProfileService.getMajorCards(searchType, keyword ,pageable));
 	}
 
+	@Operation(summary = "전공자 프로필 상세 조회", description = "특정 전공자 프로필의 상세 정보를 조회합니다.")
 	@GetMapping("/{profileId}")
 	public ApiResponseNew<MajorProfileResponse> getMajorCardDetail(@PathVariable Long profileId) {
 		MajorProfileResponse response = majorProfileService.getMajorCardDetail(profileId);
 		return ApiResponseNew.success(response);
 	}
 
+	@Operation(summary = "전공자 프로필 좋아요 토글", description = "전공자 프로필에 좋아요를 누르거나 취소합니다.")
 	@PostMapping("/{profileId}/likes")
 	public ApiResponseNew<LikeToggleResponse> toggleLike(@PathVariable Long profileId) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
