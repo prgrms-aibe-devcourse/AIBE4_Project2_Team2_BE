@@ -1,18 +1,18 @@
-package kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew;
+package kr.java.aibe4_project2_team2_be.majormate.global.common.response;
 
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 
-public final class PageResponsesNew {
+public final class PageResponses {
 
-	private PageResponsesNew() {
+	private PageResponses() {
 	}
 
-	public static <T> ApiResponseNew<List<T>> of(Page<T> page) {
-		return ApiResponseNew.success(
+	public static <T> ApiResponse<List<T>> of(Page<T> page) {
+		return ApiResponse.success(
 			page.getContent(),
-			PageMetaNew.of(
+			PageMeta.of(
 				page.getNumber(),
 				page.getSize(),
 				page.getTotalElements(),
@@ -25,11 +25,11 @@ public final class PageResponsesNew {
 		);
 	}
 
-	public static <T> ApiResponseNew<List<T>> of(Page<T> page, Object extraMeta) {
-		return ApiResponseNew.success(
+	public static <T> ApiResponse<List<T>> of(Page<T> page, Object extraMeta) {
+		return ApiResponse.success(
 			page.getContent(),
 			new CombinedMetaNew(
-				PageMetaNew.of(
+				PageMeta.of(
 					page.getNumber(),
 					page.getSize(),
 					page.getTotalElements(),
@@ -44,6 +44,6 @@ public final class PageResponsesNew {
 		);
 	}
 
-	public record CombinedMetaNew(PageMetaNew page, Object extra) {
+	public record CombinedMetaNew(PageMeta page, Object extra) {
 	}
 }

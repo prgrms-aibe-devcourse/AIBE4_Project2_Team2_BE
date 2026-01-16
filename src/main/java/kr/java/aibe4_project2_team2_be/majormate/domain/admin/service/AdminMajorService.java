@@ -1,7 +1,6 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.admin.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.AdminMajorReqDto;
 import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.AdminMajorReqDetailDto;
 import kr.java.aibe4_project2_team2_be.majormate.domain.admin.dto.response.AdminMajorReqDto;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
@@ -17,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -31,6 +32,10 @@ public class AdminMajorService {
     private final MajorRoleRequestRepository majorRoleRequestRepository;
     private final MemberProfileRepository memberProfileRepository;
     private final S3FileService s3FileService;
+
+    // ... (검색/필터/조회 메소드 생략 - 기존과 동일) ...
+    // getAllRequests, getPendingRequests 등은 그대로 두시면 됩니다.
+    // 여기서는 핵심 로직인 acceptRequest를 중심으로 수정합니다.
 
     // [공통 검색/필터 로직]
     private Page<MajorRoleRequest> searchOrFilter(List<ApplicationStatus> statuses, String searchType, String keyword, Pageable pageable) {
@@ -49,15 +54,13 @@ public class AdminMajorService {
         return majorRoleRequestRepository.findByApplicationStatusIn(statuses, pageable);
     }
 
-    // 1-1. 전체 목록
     public Page<AdminMajorReqDto> getAllRequests(String searchType, String keyword, Pageable pageable) {
         return searchOrFilter(
                 List.of(ApplicationStatus.PENDING, ApplicationStatus.RESUBMITTED, ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED, ApplicationStatus.REVOKED),
                 searchType, keyword, pageable
-        ).map(AdminMajorReqDto::new); // 여기서 DTO로 변환!
+        ).map(AdminMajorReqDto::new);
     }
 
-    // 1-2. 대기 목록
     public Page<AdminMajorReqDto> getPendingRequests(String searchType, String keyword, Pageable pageable) {
         return searchOrFilter(
                 List.of(ApplicationStatus.PENDING, ApplicationStatus.RESUBMITTED),
@@ -65,30 +68,21 @@ public class AdminMajorService {
         ).map(AdminMajorReqDto::new);
     }
 
-    // 1-3. 승인된 목록
     public Page<AdminMajorReqDto> getAcceptedRequests(String searchType, String keyword, Pageable pageable) {
-        return searchOrFilter(Collections.singletonList(ApplicationStatus.ACCEPTED), searchType, keyword, pageable)
-                .map(AdminMajorReqDto::new);
+        return searchOrFilter(Collections.singletonList(ApplicationStatus.ACCEPTED), searchType, keyword, pageable).map(AdminMajorReqDto::new);
     }
 
-    // 1-4. 반려된 목록
     public Page<AdminMajorReqDto> getRejectedRequests(String searchType, String keyword, Pageable pageable) {
-        return searchOrFilter(Collections.singletonList(ApplicationStatus.REJECTED), searchType, keyword, pageable)
-                .map(AdminMajorReqDto::new);
+        return searchOrFilter(Collections.singletonList(ApplicationStatus.REJECTED), searchType, keyword, pageable).map(AdminMajorReqDto::new);
     }
 
-    // 1-5. 자격 박탈 목록
     public Page<AdminMajorReqDto> getRevokedRequests(String searchType, String keyword, Pageable pageable) {
-        return searchOrFilter(Collections.singletonList(ApplicationStatus.REVOKED), searchType, keyword, pageable)
-                .map(AdminMajorReqDto::new);
+        return searchOrFilter(Collections.singletonList(ApplicationStatus.REVOKED), searchType, keyword, pageable).map(AdminMajorReqDto::new);
     }
 
-    // 1-6. 상세 조회
     public AdminMajorReqDetailDto getRequestDetail(Long requestId) {
         MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
-
-
         return new AdminMajorReqDetailDto(request);
     }
 
@@ -107,18 +101,44 @@ public class AdminMajorService {
         }
 
         String originalUrl = request.getDocumentUrl();
+        String newUrl = originalUrl;
+
+        // 1. 파일 이동 (transferFile 사용)
         if (originalUrl != null && !originalUrl.isBlank()) {
-            String extension = "";
-            if (originalUrl.contains(".")) {
-                extension = originalUrl.substring(originalUrl.lastIndexOf("."));
+            try {
+                String extension = "";
+                if (originalUrl.contains(".")) {
+                    extension = originalUrl.substring(originalUrl.lastIndexOf("."));
+                }
+                String newKey = "major/" + request.getMemberProfile().getMemberId() + "/" + UUID.randomUUID() + extension;
+
+                // [수정] copyFile -> transferFile (다운로드 후 업로드)
+                newUrl = s3FileService.transferFile(originalUrl, newKey);
+                request.updateDocumentUrl(newUrl);
+
+            } catch (Exception e) {
+                // 파일 이동 실패 시 로그만 남기고 승인 처리는 계속 진행 (마이그레이션 과도기 대응)
+                System.err.println("파일 이동 실패 (승인은 진행됨): " + e.getMessage());
             }
-            String newKey = "major/" + request.getMemberProfile().getMemberId() + "/" + UUID.randomUUID() + extension;
-            String newUrl = s3FileService.moveFile(originalUrl, newKey);
-            request.updateDocumentUrl(newUrl);
         }
 
+        // 2. DB 업데이트
         request.accept(admin);
         request.getMemberProfile().grantMajorRole();
+
+        // 3. 트랜잭션 커밋 후 원본 삭제
+        if (!newUrl.equals(originalUrl)) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        s3FileService.delete(originalUrl);
+                    } catch (Exception e) {
+                        System.err.println("원본 파일 삭제 실패 (무시됨): " + originalUrl);
+                    }
+                }
+            });
+        }
     }
 
     @Transactional

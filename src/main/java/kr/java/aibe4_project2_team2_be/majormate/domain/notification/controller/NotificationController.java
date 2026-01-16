@@ -1,23 +1,26 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.notification.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.event.NotificationEvent;
-import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.response.NotificationResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.notification.service.NotificationService;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j; // 로그용
+import java.util.List;
+
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.List;
+import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.response.NotificationResponse;
+import kr.java.aibe4_project2_team2_be.majormate.domain.notification.service.NotificationService;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController

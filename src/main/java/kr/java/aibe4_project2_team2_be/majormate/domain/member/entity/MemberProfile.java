@@ -153,6 +153,9 @@ public class MemberProfile extends BaseEntity {
 		this.role = MemberRole.MAJOR;
 	}
 
+    public void grantAdminRole() {
+        this.role = MemberRole.ADMIN;
+    }
 	public void revokeMajorRole() {
 		assertRoleMutable();
 		if (this.role == MemberRole.STUDENT) {

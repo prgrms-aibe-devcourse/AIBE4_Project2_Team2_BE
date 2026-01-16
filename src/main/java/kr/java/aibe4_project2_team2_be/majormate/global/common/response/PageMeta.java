@@ -1,9 +1,9 @@
-package kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew;
+package kr.java.aibe4_project2_team2_be.majormate.global.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record PageMetaNew(
+public record PageMeta(
 	int page,
 	int size,
 	long totalElements,
@@ -13,7 +13,7 @@ public record PageMetaNew(
 	boolean hasNext,
 	boolean hasPrevious
 ) {
-	public static PageMetaNew of(
+	public static PageMeta of(
 		int page,
 		int size,
 		long totalElements,
@@ -23,6 +23,6 @@ public record PageMetaNew(
 		boolean hasNext,
 		boolean hasPrevious
 	) {
-		return new PageMetaNew(page, size, totalElements, totalPages, first, last, hasNext, hasPrevious);
+		return new PageMeta(page, size, totalElements, totalPages, first, last, hasNext, hasPrevious);
 	}
 }

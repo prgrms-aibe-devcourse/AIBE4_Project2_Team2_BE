@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>문의 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .qna-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         th { background-color: #f4f4f4; }
@@ -13,18 +14,16 @@
         .status-wait { background-color: #fff7e6; color: #fa8c16; }
         .pagination { margin-top: 20px; text-align: center; }
         .left-align { text-align: left; }
-        .btn { padding: 5px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; border: none; font-size: 0.9em; }
-        .btn-view { background-color: #007bff; color: white; }
-        .btn-delete { background-color: #dc3545; color: white; }
+        .custom-btn { padding: 5px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; border: none; font-size: 0.9em; color:white;}
+        .btn-view { background-color: #007bff; }
+        .btn-delete { background-color: #dc3545; }
     </style>
-    <script>
-        function confirmDelete() {
-            return confirm("정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
-        }
-    </script>
 </head>
 <body>
-<div class="container">
+
+<nav th:replace="~{admin/fragments/header :: headerFragment}"></nav>
+
+<div class="container qna-container">
     <h2>문의 관리</h2>
 
     <table>
@@ -54,7 +53,7 @@
                 <span th:unless="${question.hasAnswer}" class="status-badge status-wait">답변대기</span>
             </td>
             <td>
-                <a th:href="@{/admin/qna/{id}(id=${question.questionId})}" class="btn btn-view">상세</a>
+                <a th:href="@{/admin/qna/{id}(id=${question.questionId})}" class="custom-btn btn-view">상세</a>
             </td>
         </tr>
         <tr th:if="${questions.totalElements == 0}">
@@ -71,5 +70,6 @@
         </span>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
