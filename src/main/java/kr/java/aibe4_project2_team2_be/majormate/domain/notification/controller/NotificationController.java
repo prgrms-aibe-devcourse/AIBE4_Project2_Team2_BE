@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.event.NotificationEvent;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.response.NotificationResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.service.NotificationService;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j; // 로그용
 import org.springframework.context.ApplicationEventPublisher;
@@ -60,18 +60,18 @@ public class NotificationController {
         return notificationService.subscribe(memberId);
     }
     @GetMapping("/unread")
-    public ApiResponse<List<NotificationResponse>> getUnreadNotifications(@AuthenticationPrincipal Object principal) {
+    public ApiResponseNew<List<NotificationResponse>> getUnreadNotifications(@AuthenticationPrincipal Object principal) {
         Long memberId = getMemberId(principal);
 
         List<NotificationResponse> responses = notificationService.getUnreadNotifications(memberId);
-        return ApiResponse.success(responses);
+        return ApiResponseNew.success(responses);
     }
 
     // 3. 알림 읽음 처리
     @PatchMapping("/{id}/read")
     public ResponseEntity<?> readNotification(@PathVariable Long id) {
         notificationService.readNotification(id);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.ok(ApiResponseNew.success(null));
     }
 
     // 테스트용 전송 API
