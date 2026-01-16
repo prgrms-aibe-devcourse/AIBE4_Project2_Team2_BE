@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.event.NotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +44,7 @@ public class ReviewService {
 	private final InterviewMajorSnapshotRepository interviewMajorSnapshotRepository;
 
 	private final MemberInfoReader memberInfoReader;
+    private final ApplicationEventPublisher eventPublisher; // 알림기능 추가를 위한 이벤트 퍼블리셔 주입
 
 	@Transactional(readOnly = true)
 	public Page<ReviewResponse> getMyReviews(
@@ -131,6 +134,14 @@ public class ReviewService {
 
 		Review saved = reviewRepository.save(Review.create(interviewId, request.rating(), request.content()));
 		InterviewMajorSnapshot major = getMajorSnapshotOrInternalError(interviewId);
+
+        eventPublisher.publishEvent(new NotificationEvent(
+                form.getMajorMemberId(),          // 받는 사람 : 멘토
+                memberId,            // 보낸 사람 : 학생(신청자)
+                "REVIEW_CREATED",    // 타입
+                "새로운 리뷰가 등록되었습니다.", // 알림 내용
+                "/major-profile?tab=review" // 클릭 시 이동할 URL
+        ));
 
 		return ReviewResponse.writtenDetail(saved, form, major);
 	}

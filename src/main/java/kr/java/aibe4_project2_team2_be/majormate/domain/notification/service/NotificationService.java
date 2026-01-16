@@ -1,17 +1,18 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.notification.service;
 
-import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.event.NotificationEvent;
+import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.response.NotificationResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.entity.Notification;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,7 +43,7 @@ public class NotificationService {
         return emitter;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW) //새로운 트랜젝션 시작
     public void send(Long receiverId, Long senderId, String type, String content, String url) {
 
         Notification notification = notificationRepository.save(Notification.builder()
@@ -78,15 +79,20 @@ public class NotificationService {
         }
     }
 
-    @EventListener
-    public void handleNotificationEvent(NotificationEvent event) {
-        this.send(
-                event.receiverId(),
-                event.senderId(),
-                event.type(),
-                event.content(),
-                event.url()
-        );
-        log.info("이벤트 수신 및 알림 발송 완료: {}", event.content());
+    @Transactional
+    public void readNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+
+        notification.read();
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getUnreadNotifications(Long memberId) {
+        List<Notification> notifications = notificationRepository.findAllByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(memberId);
+
+        return notifications.stream()
+                .map(NotificationResponse::from)
+                .toList();
     }
 }

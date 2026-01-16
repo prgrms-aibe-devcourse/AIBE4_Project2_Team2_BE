@@ -11,7 +11,7 @@ public record NotificationResponse(
         boolean isRead,
         LocalDateTime createdAt
 ) {
-    // Entity -> DTO 변환 메서드 (CONVENTION.md 규칙)
+    // Entity -> DTO
     public static NotificationResponse from(Notification notification) {
         return new NotificationResponse(
                 notification.getId(),
