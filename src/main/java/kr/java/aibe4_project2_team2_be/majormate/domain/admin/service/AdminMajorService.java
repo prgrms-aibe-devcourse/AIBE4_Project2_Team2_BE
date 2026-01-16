@@ -16,8 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -89,56 +87,54 @@ public class AdminMajorService {
     @Transactional
     public void acceptRequest(Long requestId, Long adminId) {
 
+        // 1. 요청 정보 및 관리자 조회
         MajorRoleRequest request = majorRoleRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("요청 정보를 찾을 수 없습니다."));
 
         MemberProfile admin = memberProfileRepository.findById(adminId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_404));
 
+        // 2. 요청 상태 검증 (PENDING 또는 RESUBMITTED 상태만 승인 가능)
         if (request.getApplicationStatus() != ApplicationStatus.PENDING &&
                 request.getApplicationStatus() != ApplicationStatus.RESUBMITTED) {
             throw new BusinessException(ErrorCode.COMMON_400);
         }
 
         String originalUrl = request.getDocumentUrl();
-        String newUrl = originalUrl;
+        String newUrl;
 
-        // 1. 파일 이동 (transferFile 사용)
+        // 3. 파일 이동 (S3 transferFile 사용)
         if (originalUrl != null && !originalUrl.isBlank()) {
             try {
                 String extension = "";
                 if (originalUrl.contains(".")) {
                     extension = originalUrl.substring(originalUrl.lastIndexOf("."));
                 }
+                // 파일 경로: major/{memberId}/{uuid}.확장자
                 String newKey = "major/" + request.getMemberProfile().getMemberId() + "/" + UUID.randomUUID() + extension;
 
                 // [수정] copyFile -> transferFile (다운로드 후 업로드)
                 newUrl = s3FileService.transferFile(originalUrl, newKey);
+
+                // 이동된 새 경로로 URL 업데이트
                 request.updateDocumentUrl(newUrl);
 
             } catch (Exception e) {
                 // 파일 이동 실패 시 로그만 남기고 승인 처리는 계속 진행 (마이그레이션 과도기 대응)
+                // log.error("파일 이동 실패: {}", e.getMessage());
                 System.err.println("파일 이동 실패 (승인은 진행됨): " + e.getMessage());
             }
         }
 
-        // 2. DB 업데이트
-        request.accept(admin);
-        request.getMemberProfile().grantMajorRole();
+        // 4. 회원 권한 변경 (전공자 등업)
+        // 주의: 여기서 MEMBER_400_INVALID_ROLE_TRANSITION 에러가 발생한다면,
+        // DB의 해당 회원 status가 이미 전공자이거나 변경 불가능한 상태인지 확인해야 합니다.
+        MemberProfile memberProfile = request.getMemberProfile();
+        memberProfile.grantMajorRole();
 
-        // 3. 트랜잭션 커밋 후 원본 삭제
-        if (!newUrl.equals(originalUrl)) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    try {
-                        s3FileService.delete(originalUrl);
-                    } catch (Exception e) {
-                        System.err.println("원본 파일 삭제 실패 (무시됨): " + originalUrl);
-                    }
-                }
-            });
-        }
+        // 5. 요청 상태 승인으로 변경 (Entity에 approve 메서드가 있다고 가정, 없으면 setter 사용)
+        request.accept(admin);
+
     }
 
     @Transactional
