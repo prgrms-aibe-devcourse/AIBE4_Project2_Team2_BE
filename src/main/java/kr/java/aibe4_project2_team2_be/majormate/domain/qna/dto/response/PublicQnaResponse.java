@@ -22,6 +22,7 @@ public record PublicQnaResponse(
 	}
 
 	public record QuestionBody(
+		Long questionId,
 		String content,
 		LocalDateTime createdAt
 	) {
@@ -47,6 +48,7 @@ public record PublicQnaResponse(
 				student.getAcademic().getMajor()
 			),
 			new QuestionBody(
+				question.getQuestionId(),
 				question.getContent(),
 				question.getCreatedAt()
 			),
