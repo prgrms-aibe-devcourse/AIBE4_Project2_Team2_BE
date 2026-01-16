@@ -18,6 +18,7 @@ public class MajorProfileResponse {
 	private String nickname;
 	private String university;
 	private String major;
+	private String profileImageUrl;
 	private String title;
 	private String content;
 	private List<String> tags;
@@ -33,6 +34,7 @@ public class MajorProfileResponse {
 			.nickname(profile.getMemberProfile().getNickname())
 			.university(academic.getUniversity())
 			.major(academic.getMajor())
+			.profileImageUrl(profile.getMemberProfile().getProfileImageUrl())
 			.title(profile.getTitle())
 			.content(profile.getContent())
 			.tags(profile.getTags().stream()
