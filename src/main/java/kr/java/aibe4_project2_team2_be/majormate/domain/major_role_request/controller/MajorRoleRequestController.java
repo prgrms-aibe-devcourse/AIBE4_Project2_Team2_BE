@@ -1,28 +1,27 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.controller;
 
+import java.util.List;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.request.RequestRejectRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.request.RoleRequestCreateRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestDetailResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestDetailResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.dto.response.RoleRequestResponse;
-import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.entity.MajorRoleRequest;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_role_request.service.MajorRoleRequestService;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
-import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtTokenProvider;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
 import kr.java.aibe4_project2_team2_be.majormate.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/major-requests")
@@ -35,45 +34,45 @@ public class MajorRoleRequestController {
 	// 1. 전공자 인증 요청 등록
 	@Operation(summary = "전공자 인증 요청 등록", description = "전공자 인증을 위한 요청을 등록합니다.")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ApiResponseNew<Long> createRequest(
+	public ApiResponse<Long> createRequest(
 		@Valid @RequestPart("request") RoleRequestCreateRequest requestDto,
 		@RequestPart("file") MultipartFile file
 	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		Long requestId = majorRoleRequestService.createRequest(memberId, requestDto, file);
-		return ApiResponseNew.success(requestId);
+		return ApiResponse.success(requestId);
 	}
 
 	// 2. 전공자 인증 요청 재제출
 	@Operation(summary = "전공자 인증 요청 재제출", description = "반려된 요청을 수정하여 재제출합니다.")
 	@PutMapping(value = "/{requestId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ApiResponseNew<Void> resubmitRequest(
+	public ApiResponse<Void> resubmitRequest(
 		@PathVariable Long requestId,
 		@Valid @RequestPart("request") RoleRequestCreateRequest requestDto,
 		@RequestPart("file") MultipartFile file
 	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		majorRoleRequestService.resubmitRequest(requestId, memberId, requestDto.getContent(), file);
-		return ApiResponseNew.success(null);
+		return ApiResponse.success(null);
 	}
 
 	@Operation(summary = "내 요청 목록 조회", description = "자신이 신청한 전공자 인증 요청 목록을 조회합니다.")
 	@GetMapping("/me")
-	public ApiResponseNew<List<RoleRequestResponse>> getMyRequests(
+	public ApiResponse<List<RoleRequestResponse>> getMyRequests(
 	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		List<RoleRequestResponse> responses = majorRoleRequestService.getMyRequests(memberId);
-		return ApiResponseNew.success(responses);
+		return ApiResponse.success(responses);
 	}
 
 	@Operation(summary = "전공자 인증 요청 상세 조회", description = "특정 전공자 인증 요청의 상세 정보를 조회합니다.")
 	@GetMapping("/{requestId}")
-	public ApiResponseNew<RoleRequestDetailResponse> MyGetRequestDetail(
+	public ApiResponse<RoleRequestDetailResponse> MyGetRequestDetail(
 		@PathVariable Long requestId
 	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		RoleRequestDetailResponse response = majorRoleRequestService.MyGetRequestDetail(requestId, memberId);
-		return ApiResponseNew.success(response);
+		return ApiResponse.success(response);
 	}
 
 }
