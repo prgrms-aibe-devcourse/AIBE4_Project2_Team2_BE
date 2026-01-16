@@ -45,4 +45,27 @@ public class MajorProfileResponse {
 			.isActive(profile.isActive())
 			.build();
 	}
+
+    public static MajorProfileResponse from(MajorProfile profile) {
+        MemberAcademic academic = profile.getMemberProfile().getAcademic();
+
+        return MajorProfileResponse.builder()
+                .id(profile.getMajorProfileId())
+                .memberId(profile.getMemberProfile().getMemberId())
+                .name(profile.getMemberProfile().getName())
+                .nickname(profile.getMemberProfile().getNickname())
+                .university(academic.getUniversity())
+                .major(academic.getMajor())
+                .profileImageUrl(profile.getMemberProfile().getProfileImageUrl())
+                .title(profile.getTitle())
+                .content(profile.getContent())
+                .tags(profile.getTags().stream()
+                        .map(MajorProfileTag::getTagName)
+                        .collect(Collectors.toList()))
+                // 추천 목록에서는 좋아요 정보를 0/false로 기본 처리 (성능 최적화)
+                .likeCount(0L)
+                .isLiked(false)
+                .isActive(profile.isActive())
+                .build();
+    }
 }

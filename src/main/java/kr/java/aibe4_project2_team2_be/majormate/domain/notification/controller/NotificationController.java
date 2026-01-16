@@ -74,14 +74,6 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponseNew.success(null));
     }
 
-    // 테스트용 전송 API
-    @PostMapping("/send-test")
-    public void sendTest(@RequestParam Long receiverId,
-                         @RequestParam String content,
-                         @RequestParam String url) { // url 추가
-        notificationService.send(receiverId, 999L, "TEST", content, url);
-    }
-
     private Long getMemberId(Object principal) {
         if (principal == null) {
             log.error(">>>> [인증 에러] Principal 객체가 NULL입니다.");
