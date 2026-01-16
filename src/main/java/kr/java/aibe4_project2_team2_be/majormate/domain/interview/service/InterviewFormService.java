@@ -165,7 +165,7 @@ public class InterviewFormService {
                     memberId,                  // 보낸 사람: 멘토
                     "INTERVIEW_ACCEPTED",      // 타입
                     "인터뷰 요청이 수락되었습니다!", // 알림 내용
-                    "/mypage" // 클릭 시 이동할 URL
+                    "/mypage?tab=applied" // 클릭 시 이동할 URL
             ));
 			return;
 		}
@@ -181,7 +181,7 @@ public class InterviewFormService {
                     memberId,                  // 보낸 사람: 멘토
                     "INTERVIEW_REJECTED",      // 타입
                     "인터뷰 요청이 거절되었습니다.", // 알림 내용
-                    "/mypage" // 클릭 시 이동할 URL
+                    "/mypage?tab=applied" // 클릭 시 이동할 URL
             ));
 			return;
 		}
@@ -194,7 +194,7 @@ public class InterviewFormService {
                     memberId,                  // 보낸 사람: 멘토
                     "INTERVIEW_COMPLETED",     // 타입
                     "인터뷰가 완료되었습니다. 리뷰를 작성해주세요!", // 알림 내용
-                    "/mypage" // 클릭 시 이동할 URL
+                    "/mypage?tab=completed" // 클릭 시 이동할 URL
             ));
 			return;
 		}

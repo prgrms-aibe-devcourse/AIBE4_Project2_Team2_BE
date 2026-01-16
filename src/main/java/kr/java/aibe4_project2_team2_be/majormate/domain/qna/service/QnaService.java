@@ -3,6 +3,8 @@ package kr.java.aibe4_project2_team2_be.majormate.domain.qna.service;
 import java.util.List;
 import java.util.Objects;
 
+import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.event.NotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +35,8 @@ public class QnaService {
 	private final QuestionRepository questionRepository;
 	private final AnswerRepository answerRepository;
 	private final MemberInfoReader memberInfoReader;
+
+    private final ApplicationEventPublisher eventPublisher; // 알림기능 추가를 위한 이벤트 퍼블리셔 주입
 
 	@Transactional(readOnly = true)
 	public Page<QnaResponse> getMyQuestions(Long studentMemberId, PageSort sort, Pageable pageable) {
@@ -108,28 +112,47 @@ public class QnaService {
 		validateQuestionRuleOrThrow(studentProfile, majorProfile);
 
 		Question saved = questionRepository.save(Question.create(studentProfile, majorProfile, request.content()));
+        eventPublisher.publishEvent(new NotificationEvent(
+                majorId,                // 받는 사람: 멘토 (전공자)
+                studentMemberId,        // 보낸 사람: 학생 (질문자)
+                "QUESTION_CREATED",     // 타입
+                "새로운 질문이 등록되었습니다.", // 알림 내용
+                "/major-profile?tab=qna" // 클릭 시 전공자 프로필의 Q&A 관리 탭으로 이동
+        ));
+
 		return new IdResponse(saved.getQuestionId());
 	}
 
-	@Transactional
-	public IdResponse createAnswer(Long majorMemberId, Long questionId, QnaRequest request) {
-		validateCreateAnswerRequestOrThrow(majorMemberId, questionId, request);
+    @Transactional
+    public IdResponse createAnswer(Long majorMemberId, Long questionId, QnaRequest request) {
+        validateCreateAnswerRequestOrThrow(majorMemberId, questionId, request);
 
-		memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
+        memberInfoReader.validateMajorRoleOrThrow(majorMemberId);
 
-		Question question = questionRepository.findById(questionId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.QNA_404_QUESTION));
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.QNA_404_QUESTION));
 
-		validateQuestionTargetMajorOrThrow(question, majorMemberId);
-		validateQuestionNotAnsweredOrThrow(question);
+        validateQuestionTargetMajorOrThrow(question, majorMemberId);
+        validateQuestionNotAnsweredOrThrow(question);
 
-		if (answerRepository.existsByQuestion_QuestionId(questionId)) {
-			throw new BusinessException(ErrorCode.QNA_409_ANSWER_ALREADY_EXISTS);
-		}
+        if (answerRepository.existsByQuestion_QuestionId(questionId)) {
+            throw new BusinessException(ErrorCode.QNA_409_ANSWER_ALREADY_EXISTS);
+        }
 
-		Answer saved = answerRepository.save(Answer.create(question, request.content()));
-		return new IdResponse(saved.getAnswerId());
-	}
+        Answer saved = answerRepository.save(Answer.create(question, request.content()));
+
+        Long studentId = question.getStudent().getMemberId();
+
+        eventPublisher.publishEvent(new NotificationEvent(
+                studentId,              // 받는 사람: 학생 (질문 작성자)
+                majorMemberId,          // 보낸 사람: 멘토 (답변 작성자)
+                "ANSWER_CREATED",       // 타입
+                "작성하신 질문에 답변이 달렸습니다.", // 알림 내용
+                "/mypage?tab=qna"       // 클릭 시 마이페이지의 Q&A 탭으로 이동
+        ));
+
+        return new IdResponse(saved.getAnswerId());
+    }
 
 	@Transactional
 	public void updateMyAnswer(Long majorMemberId, Long answerId, QnaRequest request) {
