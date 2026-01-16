@@ -17,52 +17,21 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 
 	Optional<MajorProfile> findByMemberProfile_MemberId(Long memberId);
 
-	// @Query(value = "SELECT p FROM MajorProfile p " +
-	// 	"JOIN FETCH p.memberProfile mp " +
-	// 	"JOIN FETCH mp.academic ma " +
-	// 	"LEFT JOIN MajorProfileLike l ON p.majorProfileId = l.majorProfile.majorProfileId " +
-	// 	"LEFT JOIN MajorProfileLike myLike ON p.majorProfileId = myLike.majorProfile.majorProfileId AND myLike.memberId = :memberId " +
-	// 	"WHERE p.isActive = true " +
-	// 	"GROUP BY p.majorProfileId " +
-	// 	"ORDER BY COUNT(l) DESC, " +
-	// 	"CASE WHEN COUNT(myLike) > 0 THEN 1 ELSE 0 END DESC, " +
-	// 	"p.createdAt DESC",
-	// 	countQuery = "SELECT count(p) FROM MajorProfile p WHERE p.isActive = true")
-	// Page<MajorProfile> findAllActiveWithAcademic(Pageable pageable, @Param("memberId") Long memberId);
-
-	@Query(value = "SELECT DISTINCT p FROM MajorProfile p " +
+	// 1. 전체 조회 (검색어 없음) + 정렬
+	@Query(value = "SELECT p FROM MajorProfile p " +
 		"JOIN FETCH p.memberProfile mp " +
 		"JOIN FETCH mp.academic ma " +
-		"LEFT JOIN p.tags t " +
+		"LEFT JOIN MajorProfileLike l ON p.majorProfileId = l.majorProfile.majorProfileId " +
+		"LEFT JOIN MajorProfileLike myLike ON p.majorProfileId = myLike.majorProfile.majorProfileId AND myLike.memberId = :memberId " +
 		"WHERE p.isActive = true " +
-		"AND (:keyword IS NULL OR :keyword = '' OR " +
-		"    (:searchType = 'tag' AND t.tagName = :keyword) OR " +
-		"    (:searchType <> 'tag' AND (ma.university LIKE %:keyword% OR ma.major LIKE %:keyword% OR mp.nickname LIKE %:keyword% OR p.title LIKE %:keyword%))"
-		+
-		")",
-		countQuery = "SELECT count(DISTINCT p) FROM MajorProfile p " +
-			"JOIN p.memberProfile mp " +
-			"JOIN mp.academic ma " +
-			"LEFT JOIN p.tags t " +
-			"WHERE p.isActive = true " +
-			"AND (:keyword IS NULL OR :keyword = '' OR " +
-			"    (:searchType = 'tag' AND t.tagName = :keyword) OR " +
-			"    (:searchType <> 'tag' AND (ma.university LIKE %:keyword% OR ma.major LIKE %:keyword% OR mp.nickname LIKE %:keyword% OR p.title LIKE %:keyword%))"
-			+
-			")")
-	Page<MajorProfile> searchActiveWithAcademic(
-		@Param("searchType") String searchType,
-		@Param("keyword") String keyword,
-		Pageable pageable
-	);
+		"GROUP BY p.majorProfileId " +
+		"ORDER BY COUNT(l) DESC, " +
+		"CASE WHEN COUNT(myLike) > 0 THEN 1 ELSE 0 END DESC, " +
+		"p.createdAt DESC",
+		countQuery = "SELECT count(p) FROM MajorProfile p WHERE p.isActive = true")
+	Page<MajorProfile> findAllActiveWithAcademic(Pageable pageable, @Param("memberId") Long memberId);
 
-	@Query("SELECT l.majorProfile.majorProfileId, COUNT(l) " +
-		"FROM MajorProfileLike l " +
-		"WHERE l.majorProfile.majorProfileId IN :ids " +
-		"GROUP BY l.majorProfile.majorProfileId")
-	List<Object[]> countLikesByProfileIds(@Param("ids") List<Long> ids);
-
-	// 통합 검색 (닉네임, 학교, 학과)
+	// 2. 통합 검색 (닉네임, 학교, 학과, 제목) + 정렬
 	@Query(value = "SELECT p FROM MajorProfile p " +
 		"JOIN FETCH p.memberProfile mp " +
 		"JOIN FETCH mp.academic ma " +
@@ -71,7 +40,8 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 		"WHERE p.isActive = true " +
 		"AND (LOWER(mp.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
 		"OR LOWER(ma.university) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-		"OR LOWER(ma.major) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+		"OR LOWER(ma.major) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+		"OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
 		"GROUP BY p.majorProfileId " +
 		"ORDER BY COUNT(l) DESC, " +
 		"CASE WHEN COUNT(myLike) > 0 THEN 1 ELSE 0 END DESC, " +
@@ -82,14 +52,15 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 			"WHERE p.isActive = true " +
 			"AND (LOWER(mp.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
 			"OR LOWER(ma.university) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-			"OR LOWER(ma.major) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+			"OR LOWER(ma.major) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+			"OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))")
 	Page<MajorProfile> findAllActiveWithAcademicByAllSearch(
 		Pageable pageable,
 		@Param("memberId") Long memberId,
 		@Param("keyword") String keyword
 	);
 
-	// 태그 검색
+	// 3. 태그 검색 + 정렬
 	@Query(value = "SELECT p FROM MajorProfile p " +
 		"JOIN FETCH p.memberProfile mp " +
 		"JOIN FETCH mp.academic ma " +
@@ -111,4 +82,10 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 		@Param("memberId") Long memberId,
 		@Param("keyword") String keyword
 	);
+
+	@Query("SELECT l.majorProfile.majorProfileId, COUNT(l) " +
+		"FROM MajorProfileLike l " +
+		"WHERE l.majorProfile.majorProfileId IN :ids " +
+		"GROUP BY l.majorProfile.majorProfileId")
+	List<Object[]> countLikesByProfileIds(@Param("ids") List<Long> ids);
 }

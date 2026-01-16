@@ -94,19 +94,20 @@ public class MajorProfileService {
 	@Transactional(readOnly = true)
 	public Page<MajorCardResponse> getMajorCards(String searchType, String keyword, Pageable pageable) {
 		Long currentMemberId = SecurityUtil.getCurrentMemberId();
+		Page<MajorProfile> profiles;
 
-		// 1. Fetch Join 쿼리 호출 (N+1 발생 안 함)
-		// Page<MajorProfile> profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
+		// 1. 검색 조건에 따른 쿼리 분기 (모두 정렬 로직 포함)
+		if (keyword == null || keyword.trim().isEmpty()) {
+			profiles = majorProfileRepository.findAllActiveWithAcademic(pageable, currentMemberId);
+		} else if ("tag".equalsIgnoreCase(searchType)) {
+			profiles = majorProfileRepository.findAllActiveWithAcademicByTag(pageable, currentMemberId, keyword);
+		} else {
+			profiles = majorProfileRepository.findAllActiveWithAcademicByAllSearch(pageable, currentMemberId, keyword);
+		}
 
-		Page<MajorProfile> profiles = majorProfileRepository.searchActiveWithAcademic(
-			searchType,
-			keyword,
-			pageable
-		);
-
-		// 검색 결과가 없는 경우 빈 페이지 즉시 반환 (불필요한 쿼리 방지)
+		// 검색 결과가 없는 경우 빈 페이지 즉시 반환
 		if (profiles.isEmpty()) {
-			return profiles.map(profile -> null); // 빈 페이지 반환
+			return profiles.map(profile -> null);
 		}
 
 		// 2. 좋아요 개수 일괄 조회
