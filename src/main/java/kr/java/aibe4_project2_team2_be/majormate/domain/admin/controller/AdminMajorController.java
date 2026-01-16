@@ -20,7 +20,7 @@ public class AdminMajorController {
     private final AdminMajorService adminMajorService;
 
     // 1-1. 전체 목록
-    @GetMapping("/requests/all")
+    @GetMapping("/major/requests/all")
     public String MajorAllList(Model model,
                           @RequestParam(required = false) String searchType,
                           @RequestParam(required = false) String keyword,
@@ -35,7 +35,7 @@ public class AdminMajorController {
     }
 
     // 1-2. 신청 대기 목록
-    @GetMapping("/requests/pending")
+    @GetMapping("/major/requests/pending")
     public String MajorRequestList(Model model,
                               @RequestParam(required = false) String searchType,
                               @RequestParam(required = false) String keyword,
@@ -49,7 +49,7 @@ public class AdminMajorController {
     }
 
     // 1-3. 승인된 목록
-    @GetMapping("/requests/accepted")
+    @GetMapping("/major/requests/accepted")
     public String MajorAcceptedList(Model model,
                                @RequestParam(required = false) String searchType,
                                @RequestParam(required = false) String keyword,
@@ -63,7 +63,7 @@ public class AdminMajorController {
     }
 
     // 1-4. 반려된 목록
-    @GetMapping("/requests/rejected")
+    @GetMapping("/major/requests/rejected")
     public String MajorRejectedList(Model model,
                                @RequestParam(required = false) String searchType,
                                @RequestParam(required = false) String keyword,
@@ -77,7 +77,7 @@ public class AdminMajorController {
     }
 
     // 1-5. 자격 박탈 목록
-    @GetMapping("/requests/revoked")
+    @GetMapping("/major/requests/revoked")
     public String MajorRevokedList(Model model,
                               @RequestParam(required = false) String searchType,
                               @RequestParam(required = false) String keyword,
@@ -91,7 +91,7 @@ public class AdminMajorController {
     }
 
     // 1-6. 상세 조회
-    @GetMapping("/requests/{id}")
+    @GetMapping("/major/requests/{id}")
     public String MajorRequestDetail(@PathVariable("id") Long requestId, Model model) {
         // Service가 이미 DetailDto를 줍니다.
         AdminMajorReqDetailDto detailDto = adminMajorService.getRequestDetail(requestId);
@@ -100,15 +100,15 @@ public class AdminMajorController {
     }
 
     // 2. 승인 처리
-    @PostMapping("/requests/{id}/accept")
+    @PostMapping("/major/requests/{id}/accept")
     public String MajorAccept(@PathVariable Long id) {
-        Long adminId = 1L; // 추후 @AuthenticationPrincipal로 변경 필요
+        Long adminId = 1L;
         adminMajorService.acceptRequest(id, adminId);
         return "redirect:/admin/requests/accepted";
     }
 
     // 3. 반려 처리
-    @PostMapping("/requests/{id}/reject")
+    @PostMapping("/major/requests/{id}/reject")
     public String MajorReject(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
         if (reason == null || reason.trim().isEmpty()) {
@@ -119,7 +119,7 @@ public class AdminMajorController {
     }
 
     // 4. 박탈 처리
-    @PostMapping("/requests/{id}/revoke")
+    @PostMapping("/major/requests/{id}/revoke")
     public String MajorRevoke(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
         adminMajorService.revokeMemberMajorRole(id, adminId, reason);

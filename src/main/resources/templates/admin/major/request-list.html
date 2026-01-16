@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <title>관리자 - 전공자 요청 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* 기존 스타일 유지 */
+        .content-container { padding: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         th { background-color: #f4f4f4; }
-        .btn { padding: 5px 10px; cursor: pointer; text-decoration: none; color: black; border: 1px solid #ccc; display: inline-block; background-color: #eee; }
+        .custom-btn { padding: 5px 10px; cursor: pointer; text-decoration: none; color: black; border: 1px solid #ccc; display: inline-block; background-color: #eee; }
         .nav-links { margin-bottom: 20px; }
         .nav-links a { margin-right: 15px; font-weight: bold; text-decoration: none; color: #555; }
         .nav-links a:hover { color: #000; text-decoration: underline; }
@@ -27,77 +30,82 @@
 </head>
 <body>
 
-<h2>전공자 권한 관리</h2>
+<nav th:replace="~{admin/fragments/header :: headerFragment}"></nav>
 
-<div class="nav-links">
-    <a th:href="@{/admin/requests/all}" th:classappend="${viewType == 'ALL'} ? 'active'">[전체 목록]</a>
-    <a th:href="@{/admin/requests/pending}" th:classappend="${viewType == 'PENDING,RESUBMITTED'} ? 'active'">[대기 목록]</a>
-    <a th:href="@{/admin/requests/accepted}" th:classappend="${viewType == 'ACCEPTED'} ? 'active'">[승인된 목록]</a>
-    <a th:href="@{/admin/requests/rejected}" th:classappend="${viewType == 'REJECTED'} ? 'active'">[반려된 목록]</a>
-    <a th:href="@{/admin/requests/revoked}" th:classappend="${viewType == 'REVOKED'} ? 'active'">[자격 박탈 목록]</a>
+<div class="container content-container">
+    <h2>전공자 권한 관리</h2>
+
+    <div class="nav-links">
+        <a th:href="@{/admin/major/requests/all}" th:classappend="${viewType == 'ALL' or viewType == null} ? 'active'">[전체 목록]</a>
+        <a th:href="@{/admin/major/requests/pending}" th:classappend="${viewType == 'PENDING'} ? 'active'">[대기 목록]</a>
+        <a th:href="@{/admin/major/requests/accepted}" th:classappend="${viewType == 'ACCEPTED'} ? 'active'">[승인된 목록]</a>
+        <a th:href="@{/admin/major/requests/rejected}" th:classappend="${viewType == 'REJECTED'} ? 'active'">[반려된 목록]</a>
+        <a th:href="@{/admin/major/requests/revoked}" th:classappend="${viewType == 'REVOKED'} ? 'active'">[자격 박탈 목록]</a>
+    </div>
+
+    <div class="search-container">
+        <form method="get">
+            <input type="hidden" name="viewType" th:value="${viewType}">
+            <select name="searchType">
+                <option value="name" th:selected="${searchType == 'name'}">신청자명</option>
+                <option value="id" th:selected="${searchType == 'id'}">Request No</option>
+            </select>
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어를 입력하세요">
+            <button type="submit" class="btn-search">🔍 검색</button>
+            <a th:if="${keyword != null and keyword != ''}" th:href="@{/admin/major/requests}" class="custom-btn">초기화</a>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>No</th>
+            <th>신청자</th>
+            <th>대학</th>
+            <th>전공</th>
+            <th>상태</th>
+            <th>신청일</th>
+            <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="req : ${requests.content}">
+            <td th:text="${req.id}">1</td>
+            <td th:text="${req.memberName}">홍길동</td>
+            <td th:text="${req.universityName}">서울대</td>
+            <td th:text="${req.majorName}">컴공</td>
+            <td th:text="${req.applicationStatus}" style="font-weight: bold;">PENDING</td>
+            <td th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-01-09</td>
+            <td>
+                <a th:href="@{/admin/requests/{id}(id=${req.id})}" class="custom-btn">상세보기</a>
+            </td>
+        </tr>
+        <tr th:if="${requests.totalElements == 0}">
+            <td colspan="7" style="padding: 20px; color: #666;">데이터가 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${requests.totalPages > 0}">
+        <ul class="pagination">
+            <li th:classappend="${requests.first} ? 'disabled'">
+                <a th:href="@{''(page=${requests.number - 1}, searchType=${searchType}, keyword=${keyword}, viewType=${viewType})}">« 이전</a>
+            </li>
+
+            <li th:each="pageNum : ${#numbers.sequence(0, requests.totalPages - 1)}"
+                th:if="${pageNum >= requests.number - 5 and pageNum <= requests.number + 5}">
+
+                <a th:href="@{''(page=${pageNum}, searchType=${searchType}, keyword=${keyword}, viewType=${viewType})}"
+                   th:text="${pageNum + 1}"
+                   th:classappend="${pageNum == requests.number} ? 'active'">1</a>
+            </li>
+
+            <li th:classappend="${requests.last} ? 'disabled'">
+                <a th:href="@{''(page=${requests.number + 1}, searchType=${searchType}, keyword=${keyword}, viewType=${viewType})}">다음 »</a>
+            </li>
+        </ul>
+    </div>
 </div>
-
-<div class="search-container">
-    <form method="get">
-        <select name="searchType">
-            <option value="name" th:selected="${searchType == 'name'}">신청자명</option>
-            <option value="id" th:selected="${searchType == 'id'}">Request No</option>
-        </select>
-        <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어를 입력하세요">
-        <button type="submit" class="btn btn-search">🔍 검색</button>
-        <a th:if="${keyword != null and keyword != ''}" th:href="@{''}" class="btn">초기화</a>
-    </form>
-</div>
-
-<table>
-    <thead>
-    <tr>
-        <th>No</th>
-        <th>신청자</th>
-        <th>대학</th>
-        <th>전공</th>
-        <th>상태</th>
-        <th>신청일</th>
-        <th>관리</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="req : ${requests.content}">
-        <td th:text="${req.id}">1</td>
-        <td th:text="${req.memberName}">홍길동</td>
-        <td th:text="${req.universityName}">서울대</td>
-        <td th:text="${req.majorName}">컴공</td>
-        <td th:text="${req.applicationStatus}" style="font-weight: bold;">PENDING</td>
-        <td th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-01-09</td>
-        <td>
-            <a th:href="@{/admin/requests/{id}(id=${req.id})}" class="btn">상세보기</a>
-        </td>
-    </tr>
-    <tr th:if="${requests.totalElements == 0}">
-        <td colspan="7" style="padding: 20px; color: #666;">데이터가 없습니다.</td>
-    </tr>
-    </tbody>
-</table>
-
-<div th:if="${requests.totalPages > 0}">
-    <ul class="pagination">
-        <li th:classappend="${requests.first} ? 'disabled'">
-            <a th:href="@{''(page=${requests.number - 1}, searchType=${searchType}, keyword=${keyword})}">« 이전</a>
-        </li>
-
-        <li th:each="pageNum : ${#numbers.sequence(0, requests.totalPages - 1)}"
-            th:if="${pageNum >= requests.number - 5 and pageNum <= requests.number + 5}">
-
-            <a th:href="@{''(page=${pageNum}, searchType=${searchType}, keyword=${keyword})}"
-               th:text="${pageNum + 1}"
-               th:classappend="${pageNum == requests.number} ? 'active'">1</a>
-        </li>
-
-        <li th:classappend="${requests.last} ? 'disabled'">
-            <a th:href="@{''(page=${requests.number + 1}, searchType=${searchType}, keyword=${keyword})}">다음 »</a>
-        </li>
-    </ul>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
