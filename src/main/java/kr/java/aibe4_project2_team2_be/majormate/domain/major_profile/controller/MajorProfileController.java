@@ -21,7 +21,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.respon
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorCardResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.dto.response.MajorProfileResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.major_profile.service.MajorProfileService;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 
@@ -32,63 +32,63 @@ public class MajorProfileController {
 	private final MajorProfileService majorProfileService;
 
 	@PostMapping
-	public ApiResponse<Long> createProfile(
+	public ApiResponseNew<Long> createProfile(
 		@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
 	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		Long profileId = majorProfileService.createProfile(memberId, majorProfileCreateRequest);
 
-		return ApiResponse.success(profileId);
+		return ApiResponseNew.success(profileId);
 	}
 
 	@PatchMapping
-	public ApiResponse<Void> updateProfile(@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
+	public ApiResponseNew<Void> updateProfile(@RequestBody @Valid MajorProfileCreateRequest majorProfileCreateRequest
 	) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		majorProfileService.updateProfile(memberId, majorProfileCreateRequest);
 
-		return ApiResponse.success(null);
+		return ApiResponseNew.success(null);
 	}
 
 	@GetMapping("/me")
-	public ApiResponse<MajorProfileResponse> getMyProfile() {
+	public ApiResponseNew<MajorProfileResponse> getMyProfile() {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		MajorProfileResponse response = majorProfileService.getMyProfile(memberId);
 
 		if (response == null) {
-			return ApiResponse.success(null, "프로필이 존재하지 않습니다. 프로필을 생성해주세요.");
+			return ApiResponseNew.success();
 		}
 
-		return ApiResponse.success(response);
+		return ApiResponseNew.success(response);
 	}
 
 	@PatchMapping("/status")
-	public ApiResponse<Void> toggleProfileActive() {
+	public ApiResponseNew<Void> toggleProfileActive() {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		majorProfileService.toggleProfileActive(memberId);
 
-		return ApiResponse.success(null);
+		return ApiResponseNew.success(null);
 	}
 
 	@GetMapping
-	public ApiResponse<Page<MajorCardResponse>> getMajorCards(
+	public ApiResponseNew<Page<MajorCardResponse>> getMajorCards(
 		@RequestParam(required = false) String searchType,
 		@RequestParam(required = false) String keyword,
 		@PageableDefault(size = 8, sort = "majorProfileId", direction = Sort.Direction.DESC) Pageable pageable
 	) {
-		return ApiResponse.success(majorProfileService.getMajorCards(searchType, keyword ,pageable));
+		return ApiResponseNew.success(majorProfileService.getMajorCards(searchType, keyword ,pageable));
 	}
 
 	@GetMapping("/{profileId}")
-	public ApiResponse<MajorProfileResponse> getMajorCardDetail(@PathVariable Long profileId) {
+	public ApiResponseNew<MajorProfileResponse> getMajorCardDetail(@PathVariable Long profileId) {
 		MajorProfileResponse response = majorProfileService.getMajorCardDetail(profileId);
-		return ApiResponse.success(response);
+		return ApiResponseNew.success(response);
 	}
 
 	@PostMapping("/{profileId}/likes")
-	public ApiResponse<LikeToggleResponse> toggleLike(@PathVariable Long profileId) {
+	public ApiResponseNew<LikeToggleResponse> toggleLike(@PathVariable Long profileId) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		LikeToggleResponse response = majorProfileService.toggleLike(memberId, profileId);
-		return ApiResponse.success(response);
+		return ApiResponseNew.success(response);
 	}
 }

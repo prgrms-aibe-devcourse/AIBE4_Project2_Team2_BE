@@ -30,7 +30,7 @@ import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.Signup
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.dto.response.TokenResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.service.AuthService;
 import kr.java.aibe4_project2_team2_be.majormate.domain.auth.service.EmailService;
-import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
+import kr.java.aibe4_project2_team2_be.majormate.global.common.responsenew.ApiResponseNew;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.ErrorCode;
 import kr.java.aibe4_project2_team2_be.majormate.global.exception.custom.UnauthorizedException;
 import kr.java.aibe4_project2_team2_be.majormate.global.security.jwt.JwtProperties;
@@ -51,14 +51,14 @@ public class AuthController {
 	@Operation(summary = "회원가입", description = "새로운 회원을 등록합니다.")
 	@PostMapping("/signup")
 	@ResponseStatus(HttpStatus.CREATED)
-	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
+	public ApiResponseNew<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
 		SignupResponse response = authService.signup(request);
-		return ApiResponse.success(response, "회원가입이 완료되었습니다.");
+		return ApiResponseNew.success(response);
 	}
 
 	@Operation(summary = "로그인", description = "아이디와 비밀번호로 로그인합니다.")
 	@PostMapping("/login")
-	public ApiResponse<TokenResponse> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
+	public ApiResponseNew<TokenResponse> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
 		TokenResponse tokenResponse = authService.login(request);
 
 		// Set refresh token as HttpOnly cookie
@@ -75,12 +75,12 @@ public class AuthController {
 			.expiresIn(tokenResponse.getExpiresIn())
 			.build();
 
-		return ApiResponse.success(responseWithoutTokens, "로그인 성공");
+		return ApiResponseNew.success(responseWithoutTokens);
 	}
 
 	@Operation(summary = "토큰 갱신", description = "쿠키의 RefreshToken으로 AccessToken을 갱신합니다.")
 	@PostMapping("/refresh")
-	public ApiResponse<TokenResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
+	public ApiResponseNew<TokenResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
 		// Get refresh token from cookie
 		Cookie refreshTokenCookie = CookieUtil.getCookie(request, "refreshToken")
 			.orElseThrow(() -> new UnauthorizedException(ErrorCode.AUTH_401_REFRESH_TOKEN_NOT_FOUND));
@@ -98,12 +98,12 @@ public class AuthController {
 			.expiresIn(tokenResponse.getExpiresIn())
 			.build();
 
-		return ApiResponse.success(responseWithoutTokens, "토큰 갱신 완료");
+		return ApiResponseNew.success(responseWithoutTokens);
 	}
 
 	@Operation(summary = "로그아웃", description = "로그아웃하고 RefreshToken을 무효화합니다.")
 	@PostMapping("/logout")
-	public ApiResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+	public ApiResponseNew<Void> logout(HttpServletRequest request, HttpServletResponse response) {
 		Long memberId = SecurityUtil.getCurrentMemberId();
 		authService.logout(memberId);
 
@@ -112,73 +112,73 @@ public class AuthController {
 		//엑세스토큰 쿠키도 같이 삭제하도록 추가하였습니다 ( 조현우 )
 		CookieUtil.deleteCookie(request, response, "accessToken");
 
-		return ApiResponse.success("로그아웃 되었습니다.");
+		return ApiResponseNew.success();
 	}
 
 	// ========== 이메일 인증 API ==========
 
 	@Operation(summary = "이메일 인증 코드 발송", description = "회원가입, 아이디 찾기, 비밀번호 재설정 시 이메일 인증 코드를 발송합니다. 요청 DTO에 type (SIGNUP, FIND_USERNAME, RESET_PASSWORD)을 포함해야 합니다.")
 	@PostMapping("/email/send")
-	public ApiResponse<Void> sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
+	public ApiResponseNew<Void> sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
 		emailService.sendVerificationCode(request.getEmail(), request.getType());
-		return ApiResponse.success("인증 코드가 발송되었습니다.");
+		return ApiResponseNew.success();
 	}
 
 	@Operation(summary = "이메일 인증 코드 검증", description = "발송된 이메일 인증 코드를 검증합니다. 요청 DTO에 type (SIGNUP, FIND_USERNAME, RESET_PASSWORD)을 포함해야 합니다.")
 	@PostMapping("/email/verify")
-	public ApiResponse<Void> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
+	public ApiResponseNew<Void> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
 		emailService.verifyCode(request.getEmail(), request.getCode(), request.getType());
-		return ApiResponse.success("이메일 인증이 완료되었습니다.");
+		return ApiResponseNew.success();
 	}
 
 	@Operation(summary = "아이디 찾기", description = "이메일 인증 후 아이디를 조회합니다.")
 	@PostMapping("/find-username")
-	public ApiResponse<FindUsernameResponse> findUsername(@Valid @RequestBody FindUsernameRequest request) {
+	public ApiResponseNew<FindUsernameResponse> findUsername(@Valid @RequestBody FindUsernameRequest request) {
 		FindUsernameResponse response = authService.findUsername(request.getEmail());
-		return ApiResponse.success(response, "아이디 찾기가 완료되었습니다.");
+		return ApiResponseNew.success(response);
 	}
 
 	@Operation(summary = "비밀번호 재설정", description = "이메일 인증 후 비밀번호를 재설정합니다.")
 	@PostMapping("/reset-password")
-	public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+	public ApiResponseNew<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
 		authService.resetPassword(request);
-		return ApiResponse.success("비밀번호가 재설정되었습니다.");
+		return ApiResponseNew.success();
 	}
 
 	@Operation(summary = "계정 타입 확인", description = "아이디와 이메일로 계정의 로그인 방식(소셜/일반)을 확인합니다.")
 	@PostMapping("/check-provider")
-	public ApiResponse<CheckProviderResponse> checkProvider(@Valid @RequestBody CheckProviderRequest request) {
+	public ApiResponseNew<CheckProviderResponse> checkProvider(@Valid @RequestBody CheckProviderRequest request) {
 		CheckProviderResponse response = authService.checkProvider(request);
-		return ApiResponse.success(response, "계정 타입 확인이 완료되었습니다.");
+		return ApiResponseNew.success(response);
 	}
 
 	@Operation(summary = "아이디 중복 체크", description = "회원가입 시 아이디 중복 여부를 확인합니다.")
 	@GetMapping("/check-username")
-	public ApiResponse<DuplicateCheckResponse> checkUsername(@RequestParam String username) {
+	public ApiResponseNew<DuplicateCheckResponse> checkUsername(@RequestParam String username) {
 		boolean available = authService.isUsernameAvailable(username);
 		DuplicateCheckResponse response = DuplicateCheckResponse.builder()
 			.available(available)
 			.build();
-		return ApiResponse.success(response);
+		return ApiResponseNew.success(response);
 	}
 
 	@Operation(summary = "이메일 중복 체크", description = "회원가입 시 이메일 중복 여부를 확인합니다.")
 	@GetMapping("/check-email")
-	public ApiResponse<DuplicateCheckResponse> checkEmail(@RequestParam String email) {
+	public ApiResponseNew<DuplicateCheckResponse> checkEmail(@RequestParam String email) {
 		boolean available = authService.isEmailAvailable(email);
 		DuplicateCheckResponse response = DuplicateCheckResponse.builder()
 			.available(available)
 			.build();
-		return ApiResponse.success(response);
+		return ApiResponseNew.success(response);
 	}
 
 	@Operation(summary = "닉네임 중복 체크", description = "회원가입 시 닉네임 중복 여부를 확인합니다.")
 	@GetMapping("/check-nickname")
-	public ApiResponse<DuplicateCheckResponse> checkNickname(@RequestParam String nickname) {
+	public ApiResponseNew<DuplicateCheckResponse> checkNickname(@RequestParam String nickname) {
 		boolean available = authService.isNicknameAvailable(nickname);
 		DuplicateCheckResponse response = DuplicateCheckResponse.builder()
 			.available(available)
 			.build();
-		return ApiResponse.success(response);
+		return ApiResponseNew.success(response);
 	}
 }
