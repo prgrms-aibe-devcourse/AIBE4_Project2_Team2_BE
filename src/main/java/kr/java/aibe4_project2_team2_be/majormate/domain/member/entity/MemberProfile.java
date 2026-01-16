@@ -145,16 +145,13 @@ public class MemberProfile extends BaseEntity {
 		this.status = status;
 	}
 
-	public void grantMajorRole() {
-		assertRoleMutable();
+    public void grantMajorRole() {
+        assertRoleMutable(); // ADMIN인지 체크
         if (this.role == MemberRole.MAJOR) {
-			throw new BusinessException(ErrorCode.MEMBER_400_INVALID_ROLE_TRANSITION);
+            return;
         }
-		this.role = MemberRole.MAJOR;
-	}
 
-    public void grantAdminRole() {
-        this.role = MemberRole.ADMIN;
+        this.role = MemberRole.MAJOR;
     }
 	public void revokeMajorRole() {
 		assertRoleMutable();

@@ -104,7 +104,7 @@ public class AdminMajorController {
     public String MajorAccept(@PathVariable Long id) {
         Long adminId = 1L;
         adminMajorService.acceptRequest(id, adminId);
-        return "redirect:/admin/requests/accepted";
+        return "redirect:/admin/major/requests/accepted";
     }
 
     // 3. 반려 처리
@@ -115,7 +115,7 @@ public class AdminMajorController {
             return "redirect:/admin/requests/" + id;
         }
         adminMajorService.rejectRequest(id, adminId, reason);
-        return "redirect:/admin/requests/rejected";
+        return "redirect:/admin/major/requests/rejected";
     }
 
     // 4. 박탈 처리
@@ -123,6 +123,6 @@ public class AdminMajorController {
     public String MajorRevoke(@PathVariable Long id, @RequestParam("reason") String reason) {
         Long adminId = 1L;
         adminMajorService.revokeMemberMajorRole(id, adminId, reason);
-        return "redirect:/admin/requests/revoked";
+        return "redirect:/admin/major/requests/revoked";
     }
 }
