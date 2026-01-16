@@ -8,12 +8,23 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@Table(
+	name = "major_profile_like",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "unique_member_profile_like",
+			columnNames = {"major_profile_id", "member_id"}
+		)
+	}
+)
 public class MajorProfileLike {
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
