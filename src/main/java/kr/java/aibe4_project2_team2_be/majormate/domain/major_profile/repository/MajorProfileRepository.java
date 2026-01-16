@@ -88,4 +88,12 @@ public interface MajorProfileRepository extends JpaRepository<MajorProfile, Long
 		"WHERE l.majorProfile.majorProfileId IN :ids " +
 		"GROUP BY l.majorProfile.majorProfileId")
 	List<Object[]> countLikesByProfileIds(@Param("ids") List<Long> ids);
+
+    // [추가] AI 추천 시스템용: 활성화된 모든 멘토 + 학적 + 태그 조회 (N+1 방지)
+    @Query("SELECT DISTINCT p FROM MajorProfile p " +
+            "JOIN FETCH p.memberProfile mp " +
+            "JOIN FETCH mp.academic ma " +
+            "LEFT JOIN FETCH p.tags t " +
+            "WHERE p.isActive = true")
+    List<MajorProfile> findAllActiveMentorsWithTags();
 }
