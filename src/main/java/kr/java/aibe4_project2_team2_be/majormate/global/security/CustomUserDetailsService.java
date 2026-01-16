@@ -16,19 +16,32 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-	private final MemberProfileRepository memberProfileRepository;
+    private final MemberProfileRepository memberProfileRepository;
 
-	@Override
-	@Transactional(readOnly = true)
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		MemberProfile memberProfile = memberProfileRepository.findById(Long.parseLong(username))
-			.orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_404));
+    @Override
+    @Transactional(readOnly = true)
+    public UserDetails loadUserByUsername(String usernameInput) throws UsernameNotFoundException {
+        MemberProfile memberProfile = null;
 
-		return new CustomUserDetails(
-			memberProfile.getMemberId(),
-			memberProfile.getEmail(),
-			memberProfile.getPassword(),
-			memberProfile.getRole().name()
-		);
-	}
+        // 1. 숫자 ID로 로그인 시도 (JWT/앱용)
+        try {
+            Long memberId = Long.parseLong(usernameInput);
+            memberProfile = memberProfileRepository.findById(memberId).orElse(null);
+        } catch (NumberFormatException e) {
+            // "admin" 같은 문자열이면 에러가 나므로 무시하고 아래로 넘어감
+        }
+
+        // 2. 문자열 아이디로 로그인 시도 (관리자용)
+        if (memberProfile == null) {
+            memberProfile = memberProfileRepository.findByUsername(usernameInput)
+                    .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + usernameInput));
+        }
+
+        return new CustomUserDetails(
+                memberProfile.getMemberId(),
+                memberProfile.getEmail(),
+                memberProfile.getPassword(),
+                memberProfile.getRole().name()
+        );
+    }
 }

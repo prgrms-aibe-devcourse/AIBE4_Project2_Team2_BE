@@ -30,38 +30,38 @@ public class InitialDataLoader implements CommandLineRunner {
 		log.info("🚀 초기 데이터 로더 시작...");
 
 		// TODO: Member 도메인 구현 후 아래 메서드 주석 해제
-		createAdminIfNotExists();
-		createTestUsersIfNotExists();
+		// createAdminIfNotExists();
+		// createTestUsersIfNotExists();
 
 		log.info("✅ 초기 데이터 로더 준비 완료 (Member 도메인 구현 후 활성화 필요)");
 	}
 
 	// TODO: Member 도메인 구현 후 주석 해제
 
-	private void createAdminIfNotExists() {
-		// String adminEmail = "admin@majormate.com";
-		//
-		// if (!memberProfileRepository.existsByEmail(adminEmail)) {
-		// 	MemberProfile admin = MemberProfile.createLocal(
-		// 		"관리자", "Admin", "admin@majormate.com", "admin", passwordEncoder.encode("test1234!")
-		// 	);
-		// 	admin.updateStatus(MemberStatus.ETC);
-		// 	admin.grantAdminRole();
-		// 	memberProfileRepository.save(admin);
-		// 	log.info("✅ 관리자 계정 생성: {}", adminEmail);
-		// }
-	}
+	//private void createAdminIfNotExists() {
+	//	String adminEmail = "admin@majormate.com";
 
-	private void createTestUsersIfNotExists() {
+    //    if (!memberProfileRepository.existsByEmail(adminEmail)) {
+	//	 	MemberProfile admin = MemberProfile.createLocal(
+	//	 		"관리자", "Admin", "admin@majormate.com", "admin", passwordEncoder.encode("test1234!"), MemberStatus.ETC
+    //
+     //        );
+	//	 	admin.grantAdminRole();
+	//	 	memberProfileRepository.save(admin);
+	//	 	log.info("✅ 관리자 계정 생성: {}", adminEmail);
+    //    }
+	//}
+
+	//private void createTestUsersIfNotExists() {
 		// 테스트 학생 계정
-		if (!memberProfileRepository.existsByEmail("student@test.com")) {
-			MemberProfile student = MemberProfile.createLocal(
-				"테스트학생", "학생1", "student@test.com", "student", passwordEncoder.encode("test1234!"),
-				MemberStatus.GRADUATED
-			);
-			memberProfileRepository.save(student);
-			log.info("✅ 테스트 학생 계정 생성: student@test.com");
-		}
+	    //	if (!memberProfileRepository.existsByEmail("student@test.com")) {
+		//	MemberProfile student = MemberProfile.createLocal(
+		//		"테스트학생", "학생1", "student@test.com", "student", passwordEncoder.encode("test1234!"),
+		//		MemberStatus.ENROLLED
+		//	);
+		//	memberProfileRepository.save(student);
+		//	log.info("✅ 테스트 학생 계정 생성: student@test.com");
+		//}
 
 		// 테스트 전공자 계정
 		// if (!memberProfileRepository.existsByEmail("major@test.com")) {
@@ -73,5 +73,5 @@ public class InitialDataLoader implements CommandLineRunner {
 		// 	memberProfileRepository.save(major);
 		// 	log.info("✅ 테스트 전공자 계정 생성: major@test.com");
 		// }
-	}
+	//}
 }
