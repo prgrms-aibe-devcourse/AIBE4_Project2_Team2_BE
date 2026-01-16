@@ -1,26 +1,20 @@
 package kr.java.aibe4_project2_team2_be.majormate.domain.notification.controller;
 
-import java.util.List;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.dto.response.NotificationResponse;
 import kr.java.aibe4_project2_team2_be.majormate.domain.notification.service.NotificationService;
 import kr.java.aibe4_project2_team2_be.majormate.global.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.Slf4j; // 로그용
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.MediaType;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -63,18 +57,18 @@ public class NotificationController {
         return notificationService.subscribe(memberId);
     }
     @GetMapping("/unread")
-    public ApiResponseNew<List<NotificationResponse>> getUnreadNotifications(@AuthenticationPrincipal Object principal) {
+    public ApiResponse<List<NotificationResponse>> getUnreadNotifications(@AuthenticationPrincipal Object principal) {
         Long memberId = getMemberId(principal);
 
         List<NotificationResponse> responses = notificationService.getUnreadNotifications(memberId);
-        return ApiResponseNew.success(responses);
+        return ApiResponse.success(responses);
     }
 
     // 3. 알림 읽음 처리
     @PatchMapping("/{id}/read")
     public ResponseEntity<?> readNotification(@PathVariable Long id) {
         notificationService.readNotification(id);
-        return ResponseEntity.ok(ApiResponseNew.success(null));
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     private Long getMemberId(Object principal) {
