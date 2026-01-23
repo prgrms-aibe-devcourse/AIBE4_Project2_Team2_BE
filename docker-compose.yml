@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  majormate-app:
+    image: ${DOCKER_USERNAME}/majormate-backend:latest
+    container_name: majormate-app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+      # Database
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # Mail
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      # AWS/Supabase (변수명 맞춤)
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+
+      # Gemini
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
+      # OAuth2 Clients
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+      GITHUB_CLIENT_ID: ${GH_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GH_CLIENT_SECRET}
+
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+
+      NAVER_CLIENT_ID: ${NAVER_CLIENT_ID}
+      NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET}
+
+      # JWT & Frontend
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
